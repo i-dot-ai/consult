@@ -259,7 +259,9 @@ class Question(UUIDPrimaryKeyModel, TimeStampedModel):
         else:
             self.multi_choice_response_count = 0
 
-        # total_response_count remains the raw row/respondent count.
+        # total_response_count is the overall response count for the question.
+        # For free-text questions this is the raw respondent row count; for multi-choice-only
+        # questions we use the number of responses with at least one selected option.
         self.total_response_count = responses.values("respondent_id").distinct().count()
 
         if self.has_multiple_choice and not self.has_free_text:
