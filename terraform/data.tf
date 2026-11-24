@@ -32,14 +32,13 @@ data "terraform_remote_state" "universal" {
 }
 
 locals {
-  record_prefix            = var.env == "prod" ? var.project_name : "${var.project_name}-${var.env}"
-  host                     = terraform.workspace == "prod" ? "${var.project_name}.ai.cabinetoffice.gov.uk" : "${var.project_name}-${terraform.workspace}.ai.cabinetoffice.gov.uk"
-  host_backend             = terraform.workspace == "prod" ? "${var.project_name}-backend-external.ai.cabinetoffice.gov.uk" : "${var.project_name}-backend-external-${terraform.workspace}.ai.cabinetoffice.gov.uk"
-  public_host              = terraform.workspace == "prod" ? "${var.project_name}.i.ai.gov.uk" : "${var.project_name}.${terraform.workspace}.i.ai.gov.uk"
-  name                     = "${var.team_name}-${var.env}-${var.project_name}"
-  batch_mapping_image_url  = "${data.aws_caller_identity.current.account_id}.dkr.ecr.${data.aws_region.current.id}.amazonaws.com/${var.project_name}-pipeline-mapping:${data.aws_ssm_parameter.image_tags["pipeline-mapping"].value}"
-  batch_sign_off_image_url = "${data.aws_caller_identity.current.account_id}.dkr.ecr.${data.aws_region.current.id}.amazonaws.com/${var.project_name}-pipeline-sign-off:${data.aws_ssm_parameter.image_tags["pipeline-sign-off"].value}"
-  llm_gateway_url          = "https://llm-gateway.i.ai.gov.uk/"
+  record_prefix           = var.env == "prod" ? var.project_name : "${var.project_name}-${var.env}"
+  host                    = terraform.workspace == "prod" ? "${var.project_name}.ai.cabinetoffice.gov.uk" : "${var.project_name}-${terraform.workspace}.ai.cabinetoffice.gov.uk"
+  host_backend            = terraform.workspace == "prod" ? "${var.project_name}-backend-external.ai.cabinetoffice.gov.uk" : "${var.project_name}-backend-external-${terraform.workspace}.ai.cabinetoffice.gov.uk"
+  public_host             = terraform.workspace == "prod" ? "${var.project_name}.i.ai.gov.uk" : "${var.project_name}.${terraform.workspace}.i.ai.gov.uk"
+  name                    = "${var.team_name}-${var.env}-${var.project_name}"
+  batch_mapping_image_url = "${data.aws_caller_identity.current.account_id}.dkr.ecr.${data.aws_region.current.id}.amazonaws.com/${var.project_name}-pipeline-mapping:${data.aws_ssm_parameter.image_tags["pipeline-mapping"].value}"
+  llm_gateway_url         = "https://llm-gateway.i.ai.gov.uk/"
 
   # Dev PoC collector from the util docs; dev only, so no other env ships telemetry.
   otel_exporter_otlp_endpoint = var.env == "dev" ? "https://search-i-dot-ai-dev-otel-poc-ekysqcfxvnh6touzvaf4dqa7ju.eu-west-2.es.amazonaws.com" : ""
@@ -68,7 +67,7 @@ data "aws_route53_zone" "zone" {
 
 
 data "aws_ssm_parameter" "image_tags" {
-  for_each = toset(["backend", "frontend", "pipeline-mapping", "pipeline-sign-off"])
+  for_each = toset(["backend", "frontend", "pipeline-mapping"])
   name     = "/${local.name}/env_secrets/${each.key}/IMAGE_TAG"
   depends_on = [
     aws_ssm_parameter.image_tag_placeholders

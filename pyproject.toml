@@ -11,7 +11,7 @@ override-dependencies = [
 ]
 
 [tool.uv.workspace]
-members = ["backend", "themefinder", "pipeline-common", "pipeline-sign-off", "pipeline-mapping"]
+members = ["backend", "themefinder", "pipeline-common", "pipeline-mapping"]
 
 [dependency-groups]
 dev = [

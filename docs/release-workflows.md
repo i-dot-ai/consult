@@ -56,7 +56,6 @@ Defined in `.github/service-config.json`:
 | `backend` | `module.backend`, `module.worker` |
 | `frontend` | `module.frontend` |
 | `pipeline-mapping` | `module.batch_job_mapping` |
-| `pipeline-sign-off` | `module.batch_job_sign_off` |
 
 Only services with changed image tags are built and deployed — if nothing in a service directory has changed since the last deploy, that service is skipped entirely.
 
@@ -160,7 +159,7 @@ The ECS services run on the shared platform cluster `i-dot-ai-<env>-ecs-cluster`
 | `backend` | ECS service | `i-dot-ai-prod-consult-worker-ecs-service` (task def `…-worker-task`) | RQ worker (shares the backend image + SSM tag) |
 | `frontend` | ECS service | `i-dot-ai-prod-consult-frontend-ecs-service` (task def `…-frontend-task`) | Astro/Svelte web app |
 | `pipeline-mapping` | AWS Batch job definition | `i-dot-ai-prod-consult-mapping-FARGATE-batch-job-definition` | Theme assignment batch job |
-| `pipeline-sign-off` | AWS Batch job definition | `i-dot-ai-prod-consult-sign-off-FARGATE-batch-job-definition` | Theme discovery batch job |
+| `backend` | ECS worker | `i-dot-ai-prod-consult-worker` | Theme discovery worker job |
 
 How to narrow it down:
 
@@ -169,7 +168,7 @@ How to narrow it down:
   - Web UI / page errors → `frontend`
   - API 5xx, `/api/health/` failures, auth/data errors → `backend`
   - Stuck/failed RQ jobs (imports, embeddings) → `worker`
-  - Theme discovery failures → `pipeline-sign-off`
+  - Theme discovery failures → `backend` worker logs and the RQ dashboard
   - Theme assignment failures → `pipeline-mapping`
 - **Note `backend` ⇒ two ECS services.** `backend` and `worker` are built from the same image and share one SSM image-tag, so a bad backend image affects both. Roll back **both** the `-backend` and `-worker` services together.
 
@@ -186,7 +185,7 @@ In the AWS console:
 
 If `backend` is at fault, repeat for **both** `…-backend` and `…-worker`.
 
-**Batch jobs (`pipeline-mapping`, `pipeline-sign-off`):** there is no long-running service to revert; the job definition is read when the next batch job is submitted. Either:
+**Batch jobs (`pipeline-mapping`):** there is no long-running service to revert; the job definition is read when the next batch job is submitted. Either:
 
 - register/select the previous job-definition revision (which points at the previous image), or
 - simply hold off triggering new find/assign-themes runs until the revert lands.

@@ -70,7 +70,7 @@ consult/
 │       ├── pages/                # Astro pages (routes)
 │       └── middleware.ts         # Auth & security
 │
-├── pipeline-sign-off/            # AWS Batch: Find themes
+├── backend/data_pipeline/find_themes.py # ECS worker: Find themes
 ├── pipeline-mapping/             # AWS Batch: Assign themes
 ├── lambda/                       # Event handlers (import results)
 ├── terraform/                    # Infrastructure as Code
@@ -120,7 +120,7 @@ SETUP → FINDING_THEMES → FINALISING_THEMES → ASSIGNING_THEMES → ANALYSIS
 **2. Finding Themes** (`FINDING_THEMES`)
 - Export data to S3 → AWS Batch job → Themefinder generates themes → S3
 - EventBridge → Lambda → RQ job imports `CandidateTheme` records
-- Location: `pipeline-sign-off/find_themes_script.py`, `lambda/import_candidate_themes/`
+- Location: `backend/data_pipeline/find_themes.py`, `backend/data_pipeline/jobs.py`
 
 **3. Finalising Themes** (`FINALISING_THEMES`)
 - Users review/edit candidate themes in UI

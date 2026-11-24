@@ -11,7 +11,7 @@ logger = settings.LOGGER
 
 
 def submit_job(
-    job_type: Literal["FIND_THEMES", "ASSIGN_THEMES"],
+    job_type: Literal["ASSIGN_THEMES"],
     consultation_code: str,
     consultation_name: str,
     user_id: int,
@@ -20,8 +20,7 @@ def submit_job(
     context_id: str | None = None,
 ) -> dict | None:
     """
-    Submit a job to AWS Batch for ThemeFinder processing.
-    This will be either to find themes or assign themes.
+    Submit an assign-themes job to AWS Batch for ThemeFinder processing.
 
     assignment_target controls how the results are imported:
     - "selected_themes": normal flow, imports into ResponseAnnotation
@@ -31,6 +30,9 @@ def submit_job(
     so it propagates through to the Batch job's parameters (and from there to the
     EventBridge event and the Lambda that imports the results).
     """
+    if job_type != "ASSIGN_THEMES":
+        raise ValueError(f"Unsupported AWS Batch job type: {job_type}")
+
     context_id = context_id or get_or_create_context_id()
     settings.LOGGER.set_context_field("context_id", context_id)
 
@@ -41,14 +43,9 @@ def submit_job(
         )
         return {"jobId": f"local-stub-{job_type.lower()}-{consultation_code}"}
 
-    if job_type == "FIND_THEMES":
-        job_name = settings.FIND_THEMES_BATCH_JOB_NAME
-        job_queue = settings.FIND_THEMES_BATCH_JOB_QUEUE
-        job_definition = settings.FIND_THEMES_BATCH_JOB_DEFINITION
-    else:
-        job_name = settings.ASSIGN_THEMES_BATCH_JOB_NAME
-        job_queue = settings.ASSIGN_THEMES_BATCH_JOB_QUEUE
-        job_definition = settings.ASSIGN_THEMES_BATCH_JOB_DEFINITION
+    job_name = settings.ASSIGN_THEMES_BATCH_JOB_NAME
+    job_queue = settings.ASSIGN_THEMES_BATCH_JOB_QUEUE
+    job_definition = settings.ASSIGN_THEMES_BATCH_JOB_DEFINITION
 
     parameters = {
         "consultation_code": consultation_code,

@@ -60,58 +60,6 @@ module "slack_notifier_lambda" {
   }
 }
 
-data "archive_file" "import_candidate_themes_archive" {
-  type        = "zip"
-  source_dir  = "${path.root}/../lambda/build/import_candidate_themes"
-  output_path = "${path.root}/../lambda/out/import_candidate_themes.zip"
-}
-
-data "archive_file" "import_candidate_themes_layer" {
-  type        = "zip"
-  source_dir  = "${path.root}/../lambda/build/packages/import_candidate_themes"
-  output_path = "${path.root}/../lambda/build/layers/import_candidate_themes.zip"
-}
-
-resource "aws_lambda_layer_version" "import_candidate_themes_dependencies" {
-  filename                 = data.archive_file.import_candidate_themes_layer.output_path
-  layer_name               = "${local.name}-import-candidate-themes-layer"
-  description              = "Dependency layer for import_candidate_themes"
-  source_code_hash         = data.archive_file.import_candidate_themes_layer.output_base64sha256
-  compatible_runtimes      = ["python3.12"]
-  compatible_architectures = ["x86_64"]
-}
-
-module "import_candidate_themes_lambda" {
-  source = "git::https://github.com/i-dot-ai/i-dot-ai-core-terraform-modules.git//modules/infrastructure/lambda?ref=v2.2.0-lambda"
-
-  file_path                     = data.archive_file.import_candidate_themes_archive.output_path
-  handler                       = "main.lambda_handler"
-  runtime                       = "python3.12"
-  function_name                 = "${local.name}-import-candidate-themes-lambda"
-  package_type                  = "Zip"
-  memory_size                   = 1024
-  source_code_hash              = data.archive_file.import_candidate_themes_archive.output_base64sha256
-  account_id                    = data.aws_caller_identity.current.account_id
-  lambda_additional_policy_arns = { for idx, arn in [aws_iam_policy.lambda_exec_custom_policy.arn] : idx => arn }
-  layers                        = [aws_lambda_layer_version.import_candidate_themes_dependencies.arn]
-  aws_security_group_ids        = [aws_security_group.lambda_sg.id]
-  subnet_ids                    = data.terraform_remote_state.vpc.outputs.private_subnets
-  environment_variables = {
-    REDIS_HOST                  = module.elasticache.redis_address
-    REDIS_PORT                  = module.elasticache.redis_port
-    AWS_BUCKET_NAME             = module.app_bucket.id
-    LAMBDA_AWS_REGION           = data.aws_region.current.id
-    AWS_ACCOUNT_ID              = data.aws_caller_identity.current.account_id
-    SENTRY_DSN                  = var.backend_sentry_dsn
-    ENVIRONMENT                 = terraform.workspace
-    APP_NAME                    = "${var.project_name}-import-candidate-themes"
-    REPO                        = var.project_name
-    EXECUTION_CONTEXT           = "lambda"
-    OTEL_ENABLED                = false
-    OTEL_EXPORTER_OTLP_ENDPOINT = local.otel_exporter_otlp_endpoint
-  }
-}
-
 data "archive_file" "import_response_annotations_archive" {
   type        = "zip"
   source_dir  = "${path.root}/../lambda/build/import_response_annotations"
@@ -170,15 +118,6 @@ module "slack_notifier_lambda_alarm" {
   name            = "${local.name}-slack-notifier"
   lambda_function = module.slack_notifier_lambda.function_name
   sns_topic_arn   = [module.sns_topic.sns_topic_arn]
-}
-
-module "import_candidate_themes_lambda_alarm" {
-  # checkov:skip=CKV_TF_1: We're using semantic versions instead of commit hash
-  source                = "git::https://github.com/i-dot-ai/i-dot-ai-core-terraform-modules.git//modules/observability/lambda-alarms?ref=v1.3.0-lambda-alarms"
-  name                  = "${local.name}-import-candidate-themes"
-  lambda_function       = module.import_candidate_themes_lambda.function_name
-  sns_topic_arn         = [module.sns_topic.sns_topic_arn]
-  duration_threshold_ms = 480000 # 80% of the 600s timeout
 }
 
 module "import_response_annotations_lambda_alarm" {
