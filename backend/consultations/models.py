@@ -241,9 +241,9 @@ class Question(UUIDPrimaryKeyModel, TimeStampedModel):
 
         if self.has_free_text:
             # Prefer canonical v2 text if present, otherwise fall back for legacy/test data.
-            text_count = responses.exclude(text__isnull=True).exclude(text="").count()
-            if text_count:
-                self.free_text_response_count = text_count
+            has_any_text_value = responses.exclude(text__isnull=True).exists()
+            if has_any_text_value:
+                self.free_text_response_count = responses.exclude(text__isnull=True).exclude(text="").count()
             else:
                 self.free_text_response_count = (
                     responses.exclude(free_text__isnull=True).exclude(free_text="").count()
