@@ -10,18 +10,20 @@ import pandas as pd
 import structlog
 import urllib3
 from django.conf import settings
+from django.utils.functional import SimpleLazyObject
 from openai import OpenAI
 from pydantic import BaseModel
+from themefinder.advanced_tasks.theme_clustering_agent import ThemeClusteringAgent
+from themefinder.llm import OpenAILLM
+from themefinder.models import ThemeNode
 from themefinder.tasks import theme_condensation, theme_generation, theme_refinement
 from themefinder.themeset_rules import (
     rule_1_total_theme_number_less_than_70_slack,
     rule_3_semantic_similarity_must_be_less_than_90pc_slack,
 )
-from themefinder.advanced_tasks.theme_clustering_agent import ThemeClusteringAgent
-from themefinder.llm import OpenAILLM
-from themefinder.models import ThemeNode
 
-logger = settings.LOGGER
+# Keep module imports usable in image smoke tests without configuring all Django settings.
+logger = SimpleLazyObject(lambda: settings.LOGGER)
 http = urllib3.PoolManager()
 
 BASE_PREFIX = "app_data/consultations"

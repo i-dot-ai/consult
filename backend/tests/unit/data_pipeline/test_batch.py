@@ -83,7 +83,7 @@ def test_submit_job_reraises_boto_errors(settings, boto3, logger):
 def test_submit_job_rejects_removed_find_themes_batch_job():
     with pytest.raises(ValueError, match="Unsupported AWS Batch job type: FIND_THEMES"):
         submit_job(
-            job_type="FIND_THEMES",  # type: ignore[arg-type]
+            job_type="FIND_THEMES",
             consultation_code="consultation",
             consultation_name="Consultation",
             user_id=123,

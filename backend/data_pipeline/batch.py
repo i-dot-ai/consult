@@ -11,7 +11,7 @@ logger = settings.LOGGER
 
 
 def submit_job(
-    job_type: Literal["ASSIGN_THEMES"],
+    job_type: Literal["FIND_THEMES", "ASSIGN_THEMES"],
     consultation_code: str,
     consultation_name: str,
     user_id: int,
