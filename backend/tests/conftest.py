@@ -1,3 +1,5 @@
+from types import SimpleNamespace
+
 import pytest
 import structlog
 import yaml
@@ -5,6 +7,7 @@ from django.contrib.postgres.search import SearchVector
 from django.test import RequestFactory
 from rest_framework_simplejwt.tokens import RefreshToken
 
+import factories
 from consultations.models import (
     Consultation,
     DemographicOption,
@@ -414,3 +417,44 @@ def embedded_responses():
         "search_mode": data["search_mode"],
     }
     Consultation.objects.filter(id=question.consultation.id).delete()
+
+
+@pytest.fixture
+def closed_answers(consultation):
+    """A hybrid (open question with a closed sibling), a demographic question and an
+    untyped legacy question, with three respondents: one multi-select, one single, one silent."""
+    closed_question = factories.ClosedQuestionFactory(consultation=consultation, number=11)
+    open_question = factories.OpenQuestionFactory(
+        consultation=consultation, number=12, closed_question=closed_question
+    )
+    demographic_question = factories.DemographicQuestionFactory(
+        consultation=consultation, number=13
+    )
+    legacy_question = factories.QuestionFactory(consultation=consultation, number=14)
+
+    multi_select, single, silent = factories.RespondentFactory.create_batch(
+        3, consultation=consultation
+    )
+    for respondent, options in [(multi_select, ["Red", "Blue"]), (single, ["Red"])]:
+        for option in options:
+            factories.ResponseFactory(
+                question=closed_question, respondent=respondent, text=option, free_text=None
+            )
+    for respondent, region in [(multi_select, "North"), (single, "South"), (silent, "North")]:
+        factories.ResponseFactory(
+            question=demographic_question, respondent=respondent, text=region, free_text=None
+        )
+    for respondent in (multi_select, single, silent):
+        factories.ResponseFactory(
+            question=open_question, respondent=respondent, text="Because", free_text="Because"
+        )
+
+    return SimpleNamespace(
+        closed_question=closed_question,
+        open_question=open_question,
+        demographic_question=demographic_question,
+        legacy_question=legacy_question,
+        multi_select=multi_select,
+        single=single,
+        silent=silent,
+    )

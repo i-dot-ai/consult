@@ -3,7 +3,6 @@ from django.urls import reverse
 
 from factories import (
     ConsultationFactory,
-    MultiChoiceAnswerFactory,
     QuestionFactory,
     RespondentFactory,
     ResponseAnnotationFactory,
@@ -13,7 +12,9 @@ from factories import (
 
 def _url(consultation, question, qs=""):
     return (
-        reverse("question-v2-detail", kwargs={"consultation_pk": consultation.id, "pk": question.id})
+        reverse(
+            "question-v2-detail", kwargs={"consultation_pk": consultation.id, "pk": question.id}
+        )
         + qs
     )
 
@@ -23,9 +24,7 @@ def _get(client, url, token):
 
 
 @pytest.mark.django_db
-def test_v2_question_retrieve_exposes_dashboard_fields(
-    client, consultation, non_staff_user_token
-):
+def test_v2_question_retrieve_exposes_dashboard_fields(client, consultation, non_staff_user_token):
     question = QuestionFactory(consultation=consultation, type="open")
 
     response = _get(client, _url(consultation, question), non_staff_user_token)
@@ -77,12 +76,11 @@ def test_v2_question_retrieve_annotates_multiple_choice_counts_under_filters(
     question = QuestionFactory(
         consultation=consultation, type="closed", has_free_text=False, has_multiple_choice=True
     )
-    yes_answer = MultiChoiceAnswerFactory(question=question, text="Yes")
-    MultiChoiceAnswerFactory(question=question, text="No")
-    r1, r2 = RespondentFactory(consultation=consultation), RespondentFactory(consultation=consultation)
-    ResponseFactory(question=question, respondent=r1, text="Yes", free_text=None).chosen_options.add(
-        yes_answer
+    r1, r2 = (
+        RespondentFactory(consultation=consultation),
+        RespondentFactory(consultation=consultation),
     )
+    ResponseFactory(question=question, respondent=r1, text="Yes", free_text=None)
     ResponseFactory(question=question, respondent=r2, text="No", free_text=None)
 
     response = _get(
@@ -115,9 +113,7 @@ def test_v2_question_retrieve_proportion_of_audited_answers(
 
 
 @pytest.mark.django_db
-def test_v2_question_retrieve_staff_can_read_any_consultation(
-    client, staff_user_token
-):
+def test_v2_question_retrieve_staff_can_read_any_consultation(client, staff_user_token):
     other_consultation = ConsultationFactory()
     question = QuestionFactory(consultation=other_consultation, type="open")
 

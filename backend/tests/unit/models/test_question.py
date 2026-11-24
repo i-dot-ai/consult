@@ -152,3 +152,26 @@ def test_answers_question_is_the_closed_sibling_for_a_hybrid():
 def test_answers_question_is_none_without_answers_to_read():
     assert OpenQuestionFactory().answers_question is None
     assert QuestionFactory().answers_question is None
+
+
+@pytest.mark.django_db
+def test_calculate_response_counts_counts_answering_respondents_for_a_hybrid(closed_answers):
+    open_question = closed_answers.open_question
+    open_question.has_multiple_choice = True
+
+    open_question.calculate_response_counts()
+    assert open_question.multi_choice_response_count == 2
+
+    single_only = open_question.response_set.filter(respondent=closed_answers.single)
+    open_question.calculate_response_counts(single_only)
+    assert open_question.multi_choice_response_count == 1
+
+
+@pytest.mark.django_db
+def test_calculate_response_counts_is_zero_for_an_open_question_without_a_sibling(
+    closed_answers,
+):
+    question = OpenQuestionFactory(consultation=closed_answers.open_question.consultation)
+    question.has_multiple_choice = True
+    question.calculate_response_counts()
+    assert question.multi_choice_response_count == 0
