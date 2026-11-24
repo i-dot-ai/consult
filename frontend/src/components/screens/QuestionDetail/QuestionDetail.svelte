@@ -208,6 +208,7 @@
         searchValue: filters.searchValue,
         searchMode: filters.searchMode,
       }),
+      // Theme ids are UUIDs, so a comma-joined list is safe here
       ...(filters.themeFilters.length > 0 && {
         themeFilters: filters.themeFilters.join(","),
       }),
@@ -220,17 +221,18 @@
       ...(filters.flagged && {
         is_flagged: JSON.stringify(filters.flagged),
       }),
-      ...(filters.multiAnswerFilters.length > 0 && {
-        multiple_choice_answer: filters.multiAnswerFilters.join(","),
-      }),
-      ...(filters.demoFilters.length > 0 && {
-        demographics: filters.demoFilters.join(","),
-      }),
       ...(includePagination && {
         ...(nextCursor ? { cursor: nextCursor } : {}),
         page_size: PAGE_SIZE.toString(),
       }),
     });
+    // Answer values can contain commas, so each one is its own parameter
+    for (const answer of filters.multiAnswerFilters) {
+      params.append("answers", answer);
+    }
+    for (const demographic of filters.demoFilters) {
+      params.append("demographic_answers", demographic);
+    }
 
     const qs = params.toString();
     return qs ? `?${qs}` : "";
