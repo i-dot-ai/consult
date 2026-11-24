@@ -1,4 +1,6 @@
+from collections import defaultdict
 from typing import ClassVar
+from uuid import UUID
 
 from django.conf import settings
 from django.db.models import Count
@@ -10,6 +12,12 @@ from rest_framework.filters import SearchFilter
 
 from authentication.models import User
 from consultations.models import DemographicOption, Response
+from consultations.query_params import RepeatedValueFilter, is_uuid
+from consultations.services.closed_answers import (
+    filter_responses_by_answers,
+    filter_responses_by_demographic_answers,
+    split_demographic_answer_id,
+)
 from embeddings import embed_text
 
 logger = settings.LOGGER
@@ -24,6 +32,8 @@ class ResponseFilter(FilterSet):
     demographics = BaseInFilter(method="filter_demographics", lookup_expr="in")
     is_flagged = BooleanFilter()
     multiple_choice_answer = BaseInFilter(method="filter_multiple_choice", lookup_expr="in")
+    answers = RepeatedValueFilter(method="filter_answers")
+    demographic_answers = RepeatedValueFilter(method="filter_demographic_answers")
     respondent_id = UUIDFilter()
     question_id = UUIDFilter()
 
@@ -70,9 +80,21 @@ class ResponseFilter(FilterSet):
         if not value:
             return queryset
 
+        answer_ids: list[str] = []
+        option_ids: list[str] = []
+        for item in value:
+            if split_demographic_answer_id(item) is not None:
+                answer_ids.append(item)
+            else:
+                option_ids.append(item)
+        if answer_ids:
+            queryset = self.filter_demographic_answers(queryset, name, answer_ids)
+        if not option_ids:
+            return queryset
+
         from consultations.models import Respondent
 
-        options = DemographicOption.objects.filter(id__in=value)
+        options = DemographicOption.objects.filter(id__in=option_ids)
         groups = {}
         for option in options:
             groups.setdefault(option.field_name, []).append(option.id)
@@ -86,14 +108,36 @@ class ResponseFilter(FilterSet):
 
         return queryset.filter(respondent_id__in=respondents.values("id"))
 
-    def filter_multiple_choice(self, queryset, name, value):
+    def filter_demographic_answers(self, queryset, name, value):
+        selections: dict[UUID, list[str]] = defaultdict(list)
+        for item in value:
+            if (parsed := split_demographic_answer_id(item)) is not None:
+                question_id, text = parsed
+                selections[question_id].append(text)
+        if not selections:
+            return queryset
+        return filter_responses_by_demographic_answers(queryset, selections)
+
+    def filter_answers(self, queryset, name, value):
         if not value:
             return queryset
-        return queryset.filter(chosen_options__in=value).distinct()
+        return filter_responses_by_answers(queryset, value)
+
+    def filter_multiple_choice(self, queryset, name, value):
+        """Legacy option ids, or answer texts while the frontend still keys answers by id."""
+        if not value:
+            return queryset
+        option_ids = [item for item in value if is_uuid(item)]
+        texts = [item for item in value if not is_uuid(item)]
+        if texts:
+            queryset = filter_responses_by_answers(queryset, texts)
+        if option_ids:
+            queryset = queryset.filter(chosen_options__in=option_ids).distinct()
+        return queryset
 
     class Meta:
         model = Response
-        fields: ClassVar[list] = ["respondent_id", "chosen_options"]
+        fields: ClassVar[list] = ["respondent_id"]
 
 
 def apply_search_filter(queryset, query_params):

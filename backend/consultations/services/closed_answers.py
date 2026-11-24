@@ -10,7 +10,7 @@ from uuid import UUID
 
 from django.db.models import Count, Exists, OuterRef, Q, QuerySet
 
-from consultations.models import Question, Response
+from consultations.models import Consultation, Question, Response
 
 
 def count_option_responses(
@@ -105,3 +105,74 @@ def filter_responses_by_answers(queryset: QuerySet, texts: Iterable[str]) -> Que
         | Q(question_id=OuterRef("question__closed_question_id"))
     )
     return queryset.filter(Exists(selected))
+
+
+def demographic_answer_id(question_id: UUID, text: str) -> str:
+    return f"{question_id}:{text}"
+
+
+def split_demographic_answer_id(value: str) -> tuple[UUID, str] | None:
+    """Inverse of demographic_answer_id; None for anything else, such as a legacy option id."""
+    question_part, separator, text = value.partition(":")
+    if not separator:
+        return None
+    try:
+        return UUID(question_part), text
+    except ValueError:
+        return None
+
+
+def filter_responses_by_demographic_answers(
+    queryset: QuerySet, selections: dict[UUID, Iterable[str]]
+) -> QuerySet:
+    """OR within a demographic question, AND across questions."""
+    for question_id, texts in selections.items():
+        queryset = queryset.filter(
+            Exists(
+                Response.objects.filter(
+                    respondent_id=OuterRef("respondent_id"),
+                    question_id=question_id,
+                    text__in=list(texts),
+                )
+            )
+        )
+    return queryset
+
+
+def count_demographic_answers(
+    consultation: Consultation, respondent_ids: Iterable[UUID] | None = None
+) -> list[dict]:
+    """Every demographic answer in the consultation with its respondent count, in the
+    shape the v1 demographics endpoint serialises. Limiting to respondents keeps every
+    answer listed and only changes the counts."""
+    rows = Response.objects.filter(
+        question__consultation=consultation,
+        question__type=Question.QuestionType.DEMOGRAPHIC,
+    ).exclude(Q(text__isnull=True) | Q(text=""))
+    answers = (
+        rows.values("question_id", "question__text", "question__number", "text")
+        .distinct()
+        .order_by("question__number", "text")
+    )
+    counted = rows
+    if respondent_ids is not None:
+        counted = counted.filter(respondent_id__in=respondent_ids)
+    counts = {
+        (row["question_id"], row["text"]): row["count"]
+        for row in counted.values("question_id", "text").annotate(
+            count=Count("respondent_id", distinct=True)
+        )
+    }
+    return [
+        {
+            "id": demographic_answer_id(answer["question_id"], answer["text"]),
+            "field_name": answer["question__text"],
+            "field_value": answer["text"],
+            "count": counts.get((answer["question_id"], answer["text"]), 0),
+        }
+        for answer in answers
+    ]
+
+
+def has_demographic_questions(consultation: Consultation) -> bool:
+    return consultation.question_set.filter(type=Question.QuestionType.DEMOGRAPHIC).exists()

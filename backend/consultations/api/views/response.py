@@ -1,7 +1,7 @@
 import uuid
 from typing import ClassVar
 
-from django.db.models import Exists, OuterRef
+from django.db.models import Exists, OuterRef, Prefetch
 from rest_framework import status
 from rest_framework.decorators import action
 from rest_framework.pagination import PageNumberPagination
@@ -19,6 +19,7 @@ from consultations.api.serializers import (
     ResponseThemeInformationSerializer,
     ThemeSerializer,
 )
+from consultations.services.closed_answers import closed_answer_rows
 
 # Upper bound on how many responses a single bulk mark-read request may carry.
 # This matches the maximum page size so a full page can always be marked at once,
@@ -123,6 +124,11 @@ class ResponseViewSet(ModelViewSet):
             "question",
         ).prefetch_related(
             "chosen_options",
+            Prefetch(
+                "respondent__response_set",
+                queryset=closed_answer_rows(consultation_uuid),
+                to_attr="prefetched_closed_answers",
+            ),
             "respondent__demographics",
             "annotation__responseannotationtheme_set__assigned_by",
             "annotation__responseannotationtheme_set",

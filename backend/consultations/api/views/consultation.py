@@ -35,6 +35,10 @@ from consultations.models import (
     ResponseAnnotationTheme,
     SelectedTheme,
 )
+from consultations.services.closed_answers import (
+    count_demographic_answers,
+    has_demographic_questions,
+)
 from consultations.test_support.load_test_fixtures import (
     create_data_from_fixtures,
     delete_data_from_fixtures,
@@ -179,27 +183,34 @@ class ConsultationViewSet(ModelViewSet):
         """
         Demographic options with counts, optionally filtered by question/theme/etc.
         """
-        self.get_object()
+        consultation = self.get_object()
 
         options = DemographicOption.objects.filter(consultation_id=pk)
 
         filter_params = [
             "themeFilters",
             "demographics",
+            "demographic_answers",
             "evidenceRich",
             "unseenResponsesOnly",
             "is_flagged",
             "multiple_choice_answer",
+            "answers",
             "searchValue",
         ]
         question_id = request.query_params.get("question_id")
         has_filters = question_id or any(request.query_params.get(p) for p in filter_params)
 
+        filtered_respondent_ids = None
         if has_filters:
             filtered_responses = get_filtered_responses(
                 request.query_params, pk, question_id=question_id
             )
             filtered_respondent_ids = filtered_responses.values("respondent_id").distinct()
+
+        if settings.DATA_SETUP_V2_ENABLED and has_demographic_questions(consultation):
+            data = count_demographic_answers(consultation, filtered_respondent_ids)
+        elif has_filters:
             through_table = Respondent.demographics.through
             counts = dict(
                 through_table.objects.filter(respondent_id__in=filtered_respondent_ids)
