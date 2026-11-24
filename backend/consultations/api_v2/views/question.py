@@ -58,11 +58,6 @@ class QuestionViewSet(UpdateModelMixin, DestroyModelMixin, ReadOnlyModelViewSet)
         queryset = (
             Question.objects.filter(consultation_id=self.kwargs["consultation_pk"])
             .prefetch_related("multichoiceanswer_set")
-            .annotate(
-                response_count=Count(
-                    "response", filter=Q(response__text__isnull=False) & ~Q(response__text="")
-                )
-            )
             .order_by("number")
         )
 
@@ -138,7 +133,7 @@ class QuestionViewSet(UpdateModelMixin, DestroyModelMixin, ReadOnlyModelViewSet)
                 "answers": list(
                     answers.order_by("id").values_list("text", flat=True)[:SAMPLE_ANSWER_COUNT]
                 ),
-                "total_count": question.response_count,
+                "total_count": answers.count(),
             }
         )
 

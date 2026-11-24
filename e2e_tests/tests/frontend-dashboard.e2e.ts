@@ -39,8 +39,8 @@ test.describe("Dashboard Page", () => {
     // Dashboard excludes demographic questions from the questions list.
     const numberOfQuestions = "3";
     // Answers metric is the sum of response counts across dashboard questions.
-    // For this fixture, the dashboard sums to 20 answers.
-    const numberOfAnswers = "20";
+    // For this fixture, the dashboard sums to 18 answers.
+    const numberOfAnswers = "18";
 
     const questionOnPage = page.getByTestId("metric-count-questions");
     await expect (questionOnPage).toBeVisible();
