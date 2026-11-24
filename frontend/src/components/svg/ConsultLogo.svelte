@@ -25,6 +25,6 @@
     font-family="'GDS Transport', Arial, sans-serif"
     font-size="17"
     font-weight="700"
-    fill="var(--text-primary)">Consult<tspan fill="var(--brand)">.</tspan></text
+    fill="var(--color-text)">Consult<tspan fill="var(--color-primary)">.</tspan></text
   >
 </svg>
