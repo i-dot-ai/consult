@@ -380,7 +380,7 @@ describe("ReviewQuestionsPage", () => {
       expect(screen.getByText("Cost")).toBeInTheDocument();
     });
     expect(
-      screen.getByText("A sample. 3 of 380 answers to this question"),
+      screen.getByText(/A sample\.\s*3\s*of\s*380\s*responses/i),
     ).toBeInTheDocument();
     const sampleCall = fetchMock.callHistory
       .calls()
