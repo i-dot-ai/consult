@@ -19,22 +19,22 @@ const QUESTIONS = [
       {
         id: "c0dd6e81-9503-4156-bf9e-548efd975cf8",
         text: "Yes",
-        response_count: 99,
+        total_response_count: 99,
       },
       {
         id: "171f1142-d62f-4f70-aeb0-1fe738ad4789",
         text: "No answer",
-        response_count: 17,
+        total_response_count: 17,
       },
       {
         id: "7448a8bd-fb8a-464f-a07b-7250299daa26",
         text: "No",
-        response_count: 18,
+        total_response_count: 18,
       },
       {
         id: "7adf9e67-86ee-4848-8c1b-8a668c0f6c3c",
         text: "Don't know",
-        response_count: 98,
+        total_response_count: 98,
       },
     ],
     proportion_of_audited_answers: 0.0,
@@ -54,22 +54,22 @@ const QUESTIONS = [
       {
         id: "faa06d2c-356d-46bf-84a3-3a3f8d55f0e8",
         text: "No",
-        response_count: 61,
+        total_response_count: 61,
       },
       {
         id: "c40a3342-c98b-4ebf-b753-a7278de28829",
         text: "Don't know",
-        response_count: 58,
+        total_response_count: 58,
       },
       {
         id: "5b74f470-4b8f-4f05-8458-3c182b17e49d",
         text: "No answer",
-        response_count: 64,
+        total_response_count: 64,
       },
       {
         id: "5c78ec82-20c8-44c2-8a8a-2207a9c34a81",
         text: "Yes",
-        response_count: 58,
+        total_response_count: 58,
       },
     ],
     proportion_of_audited_answers: 0,
@@ -89,27 +89,27 @@ const QUESTIONS = [
       {
         id: "28a76cea-e243-4cdc-9ebc-2f7847b7891d",
         text: "Design",
-        response_count: 62,
+        total_response_count: 62,
       },
       {
         id: "2834a9e7-d57e-4d6b-b324-18b2ee0ed7d5",
         text: "Brand recognition",
-        response_count: 56,
+        total_response_count: 56,
       },
       {
         id: "d8290922-fa60-4e75-8184-21b643489e05",
         text: "Cost-effectiveness",
-        response_count: 63,
+        total_response_count: 63,
       },
       {
         id: "c72c2e69-94da-466c-8589-81fb0c9d8e18",
         text: "Durability",
-        response_count: 66,
+        total_response_count: 66,
       },
       {
         id: "8eb356c1-d936-4fab-bd36-e94db28c9f8a",
         text: "Sustainability",
-        response_count: 63,
+        total_response_count: 63,
       },
     ],
     proportion_of_audited_answers: 0,
@@ -209,7 +209,7 @@ const V2_QUESTIONS = QUESTIONS.map(
     short_name: "",
     dashboard_role: "filter",
     status: "configured",
-    response_count: rest.free_text_response_count,
+    total_response_count: rest.free_text_response_count,
   }),
 );
 

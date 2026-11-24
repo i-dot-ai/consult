@@ -446,7 +446,6 @@ export const questionV2Mock = {
     short_name: "flavour-categories",
     dashboard_role: "filter",
     status: "configured",
-    response_count: mocks.questionMock.body.free_text_response_count,
     total_response_count: mocks.questionMock.body.total_response_count,
     free_text_response_count: mocks.questionMock.body.free_text_response_count,
     multi_choice_response_count:

@@ -57,12 +57,12 @@ export const questionsMock = {
           {
             id: "2a210b53-0205-4249-a863-18c6636e0afb",
             text: "Support",
-            response_count: 76,
+            total_response_count: 76,
           },
           {
             id: "74adb02d-1638-48f9-a512-b6a50d6be61a",
             text: "Oppose",
-            response_count: 49,
+            total_response_count: 49,
           },
         ],
         proportion_of_audited_answers: 0.0,

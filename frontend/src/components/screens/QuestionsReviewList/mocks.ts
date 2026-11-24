@@ -46,7 +46,6 @@ export const v2ClosedQuestion = {
   short_name: "",
   dashboard_role: "filter",
   status: "configured",
-  response_count: 0,
   total_response_count: 0,
   free_text_response_count: 0,
   multi_choice_response_count: 0,
