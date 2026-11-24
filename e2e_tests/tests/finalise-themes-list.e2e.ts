@@ -13,11 +13,11 @@ test.describe.configure({ mode: "serial" });
 
 const cleanupManager = new CleanupManager();
 
-// Questions with free text are signed off in the finalise themes flow;
-// multiple-choice-only questions are not. Derived from the fixture so it
+// Open questions are signed off in the finalise themes flow;
+// closed questions are not. Derived from the fixture so it
 // stays correct if the fixture's questions change.
 const FREE_TEXT_QUESTION_COUNT = (signOffConsultation.questions ?? []).filter(
-  (question) => question.has_free_text,
+  (question) => question.type === "open",
 ).length;
 
 test.describe("Finalise Themes - List Page", () => {
@@ -71,8 +71,11 @@ test.describe("Finalise Themes - List Page", () => {
   test("Number of questions is correct", async ({ page }) => {
     await gotoFinaliseThemesList(page, signOffConsultation.title);
 
-    // This list excludes demographic questions on v2.
-    const questionCount = signOffConsultation.questions!.length;
+    // This list excludes demographic questions on v2 and includes a hybrid's closed sibling.
+    const questionCount = signOffConsultation.questions!.reduce(
+      (count, question) => count + (question.closed_question ? 2 : 1),
+      0,
+    );
     await expect(
       page.getByText(`${questionCount} questions`, { exact: true }),
     ).toBeVisible();
@@ -82,7 +85,10 @@ test.describe("Finalise Themes - List Page", () => {
     await gotoFinaliseThemesList(page, signOffConsultation.title);
 
     const questions = signOffConsultation.questions!;
-    await expect(page.getByTestId("question-card")).toHaveCount(questions.length);
+    const closedSiblingCount = questions.filter((question) => question.closed_question).length;
+    await expect(page.getByTestId("question-card")).toHaveCount(
+      questions.length + closedSiblingCount,
+    );
 
     for (const question of questions) {
       await expect(page.getByText(question.text).first()).toBeVisible();
@@ -96,7 +102,7 @@ test.describe("Finalise Themes - List Page", () => {
     // opening words are unique, so search for those rather than a hardcoded
     // string or a positional index into the fixture.
     const openQuestion = signOffConsultation.questions!.find(
-      (question) => question.has_free_text && !question.has_multiple_choice,
+      (question) => question.type === "open" && !question.closed_question,
     )!;
     const searchTerm = openQuestion.text.split(" ").slice(0, 4).join(" ");
     await page.locator("#search-input").fill(searchTerm);
@@ -158,7 +164,7 @@ test.describe("Finalise Themes - List Page", () => {
 
     // Only free-text questions have a detail page to navigate to.
     const freeTextQuestion = signOffConsultation.questions!.find(
-      (question) => question.has_free_text,
+      (question) => question.type === "open",
     )!;
     await page
       .getByTestId("question-card")

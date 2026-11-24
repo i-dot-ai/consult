@@ -20,6 +20,9 @@ const responsesWithNation = (nation: string) =>
 const responsesWithChoice = (option: string) =>
   responses.filter((response) => response.chosen_options?.includes(option))
     .length;
+const hybridQuestionOptions = [
+  ...new Set(responses.flatMap((response) => response.chosen_options ?? [])),
+];
 const responsesMatchingText = (substring: string) =>
   responses.filter((response) =>
     response.free_text?.toLowerCase().includes(substring.toLowerCase()),
@@ -98,7 +101,7 @@ test.describe("Question Summary Page", () => {
     ).toBeVisible();
 
     // Each option label is rendered as a heading within the section.
-    for (const option of hybridQuestionWithThemes.multiple_choice_options ?? []) {
+    for (const option of hybridQuestionOptions) {
       await expect(
         page.getByRole("heading", { name: option, exact: true }),
       ).toBeVisible();

@@ -52,7 +52,7 @@ test.describe("Finalise Themes - Detail Page", () => {
     // Only free-text questions have a detail page; target that card by its text
     // rather than relying on fixture order.
     const freeTextQuestion = signOffConsultation.questions!.find(
-      (question) => question.has_free_text,
+      (question) => question.type === "open",
     )!;
     const questionCard = page
       .getByTestId("question-card")

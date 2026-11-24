@@ -36,11 +36,12 @@ test.describe("Dashboard Page", () => {
   });
 
   test("metric counts should be as expected", async ({ page }) => {
-    // Dashboard excludes demographic questions from the questions list.
-    const numberOfQuestions = "3";
-    // Answers metric is the sum of response counts across dashboard questions.
-    // For this fixture, the dashboard sums to 18 answers.
-    const numberOfAnswers = "18";
+    // Dashboard excludes demographic questions from the questions list and
+    // counts a hybrid's closed sibling as its own question.
+    const numberOfQuestions = "4";
+    // Answers metric is the sum of response counts across dashboard questions,
+    // the hybrid's closed sibling included. For this fixture that is 23.
+    const numberOfAnswers = "23";
 
     const questionOnPage = page.getByTestId("metric-count-questions");
     await expect (questionOnPage).toBeVisible();

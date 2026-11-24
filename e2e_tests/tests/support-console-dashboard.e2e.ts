@@ -78,9 +78,13 @@ test.describe("Support Console Dashboard - Dashboard Page", () => {
         ),
       ).size;
 
+      const closedSiblingCount = questions.filter(
+        (question) => question.closed_question,
+      ).length;
+
       await expect(
         page.getByRole("button", { name: /delete question .*/ }),
-      ).toHaveCount(questions.length + demographicFieldCount);
+      ).toHaveCount(questions.length + closedSiblingCount + demographicFieldCount);
 
       // Check each question's text, not just the row count, so a mislabelled
       // or missing row is caught.

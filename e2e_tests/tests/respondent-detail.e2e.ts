@@ -112,8 +112,9 @@ test.describe("Respondent Detail Page", () => {
     expect(answered).toBeLessThanOrEqual(total);
     expect(total).toBeGreaterThan(0);
 
-    // Total is determined by the UI.
-    expect(total).toBe(5);
+    // Total is determined by the UI: the fixture's three dashboard questions
+    // plus the hybrid's closed sibling and the two demographic questions.
+    expect(total).toBe(6);
 
     const calculatedPercentage = Math.round((answered / total) * 100);
     expect(percentage).toBe(calculatedPercentage);
