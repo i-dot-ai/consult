@@ -6,7 +6,6 @@
   import { Routes } from "../../../global/routes";
   import { handleEscKeyPress } from "../../../global/utils";
 
-  import IaiIcon from "../../svg/IaiIcon.svelte";
   import MaterialIcon from "../../MaterialIcon.svelte";
   import ChevronRight from "../../svg/material/ChevronRight.svelte";
   import Menu from "../../svg/material/Menu.svelte";
@@ -15,6 +14,7 @@
   import WithExternalClick from "../../WithExternalClick/WithExternalClick.svelte";
 
   import type { Props } from "./types";
+  import ConsultLogo from "../../svg/ConsultLogo.svelte";
 
   interface NavButtonOptions {
     label?: string;
@@ -25,12 +25,13 @@
   }
 
   const {
-    title = "Incubator for AI",
+    title,
     subtitle = "",
     pathParts = [],
-    icon = IaiIcon,
+    icon = ConsultLogo,
     navItems = [{ label: "Home", url: "/", external: false }],
     endItems,
+    showTitle = true,
   }: Props = $props();
 
   let activeSubmenu = $state();
@@ -266,16 +267,19 @@
     ])}
   >
     <div class={clsx(["flex", "items-center", "gap-2"])}>
-      <a href={Routes.Home} class="block flex items-center gap-2">
+      <a href={Routes.Home} class="block flex items-center gap-2" aria-label={title || "Logo"}>
         <div
-          class={clsx(["flex", "justify-center", "items-center", "w-8", "h-8"])}
+          class={clsx(["flex", "justify-center", "items-center"])}
+          aria-hidden="true"
         >
           <IconComponent />
         </div>
 
-        <h1 class="font-medium">
-          {title}
-        </h1>
+        {#if showTitle}
+          <span class="font-medium">
+            {title}
+          </span>
+        {/if}
       </a>
 
       <!-- Divider only renders when there's text after -->
