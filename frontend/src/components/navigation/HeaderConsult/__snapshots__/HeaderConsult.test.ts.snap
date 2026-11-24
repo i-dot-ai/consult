@@ -67,7 +67,7 @@ exports[`HeaderConsult > matches snapshot 1`] = `
                 />
               </g>
               <text
-                fill="var(--text-primary)"
+                fill="var(--color-text)"
                 font-family="'GDS Transport', Arial, sans-serif"
                 font-size="17"
                 font-weight="700"
@@ -76,7 +76,7 @@ exports[`HeaderConsult > matches snapshot 1`] = `
               >
                 Consult
                 <tspan
-                  fill="var(--brand)"
+                  fill="var(--color-primary)"
                 >
                   .
                 </tspan>
