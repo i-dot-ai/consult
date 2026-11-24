@@ -239,10 +239,15 @@ class Question(UUIDPrimaryKeyModel, TimeStampedModel):
         if responses is None:
             responses = self.response_set.all()
 
-        self.total_response_count = responses.values("respondent_id").distinct().count()
-
         if self.has_free_text:
-            self.free_text_response_count = responses.filter(free_text__isnull=False).count()
+            # Prefer canonical v2 text if present, otherwise fall back for legacy/test data.
+            text_count = responses.exclude(text__isnull=True).exclude(text="").count()
+            if text_count:
+                self.free_text_response_count = text_count
+            else:
+                self.free_text_response_count = (
+                    responses.exclude(free_text__isnull=True).exclude(free_text="").count()
+                )
         else:
             self.free_text_response_count = 0
 
@@ -253,6 +258,12 @@ class Question(UUIDPrimaryKeyModel, TimeStampedModel):
 
         else:
             self.multi_choice_response_count = 0
+
+        # total_response_count remains the raw row/respondent count.
+        self.total_response_count = responses.values("respondent_id").distinct().count()
+
+        if self.has_multiple_choice and not self.has_free_text:
+            self.total_response_count = self.multi_choice_response_count
 
     def update_response_counts(self):
         """Calculate and persist denormalised response counts."""
@@ -269,7 +280,7 @@ class Question(UUIDPrimaryKeyModel, TimeStampedModel):
         """
         Get queryset of non-empty responses for this question.
         """
-        return self.response_set.filter(free_text__isnull=False)
+        return self.response_set.exclude(free_text__isnull=True).exclude(free_text="")
 
     def sample_responses(self, keep_count: int) -> SampleResult:
         """
