@@ -45,7 +45,11 @@ def send_slack_message(job: dict, consultation: dict, environment: str, user_id:
     region = os.environ.get("LAMBDA_AWS_REGION", "eu-west-2")
     bucket = os.environ.get("AWS_BUCKET_NAME", "consult-data")
 
-    job_url = f"https://console.aws.amazon.com/batch/home?region={region}#jobs/detail/{job['id']}"
+    job_url = (
+        f"https://console.aws.amazon.com/batch/home?region={region}#jobs/detail/{job['id']}"
+        if job.get("runtime") == "batch"
+        else None
+    )
 
     if job["type"] == "FIND_THEMES":
         s3_path = f"app_data/consultations/{consultation['code']}/outputs/sign_off/"
@@ -76,30 +80,34 @@ def send_slack_message(job: dict, consultation: dict, environment: str, user_id:
                     {"type": "mrkdwn", "text": f"*Job ID:*\n`{job['id']}`"},
                 ],
             },
+        ],
+    }
+
+    if job_url:
+        message["blocks"].append(
             {
                 "type": "actions",
                 "elements": [
                     {
                         "type": "button",
-                        "text": {
-                            "type": "plain_text",
-                            "text": "View job in AWS",
-                        },
+                        "text": {"type": "plain_text", "text": "View job in AWS"},
                         "url": job_url,
                     }
                 ],
-            },
-        ],
-    }
+            }
+        )
 
     if job["status"] == "SUCCEEDED":
         # Add S3 button to the actions block
         blocks = message["blocks"]
         assert isinstance(blocks, list)
-        actions_block = blocks[2]
-        assert isinstance(actions_block, dict)
+        actions_block = next(
+            (block for block in blocks if block.get("type") == "actions"), None
+        )
+        if actions_block is None:
+            actions_block = {"type": "actions", "elements": []}
+            blocks.append(actions_block)
         elements = actions_block["elements"]
-        assert isinstance(elements, list)
         elements.append(
             {
                 "type": "button",
@@ -129,7 +137,7 @@ def send_slack_message(job: dict, consultation: dict, environment: str, user_id:
         error_message = (
             f"Slack webhook failed with status {response.status}: {response_data}"
         )
-        raise Exception(error_message)
+        raise RuntimeError(error_message)
 
 
 def lambda_handler(event, context):
@@ -138,27 +146,42 @@ def lambda_handler(event, context):
     when AWS Batch job changes state.
     """
     logger.refresh_context([{"type": ContextEnrichmentType.LAMBDA, "object": context}])
-    logger.set_context_field("execution_context", os.environ.get("EXECUTION_CONTEXT", "lambda"))
+    logger.set_context_field(
+        "execution_context", os.environ.get("EXECUTION_CONTEXT", "lambda")
+    )
 
-    logger.info("Received event: {event}", event=json.dumps(event))
+    logger.info("Received event: {event_payload}", event_payload=json.dumps(event))
 
     try:
         detail = event["detail"]
-        parameters = detail["parameters"]
-
-        job = {
-            "id": detail["jobId"],
-            "status": detail["status"],
-            "type": parameters["job_type"],
-        }
-        consultation = {
-            "name": parameters["consultation_name"],
-            "code": parameters["consultation_code"],
-        }
+        if event.get("source") == "consult.worker":
+            parameters = detail
+            job = {
+                "id": detail.get("job_id", "unknown"),
+                "status": detail["status"],
+                "type": detail["job_type"],
+                "runtime": "worker",
+            }
+            consultation = {
+                "name": detail["consultation_name"],
+                "code": detail["consultation_code"],
+            }
+        else:
+            parameters = detail["parameters"]
+            job = {
+                "id": detail["jobId"],
+                "status": detail["status"],
+                "type": parameters["job_type"],
+                "runtime": "batch",
+            }
+            consultation = {
+                "name": parameters["consultation_name"],
+                "code": parameters["consultation_code"],
+            }
         environment = os.environ.get("ENVIRONMENT", "unknown")
         user_id = parameters["user_id"]
 
-        logger.set_context_field("batch_job_name", detail.get("jobName", job["type"]))
+        logger.set_context_field("job_name", detail.get("jobName", job["type"]))
         logger.set_context_field("consultation_code", consultation["code"])
         logger.set_context_field("context_id", parameters.get("context_id"))
 
