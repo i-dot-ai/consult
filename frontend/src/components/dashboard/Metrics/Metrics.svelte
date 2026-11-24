@@ -10,7 +10,10 @@
     QuestionMultiAnswer,
   } from "../../../global/types";
   import type { QuestionDetailV2 } from "../../../global/queries/questions/types.ts";
-  import { getQuestionText } from "../../../global/questionText";
+  import {
+    getQuestionText,
+    holdsOwnAnswers,
+  } from "../../../global/questionText";
 
   import TabView from "../../TabView/TabView.svelte";
   import Chart from "../../Chart/Chart.svelte";
@@ -54,7 +57,9 @@
 
   let chartQuestions: Array<Question | QuestionDetailV2> = $derived(
     questions.filter(
-      (question) => (question.multiple_choice_answer?.length ?? 0) > 0,
+      (question) =>
+        holdsOwnAnswers(question) &&
+        (question.multiple_choice_answer?.length ?? 0) > 0,
     ),
   );
 
