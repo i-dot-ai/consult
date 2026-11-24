@@ -65,7 +65,9 @@ test.describe("Support Console - Consultations Detail", () => {
   setupConsultation.questions?.forEach((question) => {
     test(`displays question ${question.number}`, async ({ page }) => {
       await expect(page.getByRole("cell", { name: question.text })).toBeVisible();
-      const removeQuestionButton = page.getByLabel(`delete question ${question.number}`);
+      const removeQuestionButton = page.getByLabel(`delete question ${question.number}`, {
+        exact: true,
+      });
 
       await removeQuestionButton.click();
       await expect(page).toHaveURL(new RegExp(`/support/consultations/.*/questions/.*/delete`));
