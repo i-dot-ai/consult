@@ -71,8 +71,8 @@ test.describe("Finalise Themes - List Page", () => {
   test("Number of questions is correct", async ({ page }) => {
     await gotoFinaliseThemesList(page, signOffConsultation.title);
 
-    // v2 model: demographic questions exist as first-class questions
-    const questionCount = signOffConsultation.questions!.length + 2;
+    // This list excludes demographic questions on v2.
+    const questionCount = signOffConsultation.questions!.length;
     await expect(
       page.getByText(`${questionCount} questions`, { exact: true }),
     ).toBeVisible();
@@ -82,7 +82,7 @@ test.describe("Finalise Themes - List Page", () => {
     await gotoFinaliseThemesList(page, signOffConsultation.title);
 
     const questions = signOffConsultation.questions!;
-    await expect(page.getByTestId("question-card")).toHaveCount(questions.length + 2);
+    await expect(page.getByTestId("question-card")).toHaveCount(questions.length);
 
     for (const question of questions) {
       await expect(page.getByText(question.text).first()).toBeVisible();

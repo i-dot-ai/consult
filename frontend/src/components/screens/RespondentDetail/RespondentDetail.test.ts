@@ -36,6 +36,11 @@ function clearMocks() {
 
 describe("RespondentDetail", () => {
   beforeEach(() => {
+    // Vitest loads PUBLIC_* vars from the repo .env files — pin the flag off
+    // explicitly so this suite exercises the v1 data sources.
+    process.env.PUBLIC_DATA_SETUP_V2_ENABLED = "false";
+  });
+  beforeEach(() => {
     clearMocks();
   });
 

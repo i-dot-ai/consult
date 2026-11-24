@@ -6,6 +6,8 @@
   import {
     getApiQuestionResponse,
     getApiShowNextResponse,
+    getApiResponseV2Url,
+    getApiShowNextResponseV2Url,
     getResponseDetailUrl,
   } from "../../../global/routes";
 
@@ -13,6 +15,8 @@
     ResponseTheme,
     ShowNextResponseResult,
   } from "../../../global/types";
+  import type { ShowNextResponseResultV2 } from "../../../global/queries/questions/types";
+  import { getDataSetupV2Enabled } from "../../../global/utils";
   import Button from "../../inputs/Button/Button.svelte";
   import Checkbox from "../../inputs/Checkbox/Checkbox.svelte";
 
@@ -22,6 +26,7 @@
     responseId: string;
     consultationId: string;
     questionId: string;
+    isV2?: boolean;
   }
 
   const {
@@ -30,11 +35,20 @@
     responseId,
     consultationId,
     questionId,
+    isV2: isV2Prop,
   }: Props = $props();
 
   let ownSelectedThemes = $derived(selectedThemes);
   let sending: boolean = $state(false);
   let errors: Record<string, string> = $state({});
+
+  const isV2 = isV2Prop ?? getDataSetupV2Enabled();
+  const showNextUrl = isV2
+    ? getApiShowNextResponseV2Url(consultationId, questionId)
+    : getApiShowNextResponse(consultationId, questionId);
+  const updateResponseUrl = isV2
+    ? getApiResponseV2Url(consultationId, responseId)
+    : getApiQuestionResponse(consultationId, questionId, responseId);
 
   const setSelectedThemes = (checked: boolean, value?: string) => {
     if (!value) return;
@@ -56,15 +70,18 @@
 
   const handleShowNext = async () => {
     try {
-      const response = await fetch(
-        getApiShowNextResponse(consultationId, questionId),
-      );
+      const response = await fetch(showNextUrl);
 
       if (!response.ok) {
         throw new Error(`HTTP error! status: ${response.status}`);
       }
 
-      const result: ShowNextResponseResult = await response.json();
+      const result: ShowNextResponseResult | ShowNextResponseResultV2 =
+        await response.json();
+      const hasFreeText =
+        "has_free_text" in result
+          ? result.has_free_text
+          : result.type === "open";
 
       if (result.next_response) {
         window.location.href = getResponseDetailUrl(
@@ -73,7 +90,7 @@
           result.next_response.id,
         );
       } else {
-        if (!result.has_free_text) {
+        if (!hasFreeText) {
           errors["general"] =
             "This question does not have free text responses.";
           sending = false;
@@ -93,19 +110,16 @@
     sending = true;
 
     try {
-      const updateResponse = await fetch(
-        getApiQuestionResponse(consultationId, questionId, responseId),
-        {
-          method: "PATCH",
-          headers: {
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify({
-            themes: ownSelectedThemes,
-            human_reviewed: true,
-          }),
+      const updateResponse = await fetch(updateResponseUrl, {
+        method: "PATCH",
+        headers: {
+          "Content-Type": "application/json",
         },
-      );
+        body: JSON.stringify({
+          themes: ownSelectedThemes,
+          human_reviewed: true,
+        }),
+      });
 
       if (!updateResponse.ok) {
         throw new Error(`Error: ${updateResponse.status}`);

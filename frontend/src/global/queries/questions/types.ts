@@ -39,6 +39,16 @@ export type QuestionDetailV2 = QuestionV2 & {
   theme_status: string;
 };
 
+// v2 show-next payload: type replaces the v1 has_free_text boolean.
+export type ShowNextResponseResultV2 = {
+  next_response: {
+    id: string;
+    consultation_id: string;
+    question_id: string;
+  } | null;
+  type: QuestionType | null;
+  message: string;
+};
 export type DemographicMergeBody = {
   new_value: string;
   responses: string[];
