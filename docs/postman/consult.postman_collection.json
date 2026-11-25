@@ -1,0 +1,1955 @@
+{
+  "info": {
+    "name": "Consult API",
+    "description": "Backend API for Consult, for local testing. Set devEmail in the environment to the local user to act as; the pre-request script signs in and refreshes the access token for you. See docs/postman/README.md.",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "auth": {
+    "type": "bearer",
+    "bearer": [
+      {
+        "key": "token",
+        "value": "{{accessToken}}",
+        "type": "string"
+      }
+    ]
+  },
+  "event": [
+    {
+      "listen": "prerequest",
+      "script": {
+        "type": "text/javascript",
+        "exec": [
+          "const B64 = \"ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789-_\"; // pragma: allowlist secret",
+          "const b64url = (text) => {",
+          "  let out = \"\";",
+          "  for (let i = 0; i < text.length; i += 3) {",
+          "    const [a, b, c] = [text.charCodeAt(i), text.charCodeAt(i + 1), text.charCodeAt(i + 2)];",
+          "    const n = (a << 16) | ((b || 0) << 8) | (c || 0);",
+          "    out += B64[(n >> 18) & 63] + B64[(n >> 12) & 63];",
+          "    out += isNaN(b) ? \"\" : B64[(n >> 6) & 63];",
+          "    out += isNaN(c) ? \"\" : B64[n & 63];",
+          "  }",
+          "  return out;",
+          "};",
+          "const b64urlDecode = (text) => {",
+          "  let bits = \"\", out = \"\";",
+          "  for (const ch of text) bits += B64.indexOf(ch).toString(2).padStart(6, \"0\");",
+          "  for (let i = 0; i + 8 <= bits.length; i += 8) out += String.fromCharCode(parseInt(bits.slice(i, i + 8), 2));",
+          "  return out;",
+          "};",
+          "// Sign-in also starts a Django session, and later sign-ins without a Bearer",
+          "// token are then CSRF-checked, so keep the rotated csrftoken to echo back.",
+          "const storeSignIn = (response) => {",
+          "  const payload = JSON.parse(b64urlDecode(response.json().access.split(\".\")[1]));",
+          "  pm.environment.set(\"accessToken\", response.json().access);",
+          "  pm.environment.set(\"accessTokenExpiresAt\", String(payload.exp * 1000));",
+          "  for (const header of response.headers.all()) {",
+          "    const match = header.key.toLowerCase() === \"set-cookie\" && /csrftoken=([^;]+)/.exec(header.value);",
+          "    if (match) pm.environment.set(\"csrfToken\", match[1]);",
+          "  }",
+          "};",
+          "",
+          "// Local sign-in: the backend accepts an unsigned dev JWT whose payload carries",
+          "// the user's email (see frontend/src/global/localUsers.ts), so build one from",
+          "// devEmail and exchange it for an access token when ours is missing or expiring.",
+          "const baseUrl = pm.environment.get(\"baseUrl\");",
+          "const devEmail = pm.environment.get(\"devEmail\");",
+          "if (!baseUrl || !devEmail) {",
+          "  throw new Error(\"baseUrl or devEmail is not set: select the Consult local environment first.\");",
+          "}",
+          "const storeDevToken = () => {",
+          "  const devToken = [",
+          "    b64url(JSON.stringify({ alg: \"HS256\", typ: \"JWT\" })),",
+          "    b64url(JSON.stringify({ email: devEmail })),",
+          "    \"dev\",",
+          "  ].join(\".\");",
+          "  pm.environment.set(\"devToken\", devToken);",
+          "  return devToken;",
+          "};",
+          "",
+          "const csrfToken = pm.environment.get(\"csrfToken\");",
+          "const isSignIn = pm.request.url.getPath().endsWith(\"/api/validate-token/\");",
+          "if (isSignIn) {",
+          "  storeDevToken();",
+          "  if (csrfToken) {",
+          "    pm.request.headers.upsert({ key: \"X-CSRFToken\", value: csrfToken });",
+          "  }",
+          "  return;",
+          "}",
+          "",
+          "const accessToken = pm.environment.get(\"accessToken\");",
+          "// No stored expiry counts as expired, so the first request signs in.",
+          "const expiresAt = Number(pm.environment.get(\"accessTokenExpiresAt\")) || 0;",
+          "const refreshWindowMs = 60 * 1000;",
+          "if (accessToken && Date.now() < expiresAt - refreshWindowMs) {",
+          "  return;",
+          "}",
+          "",
+          "const header = { \"Content-Type\": \"application/json\" };",
+          "if (csrfToken) {",
+          "  header[\"X-CSRFToken\"] = csrfToken;",
+          "}",
+          "pm.sendRequest(",
+          "  {",
+          "    url: `${baseUrl}/api/validate-token/`,",
+          "    method: \"POST\",",
+          "    header,",
+          "    body: { mode: \"raw\", raw: JSON.stringify({ internal_access_token: storeDevToken() }) },",
+          "  },",
+          "  (error, response) => {",
+          "    if (error || response.code !== 200) {",
+          "      console.error(\"validate-token failed\", error || `${response.code} ${response.text()}`);",
+          "      return;",
+          "    }",
+          "    storeSignIn(response);",
+          "  },",
+          ");"
+        ]
+      }
+    }
+  ],
+  "item": [
+    {
+      "name": "Auth",
+      "item": [
+        {
+          "name": "Validate token (sign in)",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/validate-token/",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "validate-token",
+                ""
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"internal_access_token\": \"{{devToken}}\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "description": "Exchanges the dev token built from devEmail for an access token. The collection pre-request script does this for you automatically; call it by hand to inspect the response or force a refresh.",
+            "auth": {
+              "type": "noauth"
+            }
+          },
+          "response": [],
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "const B64 = \"ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789-_\"; // pragma: allowlist secret",
+                  "const b64url = (text) => {",
+                  "  let out = \"\";",
+                  "  for (let i = 0; i < text.length; i += 3) {",
+                  "    const [a, b, c] = [text.charCodeAt(i), text.charCodeAt(i + 1), text.charCodeAt(i + 2)];",
+                  "    const n = (a << 16) | ((b || 0) << 8) | (c || 0);",
+                  "    out += B64[(n >> 18) & 63] + B64[(n >> 12) & 63];",
+                  "    out += isNaN(b) ? \"\" : B64[(n >> 6) & 63];",
+                  "    out += isNaN(c) ? \"\" : B64[n & 63];",
+                  "  }",
+                  "  return out;",
+                  "};",
+                  "const b64urlDecode = (text) => {",
+                  "  let bits = \"\", out = \"\";",
+                  "  for (const ch of text) bits += B64.indexOf(ch).toString(2).padStart(6, \"0\");",
+                  "  for (let i = 0; i + 8 <= bits.length; i += 8) out += String.fromCharCode(parseInt(bits.slice(i, i + 8), 2));",
+                  "  return out;",
+                  "};",
+                  "// Sign-in also starts a Django session, and later sign-ins without a Bearer",
+                  "// token are then CSRF-checked, so keep the rotated csrftoken to echo back.",
+                  "const storeSignIn = (response) => {",
+                  "  const payload = JSON.parse(b64urlDecode(response.json().access.split(\".\")[1]));",
+                  "  pm.environment.set(\"accessToken\", response.json().access);",
+                  "  pm.environment.set(\"accessTokenExpiresAt\", String(payload.exp * 1000));",
+                  "  for (const header of response.headers.all()) {",
+                  "    const match = header.key.toLowerCase() === \"set-cookie\" && /csrftoken=([^;]+)/.exec(header.value);",
+                  "    if (match) pm.environment.set(\"csrfToken\", match[1]);",
+                  "  }",
+                  "};",
+                  "",
+                  "if (pm.response.code === 200) {",
+                  "  storeSignIn(pm.response);",
+                  "}"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Current user",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/user/",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "user",
+                ""
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Logout",
+          "request": {
+            "method": "POST",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/logout/",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "logout",
+                ""
+              ]
+            }
+          },
+          "response": []
+        }
+      ],
+      "description": "Local sign-in. In deployed environments the token comes from the auth proxy, so this collection is for local use."
+    },
+    {
+      "name": "Health",
+      "item": [
+        {
+          "name": "Health",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/health/",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "health",
+                ""
+              ]
+            },
+            "auth": {
+              "type": "noauth"
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Live",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/live/",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "live",
+                ""
+              ]
+            },
+            "auth": {
+              "type": "noauth"
+            }
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "Consultations",
+      "item": [
+        {
+          "name": "List consultations",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/consultations/?scope=assigned",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "consultations",
+                ""
+              ],
+              "query": [
+                {
+                  "key": "scope",
+                  "value": "assigned"
+                }
+              ]
+            },
+            "description": "scope=assigned limits the list to consultations the current user is on."
+          },
+          "response": []
+        },
+        {
+          "name": "Consultation folders in S3",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/consultations/folders/?stage=setup",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "consultations",
+                "folders",
+                ""
+              ],
+              "query": [
+                {
+                  "key": "stage",
+                  "value": "setup"
+                }
+              ]
+            },
+            "description": "stage is setup or find-themes. Staff only."
+          },
+          "response": []
+        },
+        {
+          "name": "Get consultation",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/consultations/{{consultationId}}/",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "consultations",
+                "{{consultationId}}",
+                ""
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Update consultation",
+          "request": {
+            "method": "PATCH",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/consultations/{{consultationId}}/",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "consultations",
+                "{{consultationId}}",
+                ""
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"title\": \"Renamed consultation\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Delete consultation",
+          "request": {
+            "method": "DELETE",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/consultations/{{consultationId}}/",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "consultations",
+                "{{consultationId}}",
+                ""
+              ]
+            },
+            "description": "Staff only. Queues an async deletion job."
+          },
+          "response": []
+        },
+        {
+          "name": "Set up consultation from S3",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/consultations/setup/",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "consultations",
+                "setup",
+                ""
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"consultation_name\": \"My consultation\",\n  \"consultation_code\": \"my-consultation\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "description": "Staff only. Imports a consultation whose inputs are already in S3 under app_data/consultations/<code>/."
+          },
+          "response": []
+        },
+        {
+          "name": "Start find themes",
+          "request": {
+            "method": "POST",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/consultations/{{consultationId}}/find-themes/",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "consultations",
+                "{{consultationId}}",
+                "find-themes",
+                ""
+              ]
+            },
+            "description": "Consultation must be in the setup stage."
+          },
+          "response": []
+        },
+        {
+          "name": "Start assign themes",
+          "request": {
+            "method": "POST",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/consultations/{{consultationId}}/assign-themes/",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "consultations",
+                "{{consultationId}}",
+                "assign-themes",
+                ""
+              ]
+            },
+            "description": "Consultation must be in the finalising_themes stage."
+          },
+          "response": []
+        },
+        {
+          "name": "Demographics",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/consultations/{{consultationId}}/demographics/",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "consultations",
+                "{{consultationId}}",
+                "demographics",
+                ""
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Evaluation",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/consultations/{{consultationId}}/evaluation/",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "consultations",
+                "{{consultationId}}",
+                "evaluation",
+                ""
+              ]
+            },
+            "description": "Staff only."
+          },
+          "response": []
+        },
+        {
+          "name": "Add users",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/consultations/{{consultationId}}/add-users/",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "consultations",
+                "{{consultationId}}",
+                "add-users",
+                ""
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"emails\": [\n    \"policy@example.com\"\n  ]\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "description": "Staff only. Users must already exist."
+          },
+          "response": []
+        },
+        {
+          "name": "Remove user",
+          "request": {
+            "method": "DELETE",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/consultations/{{consultationId}}/users/{{userId}}/",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "consultations",
+                "{{consultationId}}",
+                "users",
+                "{{userId}}",
+                ""
+              ]
+            },
+            "description": "Staff only."
+          },
+          "response": []
+        },
+        {
+          "name": "Import finalised themes",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/consultations/{{consultationId}}/import-finalised-themes/",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "consultations",
+                "{{consultationId}}",
+                "import-finalised-themes",
+                ""
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"source_consultation_id\": \"00000000-0000-0000-0000-000000000000\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "description": "Staff only."
+          },
+          "response": []
+        },
+        {
+          "name": "Create test data",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/consultations/create-test-data/",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "consultations",
+                "create-test-data",
+                ""
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"fixtures\": {\n    \"consultations\": [\n      {\n        \"title\": \"Fixture consultation\",\n        \"stage\": \"setup\",\n        \"users\": [\n          \"admin@example.com\"\n        ],\n        \"questions\": []\n      }\n    ]\n  }\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "description": "Staff only, local and test environments only. Loads consultations from the fixtures object and returns their consultation_ids and question_ids. See e2e_tests/fixtures.ts for the full fixture shape, including questions, responses, and candidate themes."
+          },
+          "response": []
+        },
+        {
+          "name": "Delete test data",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/consultations/delete-test-data/",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "consultations",
+                "delete-test-data",
+                ""
+              ]
+            },
+            "description": "Staff only, local and test environments only. Deletes the consultations listed in fixtures.consultation_ids.",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"fixtures\": {\n    \"consultation_ids\": [\n      \"{{consultationId}}\"\n    ]\n  }\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "Questions",
+      "item": [
+        {
+          "name": "List questions",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/consultations/{{consultationId}}/questions/",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "consultations",
+                "{{consultationId}}",
+                "questions",
+                ""
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Get question",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/consultations/{{consultationId}}/questions/{{questionId}}/",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "consultations",
+                "{{consultationId}}",
+                "questions",
+                "{{questionId}}",
+                ""
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Update question",
+          "request": {
+            "method": "PATCH",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/consultations/{{consultationId}}/questions/{{questionId}}/",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "consultations",
+                "{{consultationId}}",
+                "questions",
+                "{{questionId}}",
+                ""
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"has_free_text\": true,\n  \"has_multiple_choice\": false\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Delete question",
+          "request": {
+            "method": "DELETE",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/consultations/{{consultationId}}/questions/{{questionId}}/",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "consultations",
+                "{{consultationId}}",
+                "questions",
+                "{{questionId}}",
+                ""
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Question themes",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/consultations/{{consultationId}}/questions/{{questionId}}/themes/",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "consultations",
+                "{{consultationId}}",
+                "questions",
+                "{{questionId}}",
+                "themes",
+                ""
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Show next response to review",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/consultations/{{consultationId}}/questions/{{questionId}}/show-next/",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "consultations",
+                "{{consultationId}}",
+                "questions",
+                "{{questionId}}",
+                "show-next",
+                ""
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Question responses",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/consultations/{{consultationId}}/questions/{{questionId}}/responses/",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "consultations",
+                "{{consultationId}}",
+                "questions",
+                "{{questionId}}",
+                "responses",
+                ""
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Selected themes",
+          "item": [
+            {
+              "name": "List selected themes",
+              "request": {
+                "method": "GET",
+                "header": [],
+                "url": {
+                  "raw": "{{baseUrl}}/api/consultations/{{consultationId}}/questions/{{questionId}}/selected-themes/",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "api",
+                    "consultations",
+                    "{{consultationId}}",
+                    "questions",
+                    "{{questionId}}",
+                    "selected-themes",
+                    ""
+                  ]
+                }
+              },
+              "response": []
+            },
+            {
+              "name": "Create selected theme",
+              "request": {
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  }
+                ],
+                "url": {
+                  "raw": "{{baseUrl}}/api/consultations/{{consultationId}}/questions/{{questionId}}/selected-themes/",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "api",
+                    "consultations",
+                    "{{consultationId}}",
+                    "questions",
+                    "{{questionId}}",
+                    "selected-themes",
+                    ""
+                  ]
+                },
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"name\": \"Cost to households\",\n  \"description\": \"Concerns about the cost of the proposal to households.\"\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                }
+              },
+              "response": []
+            },
+            {
+              "name": "Get selected theme",
+              "request": {
+                "method": "GET",
+                "header": [],
+                "url": {
+                  "raw": "{{baseUrl}}/api/consultations/{{consultationId}}/questions/{{questionId}}/selected-themes/{{selectedThemeId}}/",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "api",
+                    "consultations",
+                    "{{consultationId}}",
+                    "questions",
+                    "{{questionId}}",
+                    "selected-themes",
+                    "{{selectedThemeId}}",
+                    ""
+                  ]
+                }
+              },
+              "response": []
+            },
+            {
+              "name": "Update selected theme",
+              "request": {
+                "method": "PATCH",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  }
+                ],
+                "url": {
+                  "raw": "{{baseUrl}}/api/consultations/{{consultationId}}/questions/{{questionId}}/selected-themes/{{selectedThemeId}}/",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "api",
+                    "consultations",
+                    "{{consultationId}}",
+                    "questions",
+                    "{{questionId}}",
+                    "selected-themes",
+                    "{{selectedThemeId}}",
+                    ""
+                  ]
+                },
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"description\": \"Updated description.\"\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                }
+              },
+              "response": []
+            },
+            {
+              "name": "Delete selected theme",
+              "request": {
+                "method": "DELETE",
+                "header": [],
+                "url": {
+                  "raw": "{{baseUrl}}/api/consultations/{{consultationId}}/questions/{{questionId}}/selected-themes/{{selectedThemeId}}/",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "api",
+                    "consultations",
+                    "{{consultationId}}",
+                    "questions",
+                    "{{questionId}}",
+                    "selected-themes",
+                    "{{selectedThemeId}}",
+                    ""
+                  ]
+                }
+              },
+              "response": []
+            }
+          ]
+        },
+        {
+          "name": "Candidate themes",
+          "item": [
+            {
+              "name": "List candidate themes",
+              "request": {
+                "method": "GET",
+                "header": [],
+                "url": {
+                  "raw": "{{baseUrl}}/api/consultations/{{consultationId}}/questions/{{questionId}}/candidate-themes/",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "api",
+                    "consultations",
+                    "{{consultationId}}",
+                    "questions",
+                    "{{questionId}}",
+                    "candidate-themes",
+                    ""
+                  ]
+                }
+              },
+              "response": []
+            },
+            {
+              "name": "Get candidate theme",
+              "request": {
+                "method": "GET",
+                "header": [],
+                "url": {
+                  "raw": "{{baseUrl}}/api/consultations/{{consultationId}}/questions/{{questionId}}/candidate-themes/{{candidateThemeId}}/",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "api",
+                    "consultations",
+                    "{{consultationId}}",
+                    "questions",
+                    "{{questionId}}",
+                    "candidate-themes",
+                    "{{candidateThemeId}}",
+                    ""
+                  ]
+                }
+              },
+              "response": []
+            },
+            {
+              "name": "Select candidate theme",
+              "request": {
+                "method": "POST",
+                "header": [],
+                "url": {
+                  "raw": "{{baseUrl}}/api/consultations/{{consultationId}}/questions/{{questionId}}/candidate-themes/{{candidateThemeId}}/select/",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "api",
+                    "consultations",
+                    "{{consultationId}}",
+                    "questions",
+                    "{{questionId}}",
+                    "candidate-themes",
+                    "{{candidateThemeId}}",
+                    "select",
+                    ""
+                  ]
+                },
+                "description": "Promotes an AI-generated theme to a selected theme."
+              },
+              "response": []
+            },
+            {
+              "name": "Candidate theme responses",
+              "request": {
+                "method": "GET",
+                "header": [],
+                "url": {
+                  "raw": "{{baseUrl}}/api/consultations/{{consultationId}}/questions/{{questionId}}/candidate-themes/{{candidateThemeId}}/responses/",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "api",
+                    "consultations",
+                    "{{consultationId}}",
+                    "questions",
+                    "{{questionId}}",
+                    "candidate-themes",
+                    "{{candidateThemeId}}",
+                    "responses",
+                    ""
+                  ]
+                }
+              },
+              "response": []
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Responses",
+      "item": [
+        {
+          "name": "List responses",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/consultations/{{consultationId}}/responses/?question_id={{questionId}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "consultations",
+                "{{consultationId}}",
+                "responses",
+                ""
+              ],
+              "query": [
+                {
+                  "key": "question_id",
+                  "value": "{{questionId}}"
+                }
+              ]
+            },
+            "description": "Other filters: respondent_id, sentimentFilters, evidenceRich, themeFilters, demographics, is_flagged, multiple_choice_answer, unseenResponsesOnly, searchValue."
+          },
+          "response": []
+        },
+        {
+          "name": "Get response",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/consultations/{{consultationId}}/responses/{{responseId}}/",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "consultations",
+                "{{consultationId}}",
+                "responses",
+                "{{responseId}}",
+                ""
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Update response annotation",
+          "request": {
+            "method": "PATCH",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/consultations/{{consultationId}}/responses/{{responseId}}/",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "consultations",
+                "{{consultationId}}",
+                "responses",
+                "{{responseId}}",
+                ""
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"annotation\": {\n    \"human_reviewed\": true,\n    \"evidence_rich\": false\n  }\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "description": "Accepts annotation.human_reviewed, annotation.evidence_rich, annotation.sentiment, and annotation.responseannotationtheme_set."
+          },
+          "response": []
+        },
+        {
+          "name": "Response themes",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/consultations/{{consultationId}}/responses/{{responseId}}/themes/",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "consultations",
+                "{{consultationId}}",
+                "responses",
+                "{{responseId}}",
+                "themes",
+                ""
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Toggle flag",
+          "request": {
+            "method": "PATCH",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/consultations/{{consultationId}}/responses/{{responseId}}/toggle-flag/",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "consultations",
+                "{{consultationId}}",
+                "responses",
+                "{{responseId}}",
+                "toggle-flag",
+                ""
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Mark read",
+          "request": {
+            "method": "POST",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/consultations/{{consultationId}}/responses/{{responseId}}/mark-read/",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "consultations",
+                "{{consultationId}}",
+                "responses",
+                "{{responseId}}",
+                "mark-read",
+                ""
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Mark read (bulk)",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/consultations/{{consultationId}}/responses/mark-read-bulk/",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "consultations",
+                "{{consultationId}}",
+                "responses",
+                "mark-read-bulk",
+                ""
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"response_ids\": [\n    \"{{responseId}}\"\n  ]\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "Respondents",
+      "item": [
+        {
+          "name": "List respondents",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/consultations/{{consultationId}}/respondents/",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "consultations",
+                "{{consultationId}}",
+                "respondents",
+                ""
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Get respondent",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/consultations/{{consultationId}}/respondents/{{respondentId}}/",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "consultations",
+                "{{consultationId}}",
+                "respondents",
+                "{{respondentId}}",
+                ""
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Update respondent",
+          "request": {
+            "method": "PATCH",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/consultations/{{consultationId}}/respondents/{{respondentId}}/",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "consultations",
+                "{{consultationId}}",
+                "respondents",
+                "{{respondentId}}",
+                ""
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"Respondent 1\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "Users",
+      "item": [
+        {
+          "name": "List users",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/users/",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "users",
+                ""
+              ]
+            },
+            "description": "Staff only. Filter with ?email=<exact email>."
+          },
+          "response": []
+        },
+        {
+          "name": "Create user",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/users/",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "users",
+                ""
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"new.user@example.com\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "description": "Staff only. Send {\"emails\": [...]} instead to create several at once."
+          },
+          "response": []
+        },
+        {
+          "name": "Get user",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/users/{{userId}}/",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "users",
+                "{{userId}}",
+                ""
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Update user",
+          "request": {
+            "method": "PATCH",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/users/{{userId}}/",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "users",
+                "{{userId}}",
+                ""
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"is_staff\": true\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Delete user",
+          "request": {
+            "method": "DELETE",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/users/{{userId}}/",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "users",
+                "{{userId}}",
+                ""
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "User's consultations",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/users/{{userId}}/consultations/",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "users",
+                "{{userId}}",
+                "consultations",
+                ""
+              ]
+            }
+          },
+          "response": []
+        }
+      ],
+      "description": "Staff only."
+    },
+    {
+      "name": "v2",
+      "item": [
+        {
+          "name": "Consultations",
+          "item": [
+            {
+              "name": "List consultations",
+              "request": {
+                "method": "GET",
+                "header": [],
+                "url": {
+                  "raw": "{{baseUrl}}/api/v2/consultations/",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "api",
+                    "v2",
+                    "consultations",
+                    ""
+                  ]
+                }
+              },
+              "response": []
+            },
+            {
+              "name": "Find by title",
+              "request": {
+                "method": "GET",
+                "header": [],
+                "url": {
+                  "raw": "{{baseUrl}}/api/v2/consultations/?title__iexact=My consultation",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "api",
+                    "v2",
+                    "consultations",
+                    ""
+                  ],
+                  "query": [
+                    {
+                      "key": "title__iexact",
+                      "value": "My consultation"
+                    }
+                  ]
+                }
+              },
+              "response": []
+            },
+            {
+              "name": "Create consultation",
+              "request": {
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  }
+                ],
+                "url": {
+                  "raw": "{{baseUrl}}/api/v2/consultations/",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "api",
+                    "v2",
+                    "consultations",
+                    ""
+                  ]
+                },
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"title\": \"My consultation\"\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                },
+                "description": "The caller becomes the owner and is assigned to it."
+              },
+              "response": []
+            },
+            {
+              "name": "Get consultation",
+              "request": {
+                "method": "GET",
+                "header": [],
+                "url": {
+                  "raw": "{{baseUrl}}/api/v2/consultations/{{consultationId}}/",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "api",
+                    "v2",
+                    "consultations",
+                    "{{consultationId}}",
+                    ""
+                  ]
+                }
+              },
+              "response": []
+            },
+            {
+              "name": "Update consultation",
+              "request": {
+                "method": "PATCH",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  }
+                ],
+                "url": {
+                  "raw": "{{baseUrl}}/api/v2/consultations/{{consultationId}}/",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "api",
+                    "v2",
+                    "consultations",
+                    "{{consultationId}}",
+                    ""
+                  ]
+                },
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"title\": \"Renamed consultation\",\n  \"data_source\": \"qualtrics\"\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                },
+                "description": "Only title and data_source are writable. data_source is qualtrics, citizen-space, or null."
+              },
+              "response": []
+            },
+            {
+              "name": "Delete consultation",
+              "request": {
+                "method": "DELETE",
+                "header": [],
+                "url": {
+                  "raw": "{{baseUrl}}/api/v2/consultations/{{consultationId}}/",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "api",
+                    "v2",
+                    "consultations",
+                    "{{consultationId}}",
+                    ""
+                  ]
+                },
+                "description": "Owner or staff only. Queues an async deletion job and returns 202."
+              },
+              "response": []
+            },
+            {
+              "name": "Upload responses file",
+              "request": {
+                "method": "POST",
+                "header": [],
+                "url": {
+                  "raw": "{{baseUrl}}/api/v2/consultations/{{consultationId}}/upload/",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "api",
+                    "v2",
+                    "consultations",
+                    "{{consultationId}}",
+                    "upload",
+                    ""
+                  ]
+                },
+                "body": {
+                  "mode": "formdata",
+                  "formdata": [
+                    {
+                      "key": "file",
+                      "type": "file",
+                      "src": ""
+                    }
+                  ]
+                },
+                "description": "Multipart upload of a .csv or .xlsx (200 MiB max). Pick the file in the Body tab."
+              },
+              "response": []
+            }
+          ]
+        },
+        {
+          "name": "Users",
+          "item": [
+            {
+              "name": "Current user",
+              "request": {
+                "method": "GET",
+                "header": [],
+                "url": {
+                  "raw": "{{baseUrl}}/api/v2/user/",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "api",
+                    "v2",
+                    "user",
+                    ""
+                  ]
+                }
+              },
+              "response": []
+            },
+            {
+              "name": "List users",
+              "request": {
+                "method": "GET",
+                "header": [],
+                "url": {
+                  "raw": "{{baseUrl}}/api/v2/users/",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "api",
+                    "v2",
+                    "users",
+                    ""
+                  ]
+                }
+              },
+              "response": []
+            },
+            {
+              "name": "Create user",
+              "request": {
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  }
+                ],
+                "url": {
+                  "raw": "{{baseUrl}}/api/v2/users/",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "api",
+                    "v2",
+                    "users",
+                    ""
+                  ]
+                },
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"email\": \"new.user@example.com\"\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                }
+              },
+              "response": []
+            },
+            {
+              "name": "Get user",
+              "request": {
+                "method": "GET",
+                "header": [],
+                "url": {
+                  "raw": "{{baseUrl}}/api/v2/users/{{userId}}/",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "api",
+                    "v2",
+                    "users",
+                    "{{userId}}",
+                    ""
+                  ]
+                }
+              },
+              "response": []
+            },
+            {
+              "name": "Update user",
+              "request": {
+                "method": "PATCH",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  }
+                ],
+                "url": {
+                  "raw": "{{baseUrl}}/api/v2/users/{{userId}}/",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "api",
+                    "v2",
+                    "users",
+                    "{{userId}}",
+                    ""
+                  ]
+                },
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"is_staff\": false\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                }
+              },
+              "response": []
+            },
+            {
+              "name": "Delete user",
+              "request": {
+                "method": "DELETE",
+                "header": [],
+                "url": {
+                  "raw": "{{baseUrl}}/api/v2/users/{{userId}}/",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "api",
+                    "v2",
+                    "users",
+                    "{{userId}}",
+                    ""
+                  ]
+                }
+              },
+              "response": []
+            },
+            {
+              "name": "User's consultations",
+              "request": {
+                "method": "GET",
+                "header": [],
+                "url": {
+                  "raw": "{{baseUrl}}/api/v2/users/{{userId}}/consultations/",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "api",
+                    "v2",
+                    "users",
+                    "{{userId}}",
+                    "consultations",
+                    ""
+                  ]
+                }
+              },
+              "response": []
+            }
+          ],
+          "description": "Staff only, apart from Current user."
+        }
+      ],
+      "description": "Mounted only when DATA_SETUP_V2_ENABLED is true on the backend; otherwise every route here returns 404."
+    }
+  ]
+}
