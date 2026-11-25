@@ -15,7 +15,7 @@ from rq_context import job
 
 logger = settings.LOGGER
 
-@job("default", timeout=14_400)  # 4 hours
+@job("default", timeout=900)  # 15 minutes
 def start_find_themes(
     consultation_id: UUID,
     user_id: int,

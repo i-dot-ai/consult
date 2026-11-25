@@ -285,7 +285,7 @@ class ConsultationViewSet(
             consultation.code = consultation_code
             consultation.save(update_fields=["code"])
 
-            # Ensure that S3 files exist before batch kickoff
+            # Atomic stage guard: only transition from SETUP -> FINDING_THEMES once.
             transitions = Consultation.objects.filter(
                 pk=consultation.pk, stage=Consultation.Stage.SETUP
             ).update(stage=Consultation.Stage.FINDING_THEMES)
@@ -297,15 +297,12 @@ class ConsultationViewSet(
                     },
                     status=status.HTTP_400_BAD_REQUEST,
                 )
-            consultation.stage = Consultation.Stage.FINDING_THEMES
-
             try:
                 start_find_themes.delay(consultation.id, request.user.id)
             except Exception:
                 consultation_rerolled = Consultation.objects.filter(
                     pk=consultation.pk, stage=Consultation.Stage.FINDING_THEMES
                 ).update(stage=Consultation.Stage.SETUP)
-                consultation.stage = Consultation.Stage.SETUP
                 if not consultation_rerolled:
                     logger.error(
                         "Failed to roll the stage back after a failed enqueue for "
