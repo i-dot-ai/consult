@@ -19,8 +19,9 @@ from consultations.api_v2.serializers import (
     QuestionDashboardSerializerV2,
     QuestionSetupSerializer,
 )
-from consultations.models import MultiChoiceAnswer, Question
+from consultations.models import Question
 from consultations.models import Response as ConsultationResponse
+from consultations.services.closed_answers import attach_option_counts, count_option_responses
 from consultations.services.setup_status import update_survey_import_status_for_questions
 
 SAMPLE_ANSWER_COUNT = 3
@@ -33,6 +34,8 @@ DASHBOARD_FILTER_PARAMS = (
     "unseenResponsesOnly",
     "is_flagged",
     "multiple_choice_answer",
+    "answers",
+    "demographic_answers",
     "searchValue",
 )
 
@@ -55,10 +58,8 @@ class QuestionViewSet(UpdateModelMixin, DestroyModelMixin, ReadOnlyModelViewSet)
         return super().get_serializer_class()
 
     def get_queryset(self):
-        queryset = (
-            Question.objects.filter(consultation_id=self.kwargs["consultation_pk"])
-            .prefetch_related("multichoiceanswer_set")
-            .order_by("number")
+        queryset = Question.objects.filter(consultation_id=self.kwargs["consultation_pk"]).order_by(
+            "number"
         )
 
         # Dashboard respondent pages filter the list to a respondent's questions
@@ -86,6 +87,11 @@ class QuestionViewSet(UpdateModelMixin, DestroyModelMixin, ReadOnlyModelViewSet)
             )
         return queryset
 
+    def list(self, request, *args, **kwargs):
+        questions = list(self.filter_queryset(self.get_queryset()))
+        attach_option_counts(questions)
+        return Response(self.get_serializer(questions, many=True).data)
+
     def retrieve(self, request, *args, **kwargs):
         """Retrieve a question with counts recalculated when dashboard filters apply.
 
@@ -103,16 +109,9 @@ class QuestionViewSet(UpdateModelMixin, DestroyModelMixin, ReadOnlyModelViewSet)
             filtered_responses = ConsultationResponse.objects.filter(id__in=filtered_ids)
             question.calculate_response_counts(filtered_responses)
 
-            if question.has_multiple_choice:
-                multichoice_answers = MultiChoiceAnswer.objects.filter(question=question).annotate(
-                    prefetched_response_count=Count(
-                        "response", filter=Q(response__id__in=filtered_ids), distinct=True
-                    )
-                )
-                question._prefetched_objects_cache = {
-                    **getattr(question, "_prefetched_objects_cache", {}),
-                    "multichoiceanswer_set": list(multichoice_answers),
-                }
+            question.prefetched_option_counts = count_option_responses(
+                question, filtered_responses.values("respondent_id")
+            )
 
         serializer = self.get_serializer(question)
         return Response(serializer.data)
