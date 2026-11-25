@@ -316,6 +316,7 @@ class ConsultationViewSet(
                         "consultation '{consultation_id}'",
                         consultation_id=consultation.id,
                     )
+                # Re-raise so the outer generic handler returns a 500 (and doesn't trip the APIException passthrough).
                 raise enqueue_error  # noqa: TRY201 - naked raise would re-raise rollback exception, not enqueue_error
 
             return Response(
