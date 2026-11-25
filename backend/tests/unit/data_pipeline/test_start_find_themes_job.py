@@ -3,7 +3,7 @@ from unittest.mock import patch
 import pytest
 
 from consultations.models import Consultation
-from data_pipeline.jobs import START_FIND_THEMES_TIMEOUT_SECONDS, start_find_themes
+from data_pipeline.jobs import start_find_themes
 from factories import ConsultationFactory
 
 
@@ -59,5 +59,30 @@ def test_start_find_themes_happy_path_returns_code_and_keeps_stage():
     assert consultation.stage == Consultation.Stage.FINDING_THEMES
 
 
-def test_start_find_themes_job_config_is_stable():
-    assert START_FIND_THEMES_TIMEOUT_SECONDS == 900
+@pytest.mark.django_db
+def test_start_find_themes_skips_deleted_consultations():
+    consultation = ConsultationFactory(stage=Consultation.Stage.FINDING_THEMES)
+    consultation_id = consultation.id
+    consultation.delete()
+
+    with (
+        patch("data_pipeline.jobs.export_consultation_inputs_to_s3") as export,
+        patch("data_pipeline.jobs.batch.submit_job") as submit,
+    ):
+        assert start_find_themes(consultation_id, user_id=1) == ""
+
+    export.assert_not_called()
+    submit.assert_not_called()
+
+
+@pytest.mark.django_db
+def test_start_find_themes_skips_when_stage_not_finding_themes():
+    consultation = ConsultationFactory(stage=Consultation.Stage.SETUP)
+    with (
+        patch("data_pipeline.jobs.export_consultation_inputs_to_s3") as export,
+        patch("data_pipeline.jobs.batch.submit_job") as submit,
+    ):
+        assert start_find_themes(consultation.id, user_id=1) == ""
+
+    export.assert_not_called()
+    submit.assert_not_called()
