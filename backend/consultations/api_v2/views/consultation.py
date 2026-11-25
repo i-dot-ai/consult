@@ -300,7 +300,6 @@ class ConsultationViewSet(
             try:
                 start_find_themes.delay(consultation.id, request.user.id)
             except Exception as enqueue_error:
-                # ruff: noqa: TRY201 - we intentionally re-raise the original enqueue exception.
                 try:
                     consultation_rerolled = Consultation.objects.filter(
                         pk=consultation.pk, stage=Consultation.Stage.FINDING_THEMES
@@ -317,7 +316,7 @@ class ConsultationViewSet(
                         "consultation '{consultation_id}'",
                         consultation_id=consultation.id,
                     )
-                raise enqueue_error
+                raise enqueue_error  # noqa: TRY201 - naked raise would re-raise rollback exception, not enqueue_error
 
             return Response(
                 {
