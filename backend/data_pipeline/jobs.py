@@ -15,9 +15,6 @@ from rq_context import job
 
 logger = settings.LOGGER
 
-DEFAULT_TIMEOUT_SECONDS = 3_600
-
-
 @job("default", timeout=14_400)  # 4 hours
 def start_find_themes(
     consultation_id: UUID,
@@ -49,7 +46,7 @@ def start_find_themes(
             pk=consultation.pk, stage=Consultation.Stage.FINDING_THEMES
         ).update(stage=Consultation.Stage.SETUP)
         if not consultation_rerolled:
-            logger.exception(
+            logger.error(
                 "Failed to roll the stage back after a failed Batch submission for "
                 "consultation '{consultation_id}'",
                 consultation_id=consultation.id,

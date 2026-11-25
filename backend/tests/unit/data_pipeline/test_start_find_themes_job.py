@@ -33,3 +33,19 @@ def test_start_find_themes_rolls_stage_back_when_batch_submit_fails():
 
     consultation.refresh_from_db()
     assert consultation.stage == Consultation.Stage.SETUP
+
+
+@pytest.mark.django_db
+def test_start_find_themes_happy_path_returns_code_and_keeps_stage():
+    consultation = ConsultationFactory(stage=Consultation.Stage.FINDING_THEMES)
+    with (
+        patch("data_pipeline.jobs.export_consultation_inputs_to_s3", return_value=1) as export,
+        patch("data_pipeline.jobs.batch.submit_job") as submit,
+    ):
+        result = start_find_themes(consultation.id, user_id=1)
+
+    assert result == consultation.code
+    export.assert_called_once_with(consultation, consultation.code)
+    submit.assert_called_once()
+    consultation.refresh_from_db()
+    assert consultation.stage == Consultation.Stage.FINDING_THEMES
