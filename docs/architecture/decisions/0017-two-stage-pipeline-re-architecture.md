@@ -42,7 +42,7 @@ Stage 2 moves the pipeline to Temporal, and does not block roll-out.
 3. **Break the jobs into smaller chunks.** A consultation is no longer one long job. Find themes and assign
    themes run at least per question, so a failure costs one chunk rather than the whole consultation.
 4. **Remove the Lambdas.** Slack notifications for completed and failed jobs are sent directly from the worker
-   jobs, and the notification Lambdas are deleted.
+   jobs, and all Lambdas are deleted.
 5. **Size and scale the worker for the heavier load.** We will confirm the worker's resources and autoscaling
    are sufficient for work that previously ran in Batch, investigate scaling on RQ queue depth, and add a load
    test that any team member can run.
