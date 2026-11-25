@@ -26,7 +26,7 @@
   <text
     x="33"
     y="22.5"
-    font-family="'GDS Transport', Arial, sans-serif"
+    font-family="Inter, Arial, sans-serif"
     font-size="17"
     font-weight="700"
     fill="var(--color-text)"
