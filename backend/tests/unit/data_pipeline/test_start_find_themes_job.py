@@ -3,7 +3,7 @@ from unittest.mock import patch
 import pytest
 
 from consultations.models import Consultation
-from data_pipeline.jobs import start_find_themes
+from data_pipeline.jobs import START_FIND_THEMES_TIMEOUT_SECONDS, start_find_themes
 from factories import ConsultationFactory
 
 
@@ -51,3 +51,7 @@ def test_start_find_themes_happy_path_returns_code_and_keeps_stage():
     submit.assert_called_once()
     consultation.refresh_from_db()
     assert consultation.stage == Consultation.Stage.FINDING_THEMES
+
+
+def test_start_find_themes_job_config_is_stable():
+    assert START_FIND_THEMES_TIMEOUT_SECONDS == 900

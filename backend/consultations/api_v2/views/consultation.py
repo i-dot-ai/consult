@@ -309,6 +309,7 @@ class ConsultationViewSet(
                         "consultation '{consultation_id}'",
                         consultation_id=consultation.id,
                     )
+                # If the rollback itself fails (e.g. DB unavailable), the outer handler logs that error.
                 raise
 
             return Response(
