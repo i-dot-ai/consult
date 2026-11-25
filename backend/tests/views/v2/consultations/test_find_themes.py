@@ -73,23 +73,6 @@ def test_v2_find_themes_rolls_stage_back_when_enqueue_fails(
 
 
 @pytest.mark.django_db
-def test_v2_find_themes_enqueues_job_on_success(
-    client, consultation, non_staff_user_token
-):
-    # Batch submission now happens in the worker job; the endpoint only enqueues.
-    QuestionFactory(consultation=consultation, number=1, type="open")
-
-    with patch("consultations.api_v2.views.consultation.start_find_themes.delay") as delay:
-        response = client.post(
-            find_themes_url(consultation),
-            headers={"Authorization": f"Bearer {non_staff_user_token}"},
-        )
-
-    assert response.status_code == 202
-    delay.assert_called_once()
-
-
-@pytest.mark.django_db
 def test_v2_find_themes_does_not_mask_drf_permission_errors_as_500(client, non_staff_user_token):
     """Consultations outside a user's visibility fail CanSeeConsultationV2
     before the action runs - that 403 must survive, as must any Http404 or

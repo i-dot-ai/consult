@@ -299,18 +299,25 @@ class ConsultationViewSet(
                 )
             try:
                 start_find_themes.delay(consultation.id, request.user.id)
-            except Exception:
-                consultation_rerolled = Consultation.objects.filter(
-                    pk=consultation.pk, stage=Consultation.Stage.FINDING_THEMES
-                ).update(stage=Consultation.Stage.SETUP)
-                if not consultation_rerolled:
-                    logger.error(
+            except Exception as enqueue_error:
+                # ruff: noqa: TRY201 - we intentionally re-raise the original enqueue exception.
+                try:
+                    consultation_rerolled = Consultation.objects.filter(
+                        pk=consultation.pk, stage=Consultation.Stage.FINDING_THEMES
+                    ).update(stage=Consultation.Stage.SETUP)
+                    if not consultation_rerolled:
+                        logger.error(
+                            "Failed to roll the stage back after a failed enqueue for "
+                            "consultation '{consultation_id}'",
+                            consultation_id=consultation.id,
+                        )
+                except Exception:
+                    logger.exception(
                         "Failed to roll the stage back after a failed enqueue for "
                         "consultation '{consultation_id}'",
                         consultation_id=consultation.id,
                     )
-                # If the rollback update itself fails (e.g. DB unavailable), it will replace the original enqueue error.
-                raise
+                raise enqueue_error
 
             return Response(
                 {

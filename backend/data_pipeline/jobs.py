@@ -26,6 +26,7 @@ def start_find_themes(
 ) -> str:
     """Export consultation inputs to S3 and submit the find-themes Batch job."""
     # user_id is passed through into Batch metadata for auditability, even if the user is deleted later.
+    # The consultation may be deleted between enqueue and execution; in that case there is nothing to roll back.
     consultation = Consultation.objects.get(pk=consultation_id)
     logger.set_context_field("consultation_id", str(consultation.id))
 
