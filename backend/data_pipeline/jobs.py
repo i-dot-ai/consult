@@ -11,18 +11,23 @@ from django.conf import settings
 from django.db import transaction
 from rq import get_current_job
 
+from consultations.models import Consultation
+from data_pipeline import batch
+from data_pipeline.events import publish_find_themes_event
+from data_pipeline.find_themes import find_themes as run_find_themes
+from data_pipeline.sync.candidate_themes import (
+    export_candidate_themes_to_s3,
+    import_candidate_themes_from_s3,
+)
+from data_pipeline.sync.consultation_inputs import export_consultation_inputs_to_s3
 from logging_context import get_or_create_context_id
 from rq_context import job
 
 logger = settings.LOGGER
 
-DEFAULT_TIMEOUT_SECONDS = 3_600
-
 
 def reset_find_themes_after_worker_failure(rq_job, connection, exception_type, value, traceback):
     """Recover state when RQ terminates the job before its own cleanup can run."""
-    from consultations.models import Consultation
-
     consultation_id = rq_job.args[0]
     Consultation.objects.filter(id=consultation_id, stage=Consultation.Stage.FINDING_THEMES).update(
         stage=Consultation.Stage.SETUP, running_job=None
@@ -36,13 +41,6 @@ def complete_find_themes(
     model_name: str | None = None,
 ) -> None:
     """Import discovered themes and start mapping without enqueueing another worker job."""
-    from consultations.models import Consultation
-    from data_pipeline import batch
-    from data_pipeline.sync.candidate_themes import (
-        export_candidate_themes_to_s3,
-        import_candidate_themes_from_s3,
-    )
-
     import_candidate_themes_from_s3(consultation_code, run_date)
     consultation = Consultation.objects.get(code=consultation_code)
     export_candidate_themes_to_s3(consultation)
@@ -73,17 +71,8 @@ def complete_find_themes(
     timeout=86400,
     on_failure=reset_find_themes_after_worker_failure,
 )  # Theme discovery can run for several hours.
-def find_themes(consultation_id: UUID, user_id: int) -> None:
+def start_find_themes(consultation_id: UUID, user_id: int) -> str:
     """Run theme discovery, persist its results, then start candidate-theme mapping."""
-    from consultations.models import Consultation
-    from data_pipeline.events import publish_find_themes_event
-    from data_pipeline.find_themes import find_themes as run_find_themes
-    from data_pipeline.sync.consultation_inputs import (
-        assign_consultation_code,
-        export_consultation_inputs_to_s3,
-        sync_has_free_text_with_type,
-    )
-
     context_id = get_or_create_context_id()
     rq_job = get_current_job()
     job_id = rq_job.id if rq_job else None
@@ -103,14 +92,31 @@ def find_themes(consultation_id: UUID, user_id: int) -> None:
         )
 
     try:
-        consultation = Consultation.objects.get(id=consultation_id)
-        consultation_code = assign_consultation_code(consultation)
-        model_name = consultation.model_name or Consultation.ModelName.GPT_41
-        publish("RUNNING")
+        try:
+            consultation = Consultation.objects.get(id=consultation_id)
+        except Consultation.DoesNotExist:
+            logger.info(
+                "Consultation {consultation_id} no longer exists; skipping find-themes",
+                consultation_id=consultation_id,
+            )
+            return ""
         if consultation.stage != Consultation.Stage.FINDING_THEMES:
-            raise ValueError(f"Consultation '{consultation.id}' is not in the finding themes stage")
-        sync_has_free_text_with_type(consultation)
-        export_consultation_inputs_to_s3(consultation, consultation_code)
+            logger.warning(
+                "Consultation {consultation_id} not in FINDING_THEMES; skipping find-themes",
+                consultation_id=consultation_id,
+                stage=consultation.stage,
+            )
+            return ""
+        consultation_code = consultation.code
+        model_name = consultation.model_name or Consultation.ModelName.GPT_41
+        logger.set_context_field("consultation_id", str(consultation.id))
+        publish("RUNNING")
+        question_parts = export_consultation_inputs_to_s3(consultation, consultation_code)
+        logger.info(
+            "Mirrored {question_parts} question parts to s3 for consultation '{consultation_code}'",
+            question_parts=question_parts,
+            consultation_code=consultation_code,
+        )
         run_date = run_find_themes(consultation_code, model_name)
         complete_find_themes(
             consultation_code=consultation_code,
@@ -119,6 +125,7 @@ def find_themes(consultation_id: UUID, user_id: int) -> None:
             model_name=model_name,
         )
         publish("SUCCEEDED")
+        return consultation_code
     except Exception:
         logger.exception(
             "Find-themes worker job failed for consultation_id={consultation_id}",

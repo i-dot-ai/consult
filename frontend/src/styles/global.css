@@ -3,6 +3,7 @@
 @theme {
   --color-primary: var(--color-primary);
   --color-secondary: var(--color-secondary);
+  --color-text: var(--color-text);
 
   --color-iaiteal-50: oklch(0.96 0.02 175);
   --color-iaiteal-100: oklch(0.91 0.05 175);
@@ -65,6 +66,7 @@
 :root {
   --color-primary: #c40678;
   --color-secondary: oklch(0.6429 0.103 186.61);
+  --color-text: oklch(0.5197 0.0121 261.77);
   --color-secondary-dark: oklch(0.4275 0.0746 187.12);
 }
 

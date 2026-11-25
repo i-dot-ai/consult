@@ -2,8 +2,9 @@ from unittest.mock import patch
 
 import pytest
 from django.urls import reverse
+from rest_framework import serializers
 
-from consultations.models import Consultation
+from consultations.models import Consultation, Question
 from factories import ConsultationFactory, QuestionFactory
 
 
@@ -12,53 +13,150 @@ def find_themes_url(consultation):
 
 
 @pytest.mark.django_db
-def test_v2_find_themes_enqueues_worker(client, consultation, non_staff_user_token):
-    QuestionFactory(consultation=consultation, number=1, type="open", has_free_text=False)
+def test_v2_find_themes_assigns_code_and_enqueues_job(client, consultation, non_staff_user_token):
+    consultation.code = ""
+    consultation.save(update_fields=["code"])
+    QuestionFactory(consultation=consultation, number=1, type="open")
 
-    with patch("consultations.api_v2.views.consultation.find_themes_job.enqueue") as enqueue:
+    with patch("consultations.api_v2.views.consultation.start_find_themes.delay") as delay:
         response = client.post(
             find_themes_url(consultation),
             headers={"Authorization": f"Bearer {non_staff_user_token}"},
         )
 
     assert response.status_code == 202
-    enqueue.assert_called_once_with(consultation.id, enqueue.call_args.args[1])
     consultation.refresh_from_db()
+    assert consultation.code  # a code was assigned and persisted
+    delay.assert_called_once_with(consultation.id, response.wsgi_request.user.id)
+    assert response.json()["consultation_code"] == consultation.code
     assert consultation.stage == Consultation.Stage.FINDING_THEMES
-    assert consultation.running_job == Consultation.RunningJob.FIND_THEMES
 
 
 @pytest.mark.django_db
-def test_v2_find_themes_rolls_back_when_enqueue_fails(client, consultation, non_staff_user_token):
+def test_v2_find_themes_reuses_an_existing_code(client, consultation, non_staff_user_token):
+    QuestionFactory(consultation=consultation, number=1, type="open")
+
+    with (
+        patch("consultations.api_v2.views.consultation.assign_consultation_code") as assign,
+        patch("consultations.api_v2.views.consultation.start_find_themes.delay") as delay,
+    ):
+        assign.return_value = consultation.code
+        response = client.post(
+            find_themes_url(consultation),
+            headers={"Authorization": f"Bearer {non_staff_user_token}"},
+        )
+
+    assert response.status_code == 202
+    assert assign.call_args.args[0] == consultation
+    delay.assert_called_once_with(consultation.id, consultation.users.first().id)
+
+
+@pytest.mark.django_db
+def test_v2_find_themes_rolls_stage_back_when_enqueue_fails(
+    client, consultation, non_staff_user_token
+):
     QuestionFactory(consultation=consultation, number=1, type="open")
 
     with patch(
-        "consultations.api_v2.views.consultation.find_themes_job.enqueue",
-        side_effect=RuntimeError("Redis unavailable"),
-    ):
+        "consultations.api_v2.views.consultation.start_find_themes.delay",
+        side_effect=RuntimeError("enqueue failed"),
+    ) as delay:
         response = client.post(
             find_themes_url(consultation),
             headers={"Authorization": f"Bearer {non_staff_user_token}"},
         )
 
     assert response.status_code == 500
+    delay.assert_called_once()
     consultation.refresh_from_db()
     assert consultation.stage == Consultation.Stage.SETUP
-    assert consultation.running_job is None
 
 
 @pytest.mark.django_db
-def test_v2_find_themes_rejects_closed_questions(client, consultation, non_staff_user_token):
-    QuestionFactory(consultation=consultation, number=1, type="closed", has_free_text=True)
+def test_v2_find_themes_does_not_mask_drf_permission_errors_as_500(client, non_staff_user_token):
+    """Consultations outside a user's visibility fail CanSeeConsultationV2
+    before the action runs - that 403 must survive, as must any Http404 or
+    APIException raised inside the action body (no 500 masking)."""
 
-    with patch("consultations.api_v2.views.consultation.find_themes_job.enqueue") as enqueue:
+    with patch("consultations.api_v2.views.consultation.start_find_themes.delay") as delay:
+        response = client.post(
+            reverse(
+                "consultation-v2-find-themes",
+                kwargs={"pk": "00000000-0000-0000-0000-000000000000"},
+            ),
+            headers={"Authorization": f"Bearer {non_staff_user_token}"},
+        )
+
+    assert response.status_code == 403
+    delay.assert_not_called()
+
+
+@pytest.mark.django_db
+def test_v2_find_themes_lets_api_exceptions_surface(client, consultation, non_staff_user_token):
+    QuestionFactory(consultation=consultation, number=1, type="open")
+
+    with (
+        patch(
+            "consultations.api_v2.views.consultation.sync_has_free_text_with_type",
+            side_effect=serializers.ValidationError("bad consultation data"),
+        ),
+        patch("consultations.api_v2.views.consultation.start_find_themes.delay") as delay,
+    ):
         response = client.post(
             find_themes_url(consultation),
             headers={"Authorization": f"Bearer {non_staff_user_token}"},
         )
 
     assert response.status_code == 400
-    enqueue.assert_not_called()
+    assert "bad consultation data" in response.json()
+    delay.assert_not_called()
+
+
+@pytest.mark.django_db
+def test_v2_find_themes_syncs_flags_before_the_guard(client, consultation, non_staff_user_token):
+    """A closed question carrying a stale free-text flag must not pass the guard."""
+    consultation.code = ""
+    consultation.save(update_fields=["code"])
+    closed_question = QuestionFactory(
+        consultation=consultation, number=1, type="closed", has_free_text=True
+    )
+
+    with (
+        patch("consultations.api_v2.views.consultation.assign_consultation_code") as assign,
+        patch("consultations.api_v2.views.consultation.start_find_themes.delay") as delay,
+    ):
+        response = client.post(
+            find_themes_url(consultation),
+            headers={"Authorization": f"Bearer {non_staff_user_token}"},
+        )
+
+    assert response.status_code == 400
+    assert "no free-text questions" in response.json()["error"]
+    closed_question.refresh_from_db()
+    assert closed_question.has_free_text is False
+    assign.assert_not_called()
+    delay.assert_not_called()
+
+
+@pytest.mark.django_db
+def test_v2_find_themes_passes_the_guard_after_syncing(client, consultation, non_staff_user_token):
+    """A question typed open with a stale flag becomes findable via the sync."""
+    QuestionFactory(consultation=consultation, number=1, type="open", has_free_text=False)
+
+    with (
+        patch("consultations.api_v2.views.consultation.assign_consultation_code") as assign,
+        patch("consultations.api_v2.views.consultation.start_find_themes.delay") as delay,
+    ):
+        assign.return_value = consultation.code
+        response = client.post(
+            find_themes_url(consultation),
+            headers={"Authorization": f"Bearer {non_staff_user_token}"},
+        )
+
+    assert response.status_code == 202
+    question = Question.objects.get(consultation=consultation)
+    assert question.has_free_text is True
+    delay.assert_called_once()
 
 
 @pytest.mark.django_db
@@ -68,11 +166,17 @@ def test_v2_find_themes_rejects_consultations_not_in_setup_stage(
     consultation = ConsultationFactory(code="in-progress", stage=Consultation.Stage.FINDING_THEMES)
     consultation.users.add(non_staff_user)
 
-    with patch("consultations.api_v2.views.consultation.find_themes_job.enqueue") as enqueue:
+    with (
+        patch("consultations.api_v2.views.consultation.assign_consultation_code") as assign,
+        patch("consultations.api_v2.views.consultation.start_find_themes.delay") as delay,
+    ):
         response = client.post(
             find_themes_url(consultation),
             headers={"Authorization": f"Bearer {non_staff_user_token}"},
         )
 
     assert response.status_code == 400
-    enqueue.assert_not_called()
+    assert "not in setup stage" in response.json()["error"]
+    assert consultation.title in response.json()["error"]  # blank code must not leak into messages
+    assign.assert_not_called()
+    delay.assert_not_called()

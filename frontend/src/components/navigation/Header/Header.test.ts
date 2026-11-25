@@ -107,6 +107,7 @@ describe("Header", () => {
       "icon",
       "pathParts",
       "navItems",
+      "showTitle",
     ]);
   });
 });

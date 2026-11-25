@@ -6,7 +6,6 @@ from zipfile import BadZipFile
 from django.conf import settings
 from django.core.exceptions import ValidationError
 from django.core.files.storage import default_storage
-from django.db import transaction
 from django.db.models import Prefetch, Q
 from django.http import Http404
 from django.shortcuts import get_object_or_404
@@ -33,9 +32,12 @@ from consultations.api_v2.serializers import (
     ConsultationUpdateSerializerV2,
     ConsultationUserAssignmentSerializerV2,
 )
-from consultations.models import Consultation, FileUpload, Question
-from data_pipeline.jobs import find_themes as find_themes_job
-from data_pipeline.sync.consultation_inputs import assign_consultation_code
+from consultations.models import Consultation, FileUpload
+from data_pipeline.jobs import start_find_themes
+from data_pipeline.sync.consultation_inputs import (
+    assign_consultation_code,
+    sync_has_free_text_with_type,
+)
 from ingest.consultation_file import read_consultation_file
 from ingest.deep_validation import deep_validate_file
 from ingest.jobs import add_consultation_job, delete_consultation_job
@@ -232,10 +234,12 @@ class ConsultationViewSet(
     )
     def find_themes(self, request, pk=None) -> Response:
         """
-        Enqueue a worker job to find themes for each free-text question.
+        Queue the worker job that finds themes for each free-text question.
 
-        The worker renders the S3 inputs, runs ThemeFinder, imports candidate
-        themes, and starts candidate-theme response mapping.
+        The worker preserves the S3 input/output contract, imports candidate
+        themes into the database, and starts candidate-theme response mapping.
+
+        Advances consultation to FINDING_THEMES stage
 
         URL: /api/consultations/{consultation_id}/find-themes/
         """
@@ -252,9 +256,16 @@ class ConsultationViewSet(
                     status=status.HTTP_400_BAD_REQUEST,
                 )
 
-            free_text_questions = consultation.question_set.filter(
-                Q(type=Question.QuestionType.OPEN) | Q(type__isnull=True, has_free_text=True)
-            )
+            synced_flags = sync_has_free_text_with_type(consultation)
+            if synced_flags:
+                logger.info(
+                    "Synced has_free_text from question type for {synced_flags} "
+                    "questions of consultation '{consultation_title}'",
+                    synced_flags=synced_flags,
+                    consultation_title=consultation.title,
+                )
+
+            free_text_questions = consultation.question_set.filter(has_free_text=True)
             if not free_text_questions.exists():
                 return Response(
                     {
@@ -265,12 +276,11 @@ class ConsultationViewSet(
                 )
 
             consultation_code = assign_consultation_code(consultation)
+
+            # Atomic stage guard: only transition from SETUP -> FINDING_THEMES once.
             transitions = Consultation.objects.filter(
                 pk=consultation.pk, stage=Consultation.Stage.SETUP
-            ).update(
-                stage=Consultation.Stage.FINDING_THEMES,
-                running_job=Consultation.RunningJob.FIND_THEMES,
-            )
+            ).update(stage=Consultation.Stage.FINDING_THEMES)
             if transitions == 0:
                 return Response(
                     {
@@ -279,38 +289,32 @@ class ConsultationViewSet(
                     },
                     status=status.HTTP_400_BAD_REQUEST,
                 )
-            consultation.stage = Consultation.Stage.FINDING_THEMES
-            consultation.running_job = Consultation.RunningJob.FIND_THEMES
-
             try:
-                find_themes_job.enqueue(consultation.id, request.user.id)
-            except Exception:
-                with transaction.atomic():
+                start_find_themes.delay(consultation.id, request.user.id)
+            except Exception as enqueue_error:
+                try:
                     consultation_rerolled = Consultation.objects.filter(
-                        pk=consultation.pk,
-                        stage=Consultation.Stage.FINDING_THEMES,
-                        running_job=Consultation.RunningJob.FIND_THEMES,
-                    ).update(stage=Consultation.Stage.SETUP, running_job=None)
-                consultation.stage = Consultation.Stage.SETUP
-                consultation.running_job = None
-                if not consultation_rerolled:
+                        pk=consultation.pk, stage=Consultation.Stage.FINDING_THEMES
+                    ).update(stage=Consultation.Stage.SETUP)
+                    if not consultation_rerolled:
+                        logger.error(
+                            "Stage rollback skipped after enqueue failure for consultation "
+                            "'{consultation_id}' (stage already changed)",
+                            consultation_id=consultation.id,
+                        )
+                except Exception:
                     logger.exception(
-                        "Failed to roll the stage back after a failed worker enqueue "
-                        "submission for consultation '{consultation_id}'",
+                        "Failed to roll the stage back after enqueue failure for consultation "
+                        "'{consultation_id}'",
                         consultation_id=consultation.id,
                     )
-                raise
-
-            logger.info(
-                "Find Themes job submitted for consultation {consultation_id} by user {user_id}",
-                consultation_id=consultation.id,
-                user_id=request.user.id,
-            )
+                # Re-raise so the outer generic handler returns a 500 (and doesn't trip the APIException passthrough).
+                raise enqueue_error  # noqa: TRY201
 
             return Response(
                 {
-                    "message": f"Find Themes job started for consultation '{consultation.title}'",
-                    "consultation_id": consultation.id,
+                    "message": f"Find Themes job queued for consultation '{consultation.title}'",
+                    "consultation_id": str(consultation.id),
                     "consultation_code": consultation_code,
                 },
                 status=status.HTTP_202_ACCEPTED,
