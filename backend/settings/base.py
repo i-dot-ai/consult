@@ -131,22 +131,23 @@ if ENVIRONMENT.lower() == "preprod":
 
 CSRF_TRUSTED_ORIGINS = TRUSTED_ORIGINS
 
-# Database with Connection Pooling
 # https://docs.djangoproject.com/en/5.0/ref/settings/#databases
 
 _db_config = env.db()
 DATABASES = {
     "default": {
         **_db_config,
-        # Use django-db-connection-pool backend for PostgreSQL
         "ENGINE": "django.db.backends.postgresql",
-        # Connection pooling settings
-        # Keep existing options
         "OPTIONS": {
             **_db_config.get("OPTIONS", {}),
         },
     }
 }
+
+# Set only for gunicorn (start.sh) so queries die with their request; migrations and the worker stay unbounded.
+DB_STATEMENT_TIMEOUT_MS = env.int("DB_STATEMENT_TIMEOUT_MS", default=0)
+if DB_STATEMENT_TIMEOUT_MS:
+    DATABASES["default"]["OPTIONS"]["options"] = f"-c statement_timeout={DB_STATEMENT_TIMEOUT_MS}"
 
 # Password validation
 # https://docs.djangoproject.com/en/5.0/ref/settings/#auth-password-validators
