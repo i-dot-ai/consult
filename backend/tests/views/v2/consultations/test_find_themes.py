@@ -52,7 +52,7 @@ def test_v2_find_themes_reuses_an_existing_code(client, consultation, non_staff_
 
 
 @pytest.mark.django_db
-def test_v2_find_themes_does_not_submit_the_batch_when_mirroring_fails(
+def test_v2_find_themes_rolls_stage_back_when_enqueue_fails(
     client, consultation, non_staff_user_token
 ):
     QuestionFactory(consultation=consultation, number=1, type="open")
