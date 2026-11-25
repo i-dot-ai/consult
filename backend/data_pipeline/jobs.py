@@ -28,15 +28,15 @@ def start_find_themes(
     logger.set_context_field("consultation_id", str(consultation.id))
 
     consultation_code = consultation.code
-    question_parts = export_consultation_inputs_to_s3(consultation, consultation_code)
-    logger.info(
-        "Mirrored {question_parts} question parts to s3 for consultation '{consultation_code}' "
-        "before find-themes kickoff",
-        question_parts=question_parts,
-        consultation_code=consultation_code,
-    )
-
     try:
+        question_parts = export_consultation_inputs_to_s3(consultation, consultation_code)
+        logger.info(
+            "Mirrored {question_parts} question parts to s3 for consultation '{consultation_code}' "
+            "before find-themes kickoff",
+            question_parts=question_parts,
+            consultation_code=consultation_code,
+        )
+
         batch.submit_job(
             job_type="FIND_THEMES",
             consultation_code=consultation_code,
@@ -48,7 +48,6 @@ def start_find_themes(
         consultation_rerolled = Consultation.objects.filter(
             pk=consultation.pk, stage=Consultation.Stage.FINDING_THEMES
         ).update(stage=Consultation.Stage.SETUP)
-        consultation.stage = Consultation.Stage.SETUP
         if not consultation_rerolled:
             logger.exception(
                 "Failed to roll the stage back after a failed Batch submission for "

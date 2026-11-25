@@ -311,7 +311,7 @@ class ConsultationViewSet(
             return Response(
                 {
                     "message": f"Find Themes job started for consultation '{consultation.title}'",
-                    "consultation_id": consultation.id,
+                    "consultation_id": str(consultation.id),
                     "consultation_code": consultation_code,
                 },
                 status=status.HTTP_202_ACCEPTED,

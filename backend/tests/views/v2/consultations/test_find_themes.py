@@ -73,12 +73,12 @@ def test_v2_find_themes_does_not_submit_the_batch_when_mirroring_fails(
 
 
 @pytest.mark.django_db
-def test_v2_find_themes_rolls_the_stage_back_when_the_submission_fails(
+def test_v2_find_themes_enqueues_job_on_success(
     client, consultation, non_staff_user_token
 ):
+    # Batch submission now happens in the worker job; the endpoint only enqueues.
     QuestionFactory(consultation=consultation, number=1, type="open")
 
-    # Batch submission now happens in the worker job; the endpoint only enqueues.
     with patch("consultations.api_v2.views.consultation.start_find_themes.delay") as delay:
         response = client.post(
             find_themes_url(consultation),
