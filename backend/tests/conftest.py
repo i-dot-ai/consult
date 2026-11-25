@@ -1,3 +1,5 @@
+from types import SimpleNamespace
+
 import pytest
 import structlog
 import yaml
@@ -10,6 +12,7 @@ from consultations.models import (
     Consultation,
     DemographicOption,
     MultiChoiceAnswer,
+    Question,
     Respondent,
     Response,
     ResponseAnnotation,
@@ -101,7 +104,11 @@ def free_text_question(consultation):
 @pytest.fixture
 def multi_choice_question(consultation):
     question = QuestionFactory(
-        consultation=consultation, has_free_text=False, has_multiple_choice=True, number=2
+        consultation=consultation,
+        has_free_text=False,
+        has_multiple_choice=True,
+        number=2,
+        type=Question.QuestionType.CLOSED,
     )
     for answer in ["red", "blue", "green"]:
         MultiChoiceAnswerFactory.create(question=question, text=answer)
@@ -119,13 +126,17 @@ def multi_choice_responses(multi_choice_question):
     )
 
     respondent_1 = RespondentFactory(consultation=multi_choice_question.consultation)
-    response_1 = Response.objects.create(respondent=respondent_1, question=multi_choice_question)
+    response_1 = Response.objects.create(
+        respondent=respondent_1, question=multi_choice_question, text="red"
+    )
     response_1.chosen_options.add(red)
     response_1.chosen_options.add(blue)
     response_1.save()
 
     respondent_2 = RespondentFactory(consultation=multi_choice_question.consultation)
-    response_2 = Response.objects.create(respondent=respondent_2, question=multi_choice_question)
+    response_2 = Response.objects.create(
+        respondent=respondent_2, question=multi_choice_question, text="red"
+    )
     response_2.chosen_options.add(red)
     response_2.save()
 
@@ -435,3 +446,44 @@ def legacy_consultation():
         )
         response.chosen_options.add(*options)
     return consultation
+
+
+@pytest.fixture
+def closed_answers(consultation):
+    """A hybrid (open question with a closed sibling), a demographic question and an
+    untyped legacy question, with three respondents: one multi-select, one single, one silent."""
+    closed_question = factories.ClosedQuestionFactory(consultation=consultation, number=11)
+    open_question = factories.OpenQuestionFactory(
+        consultation=consultation, number=12, closed_question=closed_question
+    )
+    demographic_question = factories.DemographicQuestionFactory(
+        consultation=consultation, number=13
+    )
+    legacy_question = factories.QuestionFactory(consultation=consultation, number=14)
+
+    multi_select, single, silent = factories.RespondentFactory.create_batch(
+        3, consultation=consultation
+    )
+    for respondent, options in [(multi_select, ["Red", "Blue"]), (single, ["Red"])]:
+        for option in options:
+            factories.ResponseFactory(
+                question=closed_question, respondent=respondent, text=option, free_text=None
+            )
+    for respondent, region in [(multi_select, "North"), (single, "South"), (silent, "North")]:
+        factories.ResponseFactory(
+            question=demographic_question, respondent=respondent, text=region, free_text=None
+        )
+    for respondent in (multi_select, single, silent):
+        factories.ResponseFactory(
+            question=open_question, respondent=respondent, text="Because", free_text="Because"
+        )
+
+    return SimpleNamespace(
+        closed_question=closed_question,
+        open_question=open_question,
+        demographic_question=demographic_question,
+        legacy_question=legacy_question,
+        multi_select=multi_select,
+        single=single,
+        silent=silent,
+    )

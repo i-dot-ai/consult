@@ -216,7 +216,7 @@ class TestQuestionViewSet:
         respondent_1 = RespondentFactory(consultation=multi_choice_question.consultation)
         respondent_1.demographics.add(northern_demographic)
         response_1 = Response.objects.create(
-            respondent=respondent_1, question=multi_choice_question
+            respondent=respondent_1, question=multi_choice_question, text="red"
         )
         response_1.chosen_options.add(red, blue)
 
@@ -224,7 +224,7 @@ class TestQuestionViewSet:
         respondent_2 = RespondentFactory(consultation=multi_choice_question.consultation)
         respondent_2.demographics.add(northern_demographic)
         response_2 = Response.objects.create(
-            respondent=respondent_2, question=multi_choice_question
+            respondent=respondent_2, question=multi_choice_question, text="red"
         )
         response_2.chosen_options.add(red)
 
@@ -232,7 +232,7 @@ class TestQuestionViewSet:
         respondent_3 = RespondentFactory(consultation=multi_choice_question.consultation)
         respondent_3.demographics.add(southern_demographic)
         response_3 = Response.objects.create(
-            respondent=respondent_3, question=multi_choice_question
+            respondent=respondent_3, question=multi_choice_question, text="blue"
         )
         response_3.chosen_options.add(blue)
 
