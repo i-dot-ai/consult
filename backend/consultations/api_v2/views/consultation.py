@@ -282,8 +282,6 @@ class ConsultationViewSet(
                 )
 
             consultation_code = assign_consultation_code(consultation)
-            consultation.code = consultation_code
-            consultation.save(update_fields=["code"])
 
             # Atomic stage guard: only transition from SETUP -> FINDING_THEMES once.
             transitions = Consultation.objects.filter(
@@ -321,7 +319,7 @@ class ConsultationViewSet(
 
             return Response(
                 {
-                    "message": f"Find Themes job started for consultation '{consultation.title}'",
+                    "message": f"Find Themes job queued for consultation '{consultation.title}'",
                     "consultation_id": str(consultation.id),
                     "consultation_code": consultation_code,
                 },
