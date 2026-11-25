@@ -6,6 +6,7 @@ These functions are designed to be executed asynchronously via RQ (Redis Queue).
 
 from uuid import UUID
 
+from botocore.exceptions import BotoCoreError, ClientError
 from django.conf import settings
 
 from consultations.models import Consultation
@@ -42,28 +43,28 @@ def start_find_themes(
     logger.set_context_field("consultation_id", str(consultation.id))
 
     consultation_code = consultation.code
-    try:
-        question_parts = export_consultation_inputs_to_s3(consultation, consultation_code)
-    except Exception:
-        consultation_rerolled = Consultation.objects.filter(
+
+    def _rollback_stage(reason: str) -> None:
+        rerolled = Consultation.objects.filter(
             pk=consultation.pk, stage=Consultation.Stage.FINDING_THEMES
         ).update(stage=Consultation.Stage.SETUP)
-        if not consultation_rerolled:
-            logger.exception(
-                "Failed to roll the stage back after a failed S3 export for consultation "
-                "'{consultation_id}'",
+        if not rerolled:
+            logger.error(
+                "Stage rollback skipped after {reason} for consultation '{consultation_id}' "
+                "(stage already changed)",
+                reason=reason,
                 consultation_id=consultation.id,
             )
-        raise
-
-    logger.info(
-        "Mirrored {question_parts} question parts to s3 for consultation '{consultation_code}' "
-        "before find-themes kickoff",
-        question_parts=question_parts,
-        consultation_code=consultation_code,
-    )
 
     try:
+        question_parts = export_consultation_inputs_to_s3(consultation, consultation_code)
+        logger.info(
+            "Mirrored {question_parts} question parts to s3 for consultation '{consultation_code}' "
+            "before find-themes kickoff",
+            question_parts=question_parts,
+            consultation_code=consultation_code,
+        )
+
         batch.submit_job(
             job_type="FIND_THEMES",
             consultation_code=consultation_code,
@@ -71,16 +72,11 @@ def start_find_themes(
             user_id=user_id,
             model_name=consultation.model_name,
         )
+    except (ClientError, BotoCoreError):
+        _rollback_stage("AWS call failure")
+        raise
     except Exception:
-        consultation_rerolled = Consultation.objects.filter(
-            pk=consultation.pk, stage=Consultation.Stage.FINDING_THEMES
-        ).update(stage=Consultation.Stage.SETUP)
-        if not consultation_rerolled:
-            logger.exception(
-                "Failed to roll the stage back after a failed Batch submission for consultation "
-                "'{consultation_id}'",
-                consultation_id=consultation.id,
-            )
+        _rollback_stage("unexpected error")
         raise
 
     logger.info(
