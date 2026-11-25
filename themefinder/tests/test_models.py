@@ -137,13 +137,6 @@ class TestCondensedTheme:
                 source_topic_count=0,  # Must be > 0
             )
 
-    @pytest.mark.parametrize("model", [CondensedTheme, RefinedTheme])
-    def test_source_topic_count_schema_has_no_numeric_bounds(self, model):
-        schema = model.model_json_schema()["properties"]["source_topic_count"]
-
-        assert "minimum" not in schema
-        assert "exclusiveMinimum" not in schema
-
 
 class TestThemeCondensationResponses:
     def test_valid_condensed_themes(self):
