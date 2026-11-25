@@ -247,37 +247,6 @@ exports[`ConsultationView > should match snapshot after loading 1`] = `
         Add and remove people on this consultation
       </p>
     </div>
-    <hr
-      class="my-2"
-    />
-     
-    <div
-      class="my-3 ml-2"
-    >
-      <!---->
-      <a
-        aria-label="Every response, as it was uploaded"
-        class="transition-colors duration-300 text-primary hover:underline"
-        data-testid="Every response, as it was uploaded"
-        href="/consultations/test-consultation/answers"
-        role="button"
-        tabindex="0"
-        title=""
-      >
-        <!---->
-        View all responses
-        
-        
-      </a>
-      
-      <!---->
-       
-      <p
-        class="text-sm text-neutral-500"
-      >
-        Every response, as it was uploaded
-      </p>
-    </div>
     <!---->
   </section>
   <!---->
