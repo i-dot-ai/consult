@@ -297,7 +297,7 @@ class ConsultationViewSet(
                 )
             try:
                 start_find_themes.delay(consultation.id, request.user.id)
-            except RuntimeError as enqueue_error:
+            except Exception as enqueue_error:
                 try:
                     consultation_rerolled = Consultation.objects.filter(
                         pk=consultation.pk, stage=Consultation.Stage.FINDING_THEMES
