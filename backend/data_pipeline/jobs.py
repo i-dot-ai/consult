@@ -63,7 +63,7 @@ def start_find_themes(
             pk=consultation.pk, stage=Consultation.Stage.FINDING_THEMES
         ).update(stage=Consultation.Stage.SETUP)
         if not consultation_rerolled:
-            logger.error(
+            logger.exception(
                 "Failed to roll the stage back after a failed Batch submission for "
                 "consultation '{consultation_id}'",
                 consultation_id=consultation.id,

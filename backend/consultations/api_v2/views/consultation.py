@@ -303,7 +303,7 @@ class ConsultationViewSet(
                         pk=consultation.pk, stage=Consultation.Stage.FINDING_THEMES
                     ).update(stage=Consultation.Stage.SETUP)
                     if not consultation_rerolled:
-                        logger.error(
+                        logger.exception(
                             "Failed to roll the stage back after a failed enqueue for "
                             "consultation '{consultation_id}'",
                             consultation_id=consultation.id,
