@@ -5,10 +5,10 @@ locals {
   data_setup_v2_enabled = true
 
   base_env_vars = {
-    "ENVIRONMENT"                 = terraform.workspace
-    "DEBUG"                       = var.env == "prod" ? false : true
-    "REPO"                        = var.project_name
-    "AWS_ACCOUNT_ID"              = data.aws_caller_identity.current.account_id
+    "ENVIRONMENT"    = terraform.workspace
+    "DEBUG"          = var.env == "prod" ? false : true
+    "REPO"           = var.project_name
+    "AWS_ACCOUNT_ID" = data.aws_caller_identity.current.account_id
     # OTel PoC is dev only; other envs (prod included) stay Sentry-only.
     "OTEL_ENABLED"                = false
     "OTEL_EXPORTER_OTLP_ENDPOINT" = local.otel_exporter_otlp_endpoint
@@ -22,9 +22,6 @@ locals {
     "ASSIGN_THEMES_BATCH_JOB_NAME"       = "${local.name}-assign-themes-job"
     "ASSIGN_THEMES_BATCH_JOB_QUEUE"      = module.batch_job_mapping.job_queue_name
     "ASSIGN_THEMES_BATCH_JOB_DEFINITION" = module.batch_job_mapping.job_definition_name
-    "FIND_THEMES_BATCH_JOB_NAME"         = "${local.name}-find-themes-job"
-    "FIND_THEMES_BATCH_JOB_QUEUE"        = module.batch_job_sign_off.job_queue_name
-    "FIND_THEMES_BATCH_JOB_DEFINITION"   = module.batch_job_sign_off.job_definition_name
   }
 
   additional_policy_arns = { for idx, arn in [aws_iam_policy.ecs_exec_custom_policy.arn] : idx => arn }
@@ -122,16 +119,16 @@ module "frontend" {
   permissions_boundary_name    = "infra/i-dot-ai-${var.env}-${var.project_name}-perms-boundary-app"
 
   environment_variables = merge(local.base_env_vars, {
-    "PUBLIC_ENVIRONMENT"       = var.env
-    "PUBLIC_BACKEND_URL"       = "http://${aws_service_discovery_service.service_discovery_service.name}.${aws_service_discovery_private_dns_namespace.private_dns_namespace.name}:${local.backend_port}",
-    "BACKEND_URL"              = "http://${aws_service_discovery_service.service_discovery_service.name}.${aws_service_discovery_private_dns_namespace.private_dns_namespace.name}:${local.backend_port}",
-    "APP_NAME"                 = var.project_name
-    "EXECUTION_CONTEXT"        = "ecs"
-    "OTEL_SERVICE_NAME"        = "consult-frontend"
-    "DOCKER_BUILDER_CONTAINER" = "${var.project_name}-frontend",
-    "PUBLIC_LANGFUSE_URL"      = "https://core-langfuse.i.ai.gov.uk/",
-    "PUBLIC_HOMEPAGE_URL"      = "https://${local.host}",
-    "SENTRY_RELEASE"           = data.aws_ssm_parameter.image_tags["frontend"].value
+    "PUBLIC_ENVIRONMENT"           = var.env
+    "PUBLIC_BACKEND_URL"           = "http://${aws_service_discovery_service.service_discovery_service.name}.${aws_service_discovery_private_dns_namespace.private_dns_namespace.name}:${local.backend_port}",
+    "BACKEND_URL"                  = "http://${aws_service_discovery_service.service_discovery_service.name}.${aws_service_discovery_private_dns_namespace.private_dns_namespace.name}:${local.backend_port}",
+    "APP_NAME"                     = var.project_name
+    "EXECUTION_CONTEXT"            = "ecs"
+    "OTEL_SERVICE_NAME"            = "consult-frontend"
+    "DOCKER_BUILDER_CONTAINER"     = "${var.project_name}-frontend",
+    "PUBLIC_LANGFUSE_URL"          = "https://core-langfuse.i.ai.gov.uk/",
+    "PUBLIC_HOMEPAGE_URL"          = "https://${local.host}",
+    "SENTRY_RELEASE"               = data.aws_ssm_parameter.image_tags["frontend"].value
     "PUBLIC_DATA_SETUP_V2_ENABLED" = local.data_setup_v2_enabled
   })
 
@@ -180,10 +177,13 @@ module "worker" {
   aws_lb_arn                   = module.load_balancer.alb_arn
   ecs_cluster_id               = data.terraform_remote_state.platform.outputs.ecs_cluster_id
   ecs_cluster_name             = data.terraform_remote_state.platform.outputs.ecs_cluster_name
-  task_additional_iam_policies = local.additional_policy_arns
-  certificate_arn              = module.acm_certificate.arn
-  create_networking            = false
-  create_listener              = false
+  task_additional_iam_policies = merge(
+    local.additional_policy_arns,
+    { "worker-events" = aws_iam_policy.worker_eventbridge_policy.arn }
+  )
+  certificate_arn   = module.acm_certificate.arn
+  create_networking = false
+  create_listener   = false
 
   environment_variables = merge(local.base_env_vars, local.django_env_vars, {
     "APP_NAME"                 = var.project_name

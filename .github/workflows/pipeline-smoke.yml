@@ -6,7 +6,6 @@ on:
     paths:
       - "backend/**"
       - "pipeline-mapping/**"
-      - "pipeline-sign-off/**"
       - "pipeline-common/**"
       - "themefinder/**"
       - "pyproject.toml"
@@ -16,7 +15,6 @@ on:
     paths:
       - "backend/**"
       - "pipeline-mapping/**"
-      - "pipeline-sign-off/**"
       - "pipeline-common/**"
       - "themefinder/**"
       - "pyproject.toml"
@@ -42,20 +40,13 @@ jobs:
               -e LITELLM_CONSULT_OPENAI_API_KEY=x
               -e SLACK_WEBHOOK_URL=x
               pipeline-mapping:smoke --help
-          - service: pipeline-sign-off
-            smoke_run: >-
-              docker run --rm
-              -e LLM_GATEWAY_URL=x
-              -e LITELLM_CONSULT_OPENAI_API_KEY=x
-              -e SLACK_WEBHOOK_URL=x
-              pipeline-sign-off:smoke --help
           # backend has no --help entrypoint; importing the editable themefinder
           # member from the installed venv exercises the workspace resolution and
           # the runtime .pth pointing at /src/themefinder/src.
           - service: backend
             smoke_run: >-
               docker run --rm backend:smoke
-              venv/bin/python -c "import themefinder"
+              venv/bin/python -c "import themefinder; import data_pipeline.find_themes"
     steps:
       - uses: actions/checkout@v7
 

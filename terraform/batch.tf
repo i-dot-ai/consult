@@ -43,34 +43,3 @@ module "batch_job_mapping" {
     }
   ]
 }
-
-module "batch_job_sign_off" {
-  # checkov:skip=CKV_TF_1: We're using semantic versions instead of commit hash
-  # source                  = "../../i-ai-core-infrastructure/modules/batch/batch_job_definitons"
-  source                   = "git::https://github.com/i-dot-ai/i-dot-ai-core-terraform-modules.git//modules/infrastructure/batch-job-definitions?ref=v4.1.0-batch-job-definitions"
-  name                     = "${local.name}-sign-off"
-  image                    = local.batch_sign_off_image_url
-  compute_environment_arn  = [module.batch_compute.fargate_compute_environment_arn]
-  use_fargate              = true
-  iam_role_name            = "${local.name}-sign-off-role"
-  platform_capabilities    = ["FARGATE"]
-  task_memory_requirements = "4096"
-  env_vars = merge(local.base_env_vars, {
-    "SLACK_WEBHOOK_URL"        = data.aws_ssm_parameter.slack_webhook_url.value,
-    "EXECUTION_CONTEXT"        = "batch"
-    "APP_NAME"                 = "${var.project_name}-sign-off"
-    "DOCKER_BUILDER_CONTAINER" = "consult-sign-off"
-    "LLM_GATEWAY_URL"          = local.llm_gateway_url
-    "AWS_ACCOUNT_ID"           = data.aws_caller_identity.current.account_id
-    "SENTRY_DSN"               = var.backend_sentry_dsn
-    "ENVIRONMENT"              = terraform.workspace
-  })
-  additional_iam_policies = { "batch" : aws_iam_policy.ecs_exec_custom_policy.arn }
-  secrets = [
-    for k, v in aws_ssm_parameter.env_secrets : {
-      name      = regex("([^/]+$)", v.arn)[0],
-      valueFrom = v.arn
-    }
-  ]
-}
-

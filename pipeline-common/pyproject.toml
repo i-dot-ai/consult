@@ -1,7 +1,7 @@
 [project]
 name = "pipeline-common"
 version = "0.1.0"
-description = "Shared AWS Batch job bootstrap (StructuredLogger + Sentry) for pipeline-mapping and pipeline-sign-off."
+description = "AWS Batch job bootstrap (StructuredLogger + Sentry) for pipeline-mapping."
 requires-python = ">=3.12,<3.13"
 dependencies = [
     "i-dot-ai-utilities[otel]>=0.7.0rc1",

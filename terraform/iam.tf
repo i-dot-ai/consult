@@ -67,6 +67,20 @@ resource "aws_iam_policy" "ecs_exec_custom_policy" {
   policy      = data.aws_iam_policy_document.ecs_exec_custom_policy.json
 }
 
+data "aws_iam_policy_document" "worker_eventbridge_policy" {
+  statement {
+    effect    = "Allow"
+    actions   = ["events:PutEvents"]
+    resources = ["arn:aws:events:${data.aws_region.current.id}:${data.aws_caller_identity.current.account_id}:event-bus/default"]
+  }
+}
+
+resource "aws_iam_policy" "worker_eventbridge_policy" {
+  name        = "${local.name}-worker-eventbridge"
+  description = "Allow the RQ worker to publish job lifecycle events"
+  policy      = data.aws_iam_policy_document.worker_eventbridge_policy.json
+}
+
 data "aws_iam_policy_document" "lambda_exec_custom_policy" {
   statement {
     effect = "Allow"
