@@ -302,10 +302,16 @@ class ConsultationViewSet(
             try:
                 start_find_themes.delay(consultation.id, request.user.id)
             except Exception:
-                Consultation.objects.filter(
+                consultation_rerolled = Consultation.objects.filter(
                     pk=consultation.pk, stage=Consultation.Stage.FINDING_THEMES
                 ).update(stage=Consultation.Stage.SETUP)
                 consultation.stage = Consultation.Stage.SETUP
+                if not consultation_rerolled:
+                    logger.exception(
+                        "Failed to roll the stage back after a failed enqueue for "
+                        "consultation '{consultation_id}'",
+                        consultation_id=consultation.id,
+                    )
                 raise
 
             return Response(
