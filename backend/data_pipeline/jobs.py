@@ -16,10 +16,7 @@ from rq_context import job
 logger = settings.LOGGER
 
 
-START_FIND_THEMES_TIMEOUT_SECONDS = 900
-
-
-@job("default", timeout=START_FIND_THEMES_TIMEOUT_SECONDS)  # 15 minutes
+@job("default", timeout=900)  # 15 minutes
 def start_find_themes(
     consultation_id: UUID,
     user_id: int,
