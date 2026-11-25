@@ -33,10 +33,9 @@ from consultations.api_v2.serializers import (
     ConsultationUserAssignmentSerializerV2,
 )
 from consultations.models import Consultation, FileUpload
-from data_pipeline import batch
+from data_pipeline.jobs import start_find_themes
 from data_pipeline.sync.consultation_inputs import (
     assign_consultation_code,
-    export_consultation_inputs_to_s3,
     sync_has_free_text_with_type,
 )
 from ingest.consultation_file import read_consultation_file
@@ -283,15 +282,8 @@ class ConsultationViewSet(
                 )
 
             consultation_code = assign_consultation_code(consultation)
-            question_parts = export_consultation_inputs_to_s3(consultation, consultation_code)
-            logger.info(
-                "Mirrored {question_parts} question parts to s3 for consultation "
-                "'{consultation_code}' before find-themes kickoff",
-                question_parts=question_parts,
-                consultation_code=consultation_code,
-            )
 
-            # Ensure that S3 files exist before batch kickoff
+            # Atomic stage guard: only transition from SETUP -> FINDING_THEMES once.
             transitions = Consultation.objects.filter(
                 pk=consultation.pk, stage=Consultation.Stage.SETUP
             ).update(stage=Consultation.Stage.FINDING_THEMES)
@@ -303,39 +295,32 @@ class ConsultationViewSet(
                     },
                     status=status.HTTP_400_BAD_REQUEST,
                 )
-            consultation.stage = Consultation.Stage.FINDING_THEMES
-
             try:
-                batch.submit_job(
-                    job_type="FIND_THEMES",
-                    consultation_code=consultation_code,
-                    consultation_name=consultation.title,
-                    user_id=request.user.id,
-                    model_name=consultation.model_name,
-                )
-            except Exception:
-                consultation_rerolled = Consultation.objects.filter(
-                    pk=consultation.pk, stage=Consultation.Stage.FINDING_THEMES
-                ).update(stage=Consultation.Stage.SETUP)
-                consultation.stage = Consultation.Stage.SETUP
-                if not consultation_rerolled:
+                start_find_themes.delay(consultation.id, request.user.id)
+            except Exception as enqueue_error:
+                try:
+                    consultation_rerolled = Consultation.objects.filter(
+                        pk=consultation.pk, stage=Consultation.Stage.FINDING_THEMES
+                    ).update(stage=Consultation.Stage.SETUP)
+                    if not consultation_rerolled:
+                        logger.error(
+                            "Stage rollback skipped after enqueue failure for consultation "
+                            "'{consultation_id}' (stage already changed)",
+                            consultation_id=consultation.id,
+                        )
+                except Exception:
                     logger.exception(
-                        "Failed to roll the stage back after a failed Batch "
-                        "submission for consultation '{consultation_id}'",
+                        "Failed to roll the stage back after enqueue failure for consultation "
+                        "'{consultation_id}'",
                         consultation_id=consultation.id,
                     )
-                raise
-
-            logger.info(
-                "Find Themes job submitted for consultation {consultation_id} by user {user_id}",
-                consultation_id=consultation.id,
-                user_id=request.user.id,
-            )
+                # Re-raise so the outer generic handler returns a 500 (and doesn't trip the APIException passthrough).
+                raise enqueue_error  # noqa: TRY201
 
             return Response(
                 {
-                    "message": f"Find Themes job started for consultation '{consultation.title}'",
-                    "consultation_id": consultation.id,
+                    "message": f"Find Themes job queued for consultation '{consultation.title}'",
+                    "consultation_id": str(consultation.id),
                     "consultation_code": consultation_code,
                 },
                 status=status.HTTP_202_ACCEPTED,
