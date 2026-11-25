@@ -33,10 +33,9 @@ from consultations.api_v2.serializers import (
     ConsultationUserAssignmentSerializerV2,
 )
 from consultations.models import Consultation, FileUpload
-from data_pipeline import batch
+from data_pipeline.jobs import start_find_themes
 from data_pipeline.sync.consultation_inputs import (
     assign_consultation_code,
-    export_consultation_inputs_to_s3,
     sync_has_free_text_with_type,
 )
 from ingest.consultation_file import read_consultation_file
@@ -283,13 +282,8 @@ class ConsultationViewSet(
                 )
 
             consultation_code = assign_consultation_code(consultation)
-            question_parts = export_consultation_inputs_to_s3(consultation, consultation_code)
-            logger.info(
-                "Mirrored {question_parts} question parts to s3 for consultation "
-                "'{consultation_code}' before find-themes kickoff",
-                question_parts=question_parts,
-                consultation_code=consultation_code,
-            )
+            consultation.code = consultation_code
+            consultation.save(update_fields=["code"])
 
             # Ensure that S3 files exist before batch kickoff
             transitions = Consultation.objects.filter(
@@ -306,31 +300,13 @@ class ConsultationViewSet(
             consultation.stage = Consultation.Stage.FINDING_THEMES
 
             try:
-                batch.submit_job(
-                    job_type="FIND_THEMES",
-                    consultation_code=consultation_code,
-                    consultation_name=consultation.title,
-                    user_id=request.user.id,
-                    model_name=consultation.model_name,
-                )
+                start_find_themes.delay(consultation.id, request.user.id)
             except Exception:
-                consultation_rerolled = Consultation.objects.filter(
+                Consultation.objects.filter(
                     pk=consultation.pk, stage=Consultation.Stage.FINDING_THEMES
                 ).update(stage=Consultation.Stage.SETUP)
                 consultation.stage = Consultation.Stage.SETUP
-                if not consultation_rerolled:
-                    logger.exception(
-                        "Failed to roll the stage back after a failed Batch "
-                        "submission for consultation '{consultation_id}'",
-                        consultation_id=consultation.id,
-                    )
                 raise
-
-            logger.info(
-                "Find Themes job submitted for consultation {consultation_id} by user {user_id}",
-                consultation_id=consultation.id,
-                user_id=request.user.id,
-            )
 
             return Response(
                 {

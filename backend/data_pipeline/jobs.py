@@ -15,6 +15,58 @@ logger = settings.LOGGER
 DEFAULT_TIMEOUT_SECONDS = 3_600
 
 
+@job("default", timeout=14_400)  # 4 hours
+def start_find_themes(
+    consultation_id: UUID,
+    user_id: int,
+) -> str:
+    """Export consultation inputs to S3 and submit the find-themes Batch job."""
+    from consultations.models import Consultation
+    from data_pipeline import batch
+    from data_pipeline.sync.consultation_inputs import export_consultation_inputs_to_s3
+
+    consultation = Consultation.objects.get(pk=consultation_id)
+    logger.set_context_field("consultation_id", str(consultation.id))
+
+    consultation_code = consultation.code
+    question_parts = export_consultation_inputs_to_s3(consultation, consultation_code)
+    logger.info(
+        "Mirrored {question_parts} question parts to s3 for consultation '{consultation_code}' "
+        "before find-themes kickoff",
+        question_parts=question_parts,
+        consultation_code=consultation_code,
+    )
+
+    try:
+        batch.submit_job(
+            job_type="FIND_THEMES",
+            consultation_code=consultation_code,
+            consultation_name=consultation.title,
+            user_id=user_id,
+            model_name=consultation.model_name,
+        )
+    except Exception:
+        consultation_rerolled = Consultation.objects.filter(
+            pk=consultation.pk, stage=Consultation.Stage.FINDING_THEMES
+        ).update(stage=Consultation.Stage.SETUP)
+        consultation.stage = Consultation.Stage.SETUP
+        if not consultation_rerolled:
+            logger.exception(
+                "Failed to roll the stage back after a failed Batch submission for "
+                "consultation '{consultation_id}'",
+                consultation_id=consultation.id,
+            )
+        raise
+
+    logger.info(
+        "Find Themes job submitted for consultation {consultation_id} by user {user_id}",
+        consultation_id=consultation.id,
+        user_id=user_id,
+    )
+
+    return consultation_code
+
+
 @job("default", timeout=86400)  # 1 day
 def import_consultation(
     consultation_name: str,
