@@ -20,13 +20,28 @@ class TestPrepareEnvironment:
     @pytest.mark.parametrize(
         "environment", ["prod", "preprod", "test", "", "unknown", "staging", "local"]
     )
-    def test_does_not_reset_on_non_dev(self, settings, environment):
+    def test_does_not_reset_on_non_dev(self, settings, monkeypatch, environment):
         settings.ENVIRONMENT = environment
+        # HostingEnvironment reads the env var, not settings
+        monkeypatch.setenv("ENVIRONMENT", environment)
 
         Consultation.objects.create(title="Should survive", code="KEEP_ME")
         call_command("prepare_environment")
 
         assert Consultation.objects.filter(code="KEEP_ME").exists()
+        # Existing data means no dummy data is added on top
+        assert Consultation.objects.count() == 1
+
+    @pytest.mark.django_db
+    @pytest.mark.parametrize("environment", ["test", "local"])
+    @patch("factories.embed_text", return_value=[0.0] * 3072)
+    def test_seeds_empty_db_on_local_and_test(self, _mock_embed, monkeypatch, environment):
+        monkeypatch.setenv("ENVIRONMENT", environment)
+
+        call_command("prepare_environment")
+
+        assert Consultation.objects.filter(code="dummy-setup").exists()
+        assert User.objects.filter(email="admin@example.com", is_staff=True).exists()
 
     @pytest.mark.django_db(transaction=True)
     @mock_aws
@@ -34,6 +49,7 @@ class TestPrepareEnvironment:
     @patch("consultations.management.commands.prepare_environment.HostingEnvironment")
     @patch("factories.embed_text", return_value=[0.0] * 3072)
     def test_resets_and_seeds_db(self, _mock_embed, mock_env, mock_s3_env, settings):
+        mock_env.is_development_environment.return_value = True
         mock_env.is_dev.return_value = True
         mock_s3_env.is_dev.return_value = True
 
@@ -79,6 +95,7 @@ class TestPrepareEnvironment:
     @patch("consultations.management.commands.prepare_environment.HostingEnvironment")
     @patch("factories.embed_text", return_value=[0.0] * 3072)
     def test_seeds_s3(self, _mock_embed, mock_env, mock_s3_env, settings):
+        mock_env.is_development_environment.return_value = True
         mock_env.is_dev.return_value = True
         mock_s3_env.is_dev.return_value = True
 
