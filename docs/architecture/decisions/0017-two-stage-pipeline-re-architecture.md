@@ -20,11 +20,9 @@ on hand. The current jobs pipeline was not built for that:
 
 The target for launch is four jobs running at once, with every failure visible and retryable.
 
-The October 2026 spike
-([Consult data pipeline options and recommendation](https://incubatorforartificialintelligence.atlassian.net/wiki/spaces/Consult/pages/345505800/Consult+data+pipeline+options+and+recommendation+Oct+2026))
-compared five options. Two conclusions from it frame this decision:
+The October 2026 spike into pipeline options compared five options. Two conclusions from it frame this decision:
 
-- Patching the current pipeline is ruled out, because it will not scale as more departments join.
+- Patching the current pipeline as a final solution is ruled out, because it will not scale as more departments join.
 - Temporal is where we want to end up, but moving the whole pipeline to it in one step carries too much
   time risk for the January roll-out, while we also have to keep a live service running.
 
@@ -65,8 +63,10 @@ the jobs at the same time.
 5. **Configure Temporal for our expected load**, so that small consultations are not blocked by large ones and
    the worker autoscales on queue depth.
 
-An earlier version of the stage 2 plan rebuilt the workers on SQS with dead-letter queues. That has been
-dropped in favour of going to Temporal directly.
+We considered rebuilding the workers on SQS with dead-letter queues in this stage, and pushing the move to
+Temporal to a later milestone or project. We dropped this in favour of going to Temporal directly. Temporal is
+where we want to end up, and an SQS implementation would be a lot of work that is then thrown away without
+bringing us any closer to it. The changes in stage 1 reduce the gap to Temporal without much throwaway work.
 
 ### Out of scope
 
@@ -88,8 +88,8 @@ Job visibility for users and engineers is the third milestone of the project and
 
 ### Negative
 
-1. The jobs are handled twice: once to move them onto the worker and break them down, and again to move them
-   to Temporal.
+1. The batch jobs are handled twice: once to move them onto the worker and break them down, and again to move them
+   to Temporal. However, the existing worker jobs are only changed once.
 2. Between the two stages we still rely on RQ, which does not give us durable execution or automatic retries.
    A failed chunk is cheaper to re-run, but may still need an engineer.
 3. During stage 2 there are two implementations of each job to keep in step until the cut-over.
