@@ -13,16 +13,12 @@ def find_themes_url(consultation):
 
 
 @pytest.mark.django_db
-def test_v2_find_themes_assigns_code_and_mirrors_inputs(client, consultation, non_staff_user_token):
+def test_v2_find_themes_assigns_code_and_enqueues_job(client, consultation, non_staff_user_token):
     consultation.code = ""
     consultation.save(update_fields=["code"])
     QuestionFactory(consultation=consultation, number=1, type="open")
 
-    with (
-        patch("consultations.api_v2.views.consultation.export_consultation_inputs_to_s3") as export,
-        patch("consultations.api_v2.views.consultation.batch.submit_job") as submit_job,
-    ):
-        export.return_value = 1
+    with patch("consultations.api_v2.views.consultation.start_find_themes.delay") as delay:
         response = client.post(
             find_themes_url(consultation),
             headers={"Authorization": f"Bearer {non_staff_user_token}"},
@@ -31,9 +27,7 @@ def test_v2_find_themes_assigns_code_and_mirrors_inputs(client, consultation, no
     assert response.status_code == 202
     consultation.refresh_from_db()
     assert consultation.code  # a code was assigned and persisted
-    export.assert_called_once_with(consultation, consultation.code)
-    submit_job.assert_called_once()
-    assert submit_job.call_args.kwargs["consultation_code"] == consultation.code
+    delay.assert_called_once_with(consultation.id, response.wsgi_request.user.id)
     assert response.json()["consultation_code"] == consultation.code
     assert consultation.stage == Consultation.Stage.FINDING_THEMES
 
@@ -44,11 +38,9 @@ def test_v2_find_themes_reuses_an_existing_code(client, consultation, non_staff_
 
     with (
         patch("consultations.api_v2.views.consultation.assign_consultation_code") as assign,
-        patch("consultations.api_v2.views.consultation.export_consultation_inputs_to_s3") as export,
-        patch("consultations.api_v2.views.consultation.batch.submit_job") as submit_job,
+        patch("consultations.api_v2.views.consultation.start_find_themes.delay") as delay,
     ):
         assign.return_value = consultation.code
-        export.return_value = 1
         response = client.post(
             find_themes_url(consultation),
             headers={"Authorization": f"Bearer {non_staff_user_token}"},
@@ -56,57 +48,28 @@ def test_v2_find_themes_reuses_an_existing_code(client, consultation, non_staff_
 
     assert response.status_code == 202
     assert assign.call_args.args[0] == consultation
-    export.assert_called_once_with(consultation, "my-first-consultation")
-    submit_job.assert_called_once()
-    assert submit_job.call_args.kwargs["consultation_code"] == "my-first-consultation"
+    delay.assert_called_once_with(consultation.id, consultation.users.first().id)
 
 
 @pytest.mark.django_db
-def test_v2_find_themes_does_not_submit_the_batch_when_mirroring_fails(
+def test_v2_find_themes_rolls_stage_back_when_enqueue_fails(
     client, consultation, non_staff_user_token
 ):
     QuestionFactory(consultation=consultation, number=1, type="open")
 
-    with (
-        patch(
-            "consultations.api_v2.views.consultation.export_consultation_inputs_to_s3",
-            side_effect=RuntimeError("S3 unavailable"),
-        ),
-        patch("consultations.api_v2.views.consultation.batch.submit_job") as submit_job,
-    ):
+    with patch(
+        "consultations.api_v2.views.consultation.start_find_themes.delay",
+        side_effect=RuntimeError("enqueue failed"),
+    ) as delay:
         response = client.post(
             find_themes_url(consultation),
             headers={"Authorization": f"Bearer {non_staff_user_token}"},
         )
 
     assert response.status_code == 500
-    submit_job.assert_not_called()
+    delay.assert_called_once()
     consultation.refresh_from_db()
     assert consultation.stage == Consultation.Stage.SETUP
-
-
-@pytest.mark.django_db
-def test_v2_find_themes_rolls_the_stage_back_when_the_submission_fails(
-    client, consultation, non_staff_user_token
-):
-    QuestionFactory(consultation=consultation, number=1, type="open")
-
-    with (
-        patch("consultations.api_v2.views.consultation.export_consultation_inputs_to_s3") as export,
-        patch(
-            "consultations.api_v2.views.consultation.batch.submit_job", side_effect=RuntimeError
-        ) as submit_job,
-    ):
-        export.return_value = 1
-        response = client.post(
-            find_themes_url(consultation),
-            headers={"Authorization": f"Bearer {non_staff_user_token}"},
-        )
-
-    assert response.status_code == 500
-    submit_job.assert_called_once()
-    consultation.refresh_from_db()
-    assert consultation.stage == Consultation.Stage.SETUP  # retryable
 
 
 @pytest.mark.django_db
@@ -115,7 +78,7 @@ def test_v2_find_themes_does_not_mask_drf_permission_errors_as_500(client, non_s
     before the action runs - that 403 must survive, as must any Http404 or
     APIException raised inside the action body (no 500 masking)."""
 
-    with patch("consultations.api_v2.views.consultation.batch.submit_job") as submit_job:
+    with patch("consultations.api_v2.views.consultation.start_find_themes.delay") as delay:
         response = client.post(
             reverse(
                 "consultation-v2-find-themes",
@@ -125,7 +88,7 @@ def test_v2_find_themes_does_not_mask_drf_permission_errors_as_500(client, non_s
         )
 
     assert response.status_code == 403
-    submit_job.assert_not_called()
+    delay.assert_not_called()
 
 
 @pytest.mark.django_db
@@ -134,10 +97,10 @@ def test_v2_find_themes_lets_api_exceptions_surface(client, consultation, non_st
 
     with (
         patch(
-            "consultations.api_v2.views.consultation.export_consultation_inputs_to_s3",
+            "consultations.api_v2.views.consultation.sync_has_free_text_with_type",
             side_effect=serializers.ValidationError("bad consultation data"),
         ),
-        patch("consultations.api_v2.views.consultation.batch.submit_job") as submit_job,
+        patch("consultations.api_v2.views.consultation.start_find_themes.delay") as delay,
     ):
         response = client.post(
             find_themes_url(consultation),
@@ -146,7 +109,7 @@ def test_v2_find_themes_lets_api_exceptions_surface(client, consultation, non_st
 
     assert response.status_code == 400
     assert "bad consultation data" in response.json()
-    submit_job.assert_not_called()
+    delay.assert_not_called()
 
 
 @pytest.mark.django_db
@@ -160,8 +123,7 @@ def test_v2_find_themes_syncs_flags_before_the_guard(client, consultation, non_s
 
     with (
         patch("consultations.api_v2.views.consultation.assign_consultation_code") as assign,
-        patch("consultations.api_v2.views.consultation.export_consultation_inputs_to_s3") as export,
-        patch("consultations.api_v2.views.consultation.batch.submit_job") as submit_job,
+        patch("consultations.api_v2.views.consultation.start_find_themes.delay") as delay,
     ):
         response = client.post(
             find_themes_url(consultation),
@@ -173,8 +135,7 @@ def test_v2_find_themes_syncs_flags_before_the_guard(client, consultation, non_s
     closed_question.refresh_from_db()
     assert closed_question.has_free_text is False
     assign.assert_not_called()
-    export.assert_not_called()
-    submit_job.assert_not_called()
+    delay.assert_not_called()
 
 
 @pytest.mark.django_db
@@ -184,11 +145,9 @@ def test_v2_find_themes_passes_the_guard_after_syncing(client, consultation, non
 
     with (
         patch("consultations.api_v2.views.consultation.assign_consultation_code") as assign,
-        patch("consultations.api_v2.views.consultation.export_consultation_inputs_to_s3") as export,
-        patch("consultations.api_v2.views.consultation.batch.submit_job") as submit_job,
+        patch("consultations.api_v2.views.consultation.start_find_themes.delay") as delay,
     ):
         assign.return_value = consultation.code
-        export.return_value = 1
         response = client.post(
             find_themes_url(consultation),
             headers={"Authorization": f"Bearer {non_staff_user_token}"},
@@ -197,8 +156,7 @@ def test_v2_find_themes_passes_the_guard_after_syncing(client, consultation, non
     assert response.status_code == 202
     question = Question.objects.get(consultation=consultation)
     assert question.has_free_text is True
-    export.assert_called_once_with(consultation, "my-first-consultation")
-    submit_job.assert_called_once()
+    delay.assert_called_once()
 
 
 @pytest.mark.django_db
@@ -210,8 +168,7 @@ def test_v2_find_themes_rejects_consultations_not_in_setup_stage(
 
     with (
         patch("consultations.api_v2.views.consultation.assign_consultation_code") as assign,
-        patch("consultations.api_v2.views.consultation.export_consultation_inputs_to_s3") as export,
-        patch("consultations.api_v2.views.consultation.batch.submit_job") as submit_job,
+        patch("consultations.api_v2.views.consultation.start_find_themes.delay") as delay,
     ):
         response = client.post(
             find_themes_url(consultation),
@@ -222,5 +179,4 @@ def test_v2_find_themes_rejects_consultations_not_in_setup_stage(
     assert "not in setup stage" in response.json()["error"]
     assert consultation.title in response.json()["error"]  # blank code must not leak into messages
     assign.assert_not_called()
-    export.assert_not_called()
-    submit_job.assert_not_called()
+    delay.assert_not_called()

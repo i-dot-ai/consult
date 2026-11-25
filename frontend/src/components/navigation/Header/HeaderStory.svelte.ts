@@ -1,4 +1,4 @@
-import ConsultIcon from "../../svg/ConsultIcon.svelte";
+import ConsultLogo from "../../svg/ConsultLogo.svelte";
 import Header from "./Header.svelte";
 
 import { testData } from "./testData";
@@ -15,9 +15,10 @@ export default {
       value: "AI safety and governance framework 2024",
       type: "text",
     },
-    { name: "icon", value: ConsultIcon },
+    { name: "icon", value: ConsultLogo },
     { name: "pathParts", value: ["Dashboard"], type: "json" },
     { name: "navItems", value: testData.navItems, type: "json" },
+    { name: "showTitle", value: false, type: "bool" },
   ],
   stories: [
     {
@@ -29,10 +30,11 @@ export default {
       props: {
         title: "Consult",
         subtitle: "AI safety and governance framework 2024",
-        icon: ConsultIcon,
+        icon: ConsultLogo,
         pathParts: ["Dashboard"],
         navItems: testData.navItems,
         endItems: TestEndItems,
+        showTitle: false,
       },
     },
   ],
