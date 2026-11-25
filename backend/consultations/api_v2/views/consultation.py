@@ -297,21 +297,21 @@ class ConsultationViewSet(
                 )
             try:
                 start_find_themes.delay(consultation.id, request.user.id)
-            except Exception as enqueue_error:
+            except RuntimeError as enqueue_error:
                 try:
                     consultation_rerolled = Consultation.objects.filter(
                         pk=consultation.pk, stage=Consultation.Stage.FINDING_THEMES
                     ).update(stage=Consultation.Stage.SETUP)
                     if not consultation_rerolled:
-                        logger.exception(
-                            "Failed to roll the stage back after a failed enqueue for "
-                            "consultation '{consultation_id}'",
+                        logger.error(
+                            "Stage rollback skipped after enqueue failure for consultation "
+                            "'{consultation_id}' (stage already changed)",
                             consultation_id=consultation.id,
                         )
                 except Exception:
                     logger.exception(
-                        "Failed to roll the stage back after a failed enqueue for "
-                        "consultation '{consultation_id}'",
+                        "Failed to roll the stage back after enqueue failure for consultation "
+                        "'{consultation_id}'",
                         consultation_id=consultation.id,
                     )
                 # Re-raise so the outer generic handler returns a 500 (and doesn't trip the APIException passthrough).
