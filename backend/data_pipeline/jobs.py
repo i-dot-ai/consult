@@ -34,6 +34,14 @@ def start_find_themes(
             consultation_id=consultation_id,
         )
         return ""
+
+    if consultation.stage != Consultation.Stage.FINDING_THEMES:
+        logger.warning(
+            "Consultation {consultation_id} not in FINDING_THEMES; skipping find-themes",
+            consultation_id=consultation_id,
+            stage=consultation.stage,
+        )
+        return ""
     logger.set_context_field("consultation_id", str(consultation.id))
 
     consultation_code = consultation.code

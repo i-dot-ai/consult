@@ -48,7 +48,13 @@ def test_start_find_themes_happy_path_returns_code_and_keeps_stage():
 
     assert result == consultation.code
     export.assert_called_once_with(consultation, consultation.code)
-    submit.assert_called_once()
+    submit.assert_called_once_with(
+        job_type="FIND_THEMES",
+        consultation_code=consultation.code,
+        consultation_name=consultation.title,
+        user_id=1,
+        model_name=consultation.model_name,
+    )
     consultation.refresh_from_db()
     assert consultation.stage == Consultation.Stage.FINDING_THEMES
 
