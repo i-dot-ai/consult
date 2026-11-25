@@ -12,11 +12,13 @@ exports[`Header > matches snapshot 1`] = `
         class="flex items-center gap-2"
       >
         <a
+          aria-label="Consult"
           class="block flex items-center gap-2"
           href="/"
         >
           <div
-            class="flex justify-center items-center w-8 h-8"
+            aria-hidden="true"
+            class="flex justify-center items-center"
           >
             <svg
               class="block size-full"
@@ -84,11 +86,12 @@ exports[`Header > matches snapshot 1`] = `
             <!---->
           </div>
            
-          <h1
+          <span
             class="font-medium"
           >
             Consult
-          </h1>
+          </span>
+          <!---->
         </a>
          
         <div

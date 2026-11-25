@@ -5,9 +5,9 @@ import pytest
 from consultations.models import Consultation
 from data_pipeline.jobs import (
     complete_find_themes,
-    find_themes,
     import_candidate_themes,
     reset_find_themes_after_worker_failure,
+    start_find_themes,
 )
 
 
@@ -18,14 +18,14 @@ def test_find_themes_job_runs_pipeline_and_starts_candidate_mapping(consultation
     consultation.save(update_fields=["stage", "running_job"])
 
     with (
-        patch("data_pipeline.find_themes.find_themes", return_value="2026-11-23") as run,
-        patch("data_pipeline.sync.consultation_inputs.export_consultation_inputs_to_s3") as export,
-        patch("data_pipeline.sync.candidate_themes.import_candidate_themes_from_s3") as import_,
-        patch("data_pipeline.sync.candidate_themes.export_candidate_themes_to_s3") as export_themes,
+        patch("data_pipeline.jobs.run_find_themes", return_value="2026-11-23") as run,
+        patch("data_pipeline.jobs.export_consultation_inputs_to_s3") as export,
+        patch("data_pipeline.jobs.import_candidate_themes_from_s3") as import_,
+        patch("data_pipeline.jobs.export_candidate_themes_to_s3") as export_themes,
         patch("data_pipeline.batch.submit_job") as submit,
-        patch("data_pipeline.events.publish_find_themes_event") as publish,
+        patch("data_pipeline.jobs.publish_find_themes_event") as publish,
     ):
-        find_themes(consultation.id, 123)
+        start_find_themes(consultation.id, 123)
 
     export.assert_called_once()
     run.assert_called_once_with(consultation.code, consultation.model_name)
@@ -45,15 +45,15 @@ def test_mapping_submission_failure_does_not_discard_discovered_themes(consultat
     consultation.save(update_fields=["stage", "running_job"])
 
     with (
-        patch("data_pipeline.find_themes.find_themes", return_value="2026-11-23"),
-        patch("data_pipeline.sync.consultation_inputs.export_consultation_inputs_to_s3"),
-        patch("data_pipeline.sync.candidate_themes.import_candidate_themes_from_s3"),
-        patch("data_pipeline.sync.candidate_themes.export_candidate_themes_to_s3"),
+        patch("data_pipeline.jobs.run_find_themes", return_value="2026-11-23"),
+        patch("data_pipeline.jobs.export_consultation_inputs_to_s3"),
+        patch("data_pipeline.jobs.import_candidate_themes_from_s3"),
+        patch("data_pipeline.jobs.export_candidate_themes_to_s3"),
         patch("data_pipeline.batch.submit_job", side_effect=RuntimeError("Batch unavailable")),
-        patch("data_pipeline.events.publish_find_themes_event"),
+        patch("data_pipeline.jobs.publish_find_themes_event"),
         pytest.raises(RuntimeError, match="Batch unavailable"),
     ):
-        find_themes(consultation.id, 123)
+        start_find_themes(consultation.id, 123)
 
     consultation.refresh_from_db()
     assert consultation.stage == Consultation.Stage.FINALISING_THEMES
@@ -68,13 +68,13 @@ def test_find_themes_job_is_retryable_after_failure(consultation):
 
     with (
         patch(
-            "data_pipeline.sync.consultation_inputs.export_consultation_inputs_to_s3",
+            "data_pipeline.jobs.export_consultation_inputs_to_s3",
             side_effect=RuntimeError("S3 unavailable"),
         ),
-        patch("data_pipeline.events.publish_find_themes_event") as publish,
+        patch("data_pipeline.jobs.publish_find_themes_event") as publish,
         pytest.raises(RuntimeError, match="S3 unavailable"),
     ):
-        find_themes(consultation.id, 123)
+        start_find_themes(consultation.id, 123)
 
     consultation.refresh_from_db()
     assert consultation.stage == Consultation.Stage.SETUP
@@ -103,8 +103,8 @@ def test_complete_find_themes_owns_import_and_mapping(consultation):
     consultation.save(update_fields=["stage", "running_job"])
 
     with (
-        patch("data_pipeline.sync.candidate_themes.import_candidate_themes_from_s3") as import_,
-        patch("data_pipeline.sync.candidate_themes.export_candidate_themes_to_s3") as export,
+        patch("data_pipeline.jobs.import_candidate_themes_from_s3") as import_,
+        patch("data_pipeline.jobs.export_candidate_themes_to_s3") as export,
         patch("data_pipeline.batch.submit_job") as submit,
     ):
         complete_find_themes(

@@ -178,7 +178,12 @@ class QuestionSetupSerializer(serializers.ModelSerializer):
     closed_question = serializers.PrimaryKeyRelatedField(
         queryset=Question.objects.all(), allow_null=True, required=False
     )
-    response_count = serializers.IntegerField(read_only=True)
+    response_count = serializers.SerializerMethodField()
+
+    def get_response_count(self, obj) -> int:
+        if obj.has_multiple_choice and not obj.has_free_text:
+            return obj.multi_choice_response_count
+        return obj.free_text_response_count
 
     class Meta:
         model = Question

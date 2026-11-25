@@ -14,4 +14,5 @@ export interface Props {
   navItems?: NavItem[];
   icon?: Component;
   endItems?: Snippet;
+  showTitle?: boolean;
 }

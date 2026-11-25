@@ -7,9 +7,9 @@
   import Button from "../../inputs/Button/Button.svelte";
   import Breadcrumbs from "../Breadcrumbs/Breadcrumbs.svelte";
   import Header from "../Header/Header.svelte";
-  import ConsultIcon from "../../svg/ConsultIcon.svelte";
   import ProfileButton from "../ProfileButton/ProfileButton.svelte";
   import LocalUserSwitcher from "../LocalUserSwitcher/LocalUserSwitcher.svelte";
+  import ConsultLogo from "../../svg/ConsultLogo.svelte";
 
   export interface Props {
     subtitle?: string;
@@ -44,8 +44,9 @@
 
 <Header
   title="Consult"
+  showTitle={false}
   {subtitle}
-  icon={ConsultIcon}
+  icon={ConsultLogo}
   pathParts={path}
   navItems={[
     {
