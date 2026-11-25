@@ -220,6 +220,25 @@ class Question(UUIDPrimaryKeyModel, TimeStampedModel):
         return self.type in (self.QuestionType.CLOSED, self.QuestionType.DEMOGRAPHIC)
 
     @property
+    def answers_question_id(self) -> uuid.UUID | None:
+        """The question whose Response rows hold the selectable answers: a closed or
+        demographic question holds its own, an open question defers to its closed sibling."""
+        if self.is_chartable:
+            return self.id
+        if self.type == self.QuestionType.OPEN:
+            return self.closed_question_id
+        return None
+
+    @property
+    def answers_question(self) -> "Question | None":
+        """Reads the closed_question FK for an open question, so callers looping over
+        questions want select_related("closed_question"); answers_question_id is free."""
+        answers_question_id = self.answers_question_id
+        if answers_question_id is None:
+            return None
+        return self if answers_question_id == self.id else self.closed_question
+
+    @property
     def proportion_of_audited_answers(self) -> float:
         """Calculate proportion of human-reviewed responses for free text questions"""
         if not self.has_free_text:
