@@ -13,7 +13,7 @@ def find_themes_url(consultation):
 
 
 @pytest.mark.django_db
-def test_v2_find_themes_assigns_code_and_mirrors_inputs(client, consultation, non_staff_user_token):
+def test_v2_find_themes_assigns_code_and_enqueues_job(client, consultation, non_staff_user_token):
     consultation.code = ""
     consultation.save(update_fields=["code"])
     QuestionFactory(consultation=consultation, number=1, type="open")
@@ -27,7 +27,7 @@ def test_v2_find_themes_assigns_code_and_mirrors_inputs(client, consultation, no
     assert response.status_code == 202
     consultation.refresh_from_db()
     assert consultation.code  # a code was assigned and persisted
-    delay.assert_called_once_with(consultation.id, consultation.users.first().id)
+    delay.assert_called_once_with(consultation.id, response.wsgi_request.user.id)
     assert response.json()["consultation_code"] == consultation.code
     assert consultation.stage == Consultation.Stage.FINDING_THEMES
 

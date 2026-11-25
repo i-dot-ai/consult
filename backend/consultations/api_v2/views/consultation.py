@@ -309,7 +309,7 @@ class ConsultationViewSet(
                         "consultation '{consultation_id}'",
                         consultation_id=consultation.id,
                     )
-                # If the rollback itself fails (e.g. DB unavailable), the outer handler logs that error.
+                # If the rollback update itself fails (e.g. DB unavailable), it will replace the original enqueue error.
                 raise
 
             return Response(
