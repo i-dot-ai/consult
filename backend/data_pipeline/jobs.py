@@ -8,6 +8,9 @@ from uuid import UUID
 
 from django.conf import settings
 
+from consultations.models import Consultation
+from data_pipeline import batch
+from data_pipeline.sync.consultation_inputs import export_consultation_inputs_to_s3
 from rq_context import job
 
 logger = settings.LOGGER
@@ -21,10 +24,6 @@ def start_find_themes(
     user_id: int,
 ) -> str:
     """Export consultation inputs to S3 and submit the find-themes Batch job."""
-    from consultations.models import Consultation
-    from data_pipeline import batch
-    from data_pipeline.sync.consultation_inputs import export_consultation_inputs_to_s3
-
     consultation = Consultation.objects.get(pk=consultation_id)
     logger.set_context_field("consultation_id", str(consultation.id))
 
