@@ -44,13 +44,26 @@ def start_find_themes(
     consultation_code = consultation.code
     try:
         question_parts = export_consultation_inputs_to_s3(consultation, consultation_code)
-        logger.info(
-            "Mirrored {question_parts} question parts to s3 for consultation '{consultation_code}' "
-            "before find-themes kickoff",
-            question_parts=question_parts,
-            consultation_code=consultation_code,
-        )
+    except Exception:
+        consultation_rerolled = Consultation.objects.filter(
+            pk=consultation.pk, stage=Consultation.Stage.FINDING_THEMES
+        ).update(stage=Consultation.Stage.SETUP)
+        if not consultation_rerolled:
+            logger.exception(
+                "Failed to roll the stage back after a failed S3 export for consultation "
+                "'{consultation_id}'",
+                consultation_id=consultation.id,
+            )
+        raise
 
+    logger.info(
+        "Mirrored {question_parts} question parts to s3 for consultation '{consultation_code}' "
+        "before find-themes kickoff",
+        question_parts=question_parts,
+        consultation_code=consultation_code,
+    )
+
+    try:
         batch.submit_job(
             job_type="FIND_THEMES",
             consultation_code=consultation_code,
@@ -64,8 +77,8 @@ def start_find_themes(
         ).update(stage=Consultation.Stage.SETUP)
         if not consultation_rerolled:
             logger.exception(
-                "Failed to roll the stage back after a failed Batch submission for "
-                "consultation '{consultation_id}'",
+                "Failed to roll the stage back after a failed Batch submission for consultation "
+                "'{consultation_id}'",
                 consultation_id=consultation.id,
             )
         raise
