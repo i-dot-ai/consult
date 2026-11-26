@@ -1,7 +1,7 @@
 import uuid
 from typing import ClassVar
 
-from django.db.models import Exists, OuterRef
+from django.db.models import Exists, OuterRef, Prefetch
 from rest_framework import status
 from rest_framework.decorators import action
 from rest_framework.pagination import PageNumberPagination
@@ -19,6 +19,7 @@ from consultations.api.serializers import (
     ResponseThemeInformationSerializer,
     ThemeSerializer,
 )
+from consultations.services.closed_answers import closed_answer_rows
 
 # Upper bound on how many responses a single bulk mark-read request may carry.
 # This matches the maximum page size so a full page can always be marked at once,
@@ -122,7 +123,11 @@ class ResponseViewSet(ModelViewSet):
             "annotation",
             "question",
         ).prefetch_related(
-            "chosen_options",
+            Prefetch(
+                "respondent__response_set",
+                queryset=closed_answer_rows(consultation_uuid),
+                to_attr="prefetched_closed_answers",
+            ),
             "respondent__demographics",
             "annotation__responseannotationtheme_set__assigned_by",
             "annotation__responseannotationtheme_set",
@@ -157,13 +162,9 @@ class ResponseViewSet(ModelViewSet):
         # Apply additional FilterSet filtering (including themeFilters)
         filterset = ResponseFilter(self.request.GET, queryset=queryset, request=self.request)
         filtered_queryset = filterset.qs
-        # Only use .distinct() when filters that JOIN through M2M are active —
-        # these can produce duplicate rows.
-        if (
-            self.request.GET.get("themeFilters")
-            or self.request.GET.get("demographics")
-            or self.request.GET.get("multiple_choice_answer")
-        ):
+        # themeFilters joins through the annotation themes and can duplicate rows; the answer
+        # and demographic filters narrow by subquery and never do.
+        if self.request.GET.get("themeFilters"):
             filtered_queryset = filtered_queryset.distinct()
         # Stable ordering is required for cursor-based pagination to be consistent
         # across pages. Without it PostgreSQL may return the same row on multiple

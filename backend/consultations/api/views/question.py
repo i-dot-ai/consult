@@ -17,6 +17,7 @@ from consultations.api.serializers import (
     QuestionSerializer,
     QuestionThemeSerializer,
 )
+from consultations.services.closed_answers import attach_option_counts, count_option_responses
 
 
 class QuestionPagination(PageNumberPagination):
@@ -39,8 +40,6 @@ class QuestionViewSet(ModelViewSet):
         if not self.request.user.is_staff:
             queryset = queryset.filter(consultation__users=self.request.user)
 
-        queryset = queryset.prefetch_related("multichoiceanswer_set")
-
         # Reviewed responses per question (only when explicitly requested)
         if "proportion_of_audited_answers" in self.request.query_params.get("include", ""):
             reviewed_response_count = Subquery(
@@ -60,6 +59,16 @@ class QuestionViewSet(ModelViewSet):
 
         return queryset.order_by("number")
 
+    def list(self, request, *args, **kwargs):
+        questions = self.filter_queryset(self.get_queryset())
+        page = self.paginate_queryset(questions)
+        if page is not None:
+            attach_option_counts(page)
+            return self.get_paginated_response(self.get_serializer(page, many=True).data)
+        questions = list(questions)
+        attach_option_counts(questions)
+        return Response(self.get_serializer(questions, many=True).data)
+
     def retrieve(self, request, *args, **kwargs):
         """
         Retrieve a single question with dynamically calculated response counts when
@@ -75,6 +84,8 @@ class QuestionViewSet(ModelViewSet):
             "unseenResponsesOnly",
             "is_flagged",
             "multiple_choice_answer",
+            "answers",
+            "demographic_answers",
             "searchValue",
         ]
         has_filters = any(request.query_params.get(p) for p in filter_params)
@@ -90,19 +101,9 @@ class QuestionViewSet(ModelViewSet):
             filtered_responses = models.Response.objects.filter(id__in=filtered_ids)
             question.calculate_response_counts(filtered_responses)
 
-            if question.has_multiple_choice:
-                multichoice_answers = models.MultiChoiceAnswer.objects.filter(
-                    question=question
-                ).annotate(
-                    prefetched_response_count=Count(
-                        "response",
-                        filter=Q(response__id__in=filtered_ids),
-                        distinct=True,
-                    )
-                )
-                question._prefetched_objects_cache["multichoiceanswer_set"] = list(
-                    multichoice_answers
-                )
+            question.prefetched_option_counts = count_option_responses(
+                question, filtered_responses.values("respondent_id")
+            )
 
         serializer = self.get_serializer(question)
         return Response(serializer.data)
@@ -126,6 +127,8 @@ class QuestionViewSet(ModelViewSet):
             "unseenResponsesOnly",
             "is_flagged",
             "multiple_choice_answer",
+            "answers",
+            "demographic_answers",
             "searchValue",
         ]
         has_filters = any(request.query_params.get(p) for p in filter_params)
