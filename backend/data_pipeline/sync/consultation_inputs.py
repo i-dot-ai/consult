@@ -10,7 +10,7 @@ import uuid
 from botocore.exceptions import BotoCoreError, ClientError
 from django.conf import settings
 from django.db import transaction
-from django.db.models import BooleanField, Case, Count, Prefetch, Value, When
+from django.db.models import BooleanField, Case, Prefetch, Value, When
 from django.utils.text import slugify
 
 from consultations.models import (
@@ -139,9 +139,9 @@ def export_consultation_inputs_to_s3(consultation: Consultation, consultation_co
         consultation.question_set.order_by("number").prefetch_related(
             Prefetch(
                 "response_set",
-                queryset=Response.objects.select_related("respondent")
-                .annotate(chosen_option_count=Count("chosen_options"))
-                .order_by("respondent__themefinder_id"),
+                queryset=Response.objects.select_related("respondent").order_by(
+                    "respondent__themefinder_id"
+                ),
             ),
         )
     )
@@ -151,7 +151,7 @@ def export_consultation_inputs_to_s3(consultation: Consultation, consultation_co
         for question in questions
         if question.has_free_text and question.closed_question_id
     ]
-    closed_respondents: dict[int, set[int]] = {}
+    closed_respondents: dict[uuid.UUID, set[uuid.UUID]] = {}
     if closed_part_ids:
         for question_id, respondent_id in Response.objects.filter(
             question_id__in=closed_part_ids
@@ -161,23 +161,18 @@ def export_consultation_inputs_to_s3(consultation: Consultation, consultation_co
     for question in questions:
         has_free_text = question.has_free_text
 
-        closed_respondent_ids: set[int] = set()
+        closed_respondent_ids: set[uuid.UUID] = set()
         if has_free_text and question.closed_question_id:
             closed_respondent_ids = closed_respondents.get(question.closed_question_id, set())
 
         rows = [
-            (
-                response.respondent_id,
-                response.respondent.themefinder_id,
-                response.text,
-                response.chosen_option_count,
-            )
+            (response.respondent_id, response.respondent.themefinder_id, response.text)
             for response in question.response_set.all()
         ]
 
         payload_rows: list[tuple[int, str]] = []
         if has_free_text:
-            for respondent_id, themefinder_id, text, chosen_option_count in rows:
+            for respondent_id, themefinder_id, text in rows:
                 if themefinder_id is None:
                     logger.warning(
                         "Response without themefinder_id skipped for consultation "
@@ -188,7 +183,7 @@ def export_consultation_inputs_to_s3(consultation: Consultation, consultation_co
                     continue
                 if text and text.strip():
                     payload_rows.append((themefinder_id, text))
-                elif chosen_option_count > 0 or respondent_id in closed_respondent_ids:
+                elif respondent_id in closed_respondent_ids:
                     payload_rows.append((themefinder_id, NOT_PROVIDED_PLACEHOLDER))
 
         if not rows:
