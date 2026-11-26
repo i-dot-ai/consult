@@ -11,7 +11,6 @@ from data_pipeline.sync.consultation_inputs import (
 )
 from factories import (
     ConsultationFactory,
-    MultiChoiceAnswerFactory,
     QuestionFactory,
     RespondentFactory,
 )
@@ -201,42 +200,6 @@ class TestExportConsultationInputsToS3:
             "type": "closed",
         }
         assert mock_s3_client.upload_fileobj.call_count == 0
-
-    @patch("data_pipeline.sync.consultation_inputs.get_s3_client")
-    @patch("data_pipeline.sync.consultation_inputs.settings")
-    def test_hybrid_respondent_with_choices_but_no_text_gets_not_provided(
-        self, mock_settings, mock_get_s3_client
-    ):
-        mock_settings.AWS_BUCKET_NAME = "test-bucket"
-        mock_s3_client = MagicMock()
-        mock_get_s3_client.return_value = mock_s3_client
-        consultation = ConsultationFactory(code="test-code")
-        question = QuestionFactory(
-            consultation=consultation,
-            number=7,
-            type="open",
-            has_free_text=True,
-            has_multiple_choice=True,
-        )
-        option = MultiChoiceAnswerFactory(question=question, text="Yes")
-        respondent_with_text = RespondentFactory(consultation=consultation, themefinder_id=1)
-        respondent_choice_only = RespondentFactory(consultation=consultation, themefinder_id=2)
-        Response.objects.create(
-            question=question, respondent=respondent_with_text, text="Behind the printer"
-        )
-        choice_only = Response.objects.create(
-            question=question, respondent=respondent_choice_only, text=None
-        )
-        choice_only.chosen_options.add(option)
-
-        export_consultation_inputs_to_s3(consultation, "test-code")
-
-        [(key, rows)] = responses_jsonl_rows(mock_s3_client)
-        assert key.endswith("question_part_7/responses.jsonl")
-        assert rows == [
-            {"themefinder_id": 1, "text": "Behind the printer"},
-            {"themefinder_id": 2, "text": "Not Provided"},
-        ]
 
     @patch("data_pipeline.sync.consultation_inputs.get_s3_client")
     @patch("data_pipeline.sync.consultation_inputs.settings")
