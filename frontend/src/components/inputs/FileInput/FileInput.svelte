@@ -122,14 +122,14 @@
     "p-4",
     "border",
     "border-dashed",
-    isDragging ? "border-secondary" : "border-neutral-300",
-    isDragging && "bg-neutral-100",
-    "hover:border-secondary",
+    isDragging ? "border-primary" : "border-text-light-50",
+    isDragging && "bg-text-light-95",
+    "hover:border-primary",
     "rounded-lg",
     "transition-colors",
     "cursor-pointer",
     "text-md",
-    "text-neutral-800",
+    "text-text-dark-50",
   ])}
   ondragover={(e) => {
     e.preventDefault();
@@ -145,17 +145,17 @@
   }}
 >
   {#if files.length === 0}
-    <MaterialIcon color="fill-neutral-400" size="3rem">
+    <MaterialIcon color="fill-text-light-50" size="3rem">
       <Upload />
     </MaterialIcon>
 
     <span>{title}</span>
 
-    <small class={clsx(["text-neutral-500", "text-xs"])}>{subtitle}</small>
+    <small class={clsx(["text-text", "text-xs"])}>{subtitle}</small>
   {/if}
 
   {#if errorMessage}
-    <small transition:slide class="text-red-500">{errorMessage}</small>
+    <small transition:slide class="text-error">{errorMessage}</small>
   {/if}
 
   <input
@@ -175,7 +175,7 @@
     data-testid="file-input"
   />
 
-  <ul class={clsx(["text-xs", "text-neutral-500"])}>
+  <ul class={clsx(["text-xs", "text-text"])}>
     {#each files as file, i (i)}
       <li class="my-0.5">
         <div class={clsx(["flex", "items-center", "gap-1"])}>
@@ -189,7 +189,7 @@
             ariaLabel={`Remove file ${file.name}`}
             title={`Remove file ${file.name}`}
           >
-            <MaterialIcon color="fill-neutral-500" size="0.8rem">
+            <MaterialIcon color="fill-text" size="0.8rem">
               <Close />
             </MaterialIcon>
           </Button>
@@ -204,7 +204,7 @@
 
   <div class="my-2">
     {#if files.length > 0 && confirmHint}
-      <small class="text-neutral-500 text-sm" transition:fade>
+      <small class="text-text text-sm" transition:fade>
         {confirmHint}
       </small>
     {/if}
@@ -244,7 +244,7 @@
     </Button>
 
     {#if files.length > 0}
-      <Button variant="approve" handleClick={() => onConfirm(files)} size="sm">
+      <Button variant="primary" handleClick={() => onConfirm(files)} size="sm">
         <div class="flex items-center gap-2">
           {#if confirmButtonText}
             {confirmButtonText}
