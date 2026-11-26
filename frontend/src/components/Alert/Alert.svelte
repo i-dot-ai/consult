@@ -23,22 +23,22 @@
 
   const COLORS = {
     background: {
-      info: "bg-sky-50",
-      warning: "bg-yellow-50",
-      error: "bg-pink-50",
-      success: "bg-teal-50",
+      info: "bg-primary-light-95",
+      warning: "bg-warning-light-95",
+      error: "bg-error-light-95",
+      success: "bg-success-light-95",
     },
     icon: {
-      info: "fill-sky-800",
-      warning: "fill-yellow-700",
-      error: "fill-pink-700",
-      success: "fill-teal-700",
+      info: "fill-primary",
+      warning: "fill-warning",
+      error: "fill-error",
+      success: "fill-success",
     },
     text: {
-      info: "text-sky-800",
-      warning: "text-yellow-700",
-      error: "text-pink-700",
-      success: "text-teal-700",
+      info: "text-primary",
+      warning: "text-warning",
+      error: "text-error",
+      success: "text-success",
     },
   };
 
