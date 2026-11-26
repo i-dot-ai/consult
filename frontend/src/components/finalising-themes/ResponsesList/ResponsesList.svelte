@@ -25,7 +25,7 @@
 <div class="flex items-center gap-1">
   <div class="shrink-0">
     <MaterialIcon
-      color={variant === "selected" ? "fill-primary" : "fill-secondary"}
+      color={variant === "selected" ? "fill-primary" : "fill-success"}
       size="1.2rem"
     >
       <Docs />
@@ -42,8 +42,8 @@
       "rounded-lg",
       "text-xs",
       variant === "selected"
-        ? "bg-pink-100 text-primary"
-        : "bg-teal-50 text-secondary",
+        ? "bg-primary-light-95 text-primary"
+        : "bg-success-light-95 text-success",
     ])}
   >
     {#if loading}
@@ -62,12 +62,12 @@
           "overflow-hidden",
           "gap-2",
           "first:mt-4",
-          "mb-4",
+          "mb-2",
           "last:mb-0",
           "p-2",
           "rounded-lg",
-          "text-neutral-100",
-          "bg-neutral-100",
+          "text-text-light-95",
+          "bg-text-light-95",
           "select-none",
         ])}
       >
@@ -76,7 +76,7 @@
     {/each}
   </ol>
 {:else if responses?.length > 0}
-  <p class="mt-2 text-sm text-neutral-500">
+  <p class="mt-2 text-sm text-text">
     Showing a sample of {responses.length} out of a total of {totalCount} answers.
   </p>
   <ol class="mt-2 max-h-80 overflow-y-auto">
@@ -90,8 +90,8 @@
           "last:mb-0",
           "p-2",
           "rounded-lg",
-          "text-neutral-600",
-          "bg-neutral-50",
+          "text-text",
+          "bg-text-light-95",
         ])}
       >
         <div
@@ -105,8 +105,8 @@
             "rounded-full",
             "text-xs",
             variant === "selected"
-              ? "bg-pink-200 text-primary"
-              : "bg-teal-50 text-secondary",
+              ? "bg-primary-light-80 text-primary-dark-25"
+              : "bg-success-light-80 text-success-dark-25",
           ])}
         >
           {i + 1}
@@ -119,5 +119,5 @@
     {/each}
   </ol>
 {:else}
-  <p class="mt-2 text-sm italic text-neutral-500">There are no responses</p>
+  <p class="mt-2 text-sm italic text-text">There are no responses</p>
 {/if}
