@@ -326,9 +326,9 @@
       size="sm"
       handleClick={() => (location.href = getFinaliseThemesUrl(consultationId))}
     >
-      <div class="flex items-center gap-2 text-neutral-700">
+      <div class="flex items-center gap-2 text-text-dark-25">
         <div class="rotate-180">
-          <MaterialIcon color="fill-neutral-500">
+          <MaterialIcon color="fill-text">
             <ArrowForward />
           </MaterialIcon>
         </div>
@@ -373,10 +373,8 @@
       "selected-section",
       "my-4",
       "p-4",
-      "bg-pink-50/25",
       "rounded-xl",
-      "border",
-      "border-pink-100",
+      "border border-text-light-80",
     ])}
   >
     <div id="onboarding-steps-2-and-3" class="mb-4">
@@ -413,7 +411,7 @@
           </Button>
         </div>
 
-        <p class="text-sm text-neutral-500">
+        <p class="text-sm text-text">
           {#if (selectedThemes.query.data?.results?.length ?? 0) > 0}
             Manage your {numSelectedThemesText(
               selectedThemes.query.data?.results,
@@ -444,13 +442,13 @@
     {#if selectedThemes.query.data?.results.length === 0}
       <div in:fade class="my-8 flex flex-col items-center justify-center gap-2">
         <div class="mb-2">
-          <MaterialIcon size="2rem" color="fill-neutral-500">
+          <MaterialIcon size="2rem" color="fill-text">
             <Price />
           </MaterialIcon>
         </div>
 
-        <h3 class="text-md text-neutral-500">No themes selected yet</h3>
-        <p class="text-xs text-neutral-500">
+        <h3 class="text-md text-text">No themes selected yet</h3>
+        <p class="text-xs text-text">
           Select themes from the AI-found suggestions below
         </p>
       </div>
@@ -506,7 +504,7 @@
       confirmText="Confirm Finalisation"
       handleConfirm={confirmFinalisingThemes}
     >
-      <p class="text-sm text-neutral-500">
+      <p class="text-sm text-text">
         Are you sure you want to sign off on these {numSelectedThemesText(
           selectedThemes.query.data?.results,
         )} for Question {$questionStore.data?.number}?
@@ -518,7 +516,7 @@
         {#each selectedThemes.query.data?.results ?? [] as selectedTheme (selectedTheme.id)}
           <Panel bg={true} border={false} testId="confirm-modal-theme">
             <h5 class="mb-1 text-xs font-bold">{selectedTheme.name}</h5>
-            <p class="text-xs text-neutral-500">{selectedTheme.description}</p>
+            <p class="text-xs text-text">{selectedTheme.description}</p>
           </Panel>
         {/each}
       </div>
@@ -557,7 +555,7 @@
       "bg-white",
       "px-4",
       "text-sm",
-      "text-neutral-500",
+      "text-text",
     ])}
   >
     Browse AI Generated Themes
@@ -571,7 +569,7 @@
         <Panel variant="approve" bg={true} border={true}>
           <div class="mb-2 flex items-center justify-between">
             <div class="flex items-center gap-2">
-              <MaterialIcon color="fill-secondary">
+              <MaterialIcon color="fill-success">
                 <SmartToy />
               </MaterialIcon>
 
@@ -586,8 +584,8 @@
 
             <div class="flex items-center gap-4">
               {#if hasNestedThemes}
-                <div class="flex items-center gap-1 text-xs text-neutral-500">
-                  <MaterialIcon color="fill-neutral-500">
+                <div class="flex items-center gap-1 text-xs text-text">
+                  <MaterialIcon color="fill-text">
                     <Stacks />
                   </MaterialIcon>
                   Multi-level themes
@@ -606,11 +604,11 @@
                 >
                   <span
                     class={clsx([
-                      "flex items-center justify-between gap-1 text-secondary",
+                      "flex items-center justify-between gap-1 text-success",
                       addingCustomTheme && "text-white",
                     ])}
                   >
-                    <MaterialIcon color="fill-secondary">
+                    <MaterialIcon color="fill-success">
                       <Stacks />
                     </MaterialIcon>
                     {isAllThemesExpanded() ? "Collapse All" : "Expand All"}
@@ -620,7 +618,7 @@
             </div>
           </div>
 
-          <p class="text-sm text-neutral-500">
+          <p class="text-sm text-text">
             Browse themes found by the AI and click "Select" to add a theme to
             your list of selected themes for analysis.
           </p>
