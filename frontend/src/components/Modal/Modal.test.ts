@@ -139,7 +139,7 @@ describe("Modal", () => {
       compact: true,
     });
     expect(screen.getByRole("button", { name: "Ok" })).toHaveClass(
-      "text-red-700",
+      "text-error",
     );
   });
 
