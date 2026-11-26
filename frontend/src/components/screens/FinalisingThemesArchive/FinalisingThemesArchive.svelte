@@ -222,13 +222,13 @@
           }
         }}
       >
-        <p class="mb-4 text-sm text-neutral-500">
+        <p class="mb-4 text-sm text-text">
           You have successfully reviewed and signed off themes for all {questionsForSignOff?.length ||
             0} consultation questions. Are you ready to proceed with AI mapping?
         </p>
 
-        <p class="mb-2 text-sm text-neutral-500">This action will:</p>
-        <ol class="mb-2 list-disc pl-4 text-sm text-neutral-500">
+        <p class="mb-2 text-sm text-text">This action will:</p>
+        <ol class="mb-2 list-disc pl-4 text-sm text-text">
           <li class="mb-2">
             Process all consultation responses across {questionsForSignOff?.length ||
               0} questions
@@ -252,15 +252,15 @@
 
         <hr class="my-4" />
 
-        <p class="mb-2 text-sm text-neutral-500">
+        <p class="mb-2 text-sm text-text">
           If you have concerns or need assistance, please contact support:
         </p>
         <a
           href={`mailto:${Routes.SupportEmail}`}
-          class="support-link mb-4 block text-sm text-secondary hover:text-primary"
+          class="support-link mb-4 block text-sm text-success hover:text-primary"
         >
           <div class="flex items-center gap-1">
-            <MaterialIcon color="fill-secondary">
+            <MaterialIcon color="fill-success">
               <Headphones />
             </MaterialIcon>
             {Routes.SupportEmail}
@@ -308,7 +308,7 @@
       {#if !dataRequested || $questionsStore.isLoading}
         <div transition:slide class="my-8">
           <LoadingIndicator size="5rem" />
-          <p class="text-center text-neutral-500">Loading questions...</p>
+          <p class="text-center text-text">Loading questions...</p>
         </div>
       {:else if $questionsStore.error}
         <p transition:slide>{$questionsStore.error}</p>
@@ -422,8 +422,8 @@
         "p-3",
         "rounded-full",
         "font-bold",
-        active ? "text-primary" : "text-neutral-500",
-        active ? "bg-pink-100" : "bg-neutral-100",
+        active ? "text-primary" : "text-text",
+        active ? "bg-primary-light-95" : "bg-text-light-95",
       ])}
     >
       {number}
