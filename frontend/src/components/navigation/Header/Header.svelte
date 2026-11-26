@@ -133,7 +133,7 @@
                     clsx([
                       "group",
                       "w-full",
-                      "hover:bg-neutral-100",
+                      "hover:bg-text-light-95",
                       "hover:text-primary!",
                     ]),
                 ])}
@@ -159,7 +159,7 @@
                       "p-2",
                       "text-sm",
                       "text-center",
-                      "text-neutral-800",
+                      "text-text-dark-25",
                       "transition-colors",
                       "whitespace-nowrap",
                       "hover:text-primary",
@@ -173,7 +173,7 @@
                         expanded && "rotate-90",
                       ])}
                     >
-                      <MaterialIcon size="0.9rem" color="fill-neutral-500">
+                      <MaterialIcon size="0.9rem" color="fill-text">
                         <ChevronRight />
                       </MaterialIcon>
                     </div>
@@ -183,7 +183,7 @@
                     class={clsx([
                       "block",
                       "text-sm",
-                      "text-neutral-800",
+                      "text-text-dark-25",
                       "hover:text-primary",
                       "transition-colors",
                       "whitespace-nowrap",
@@ -193,7 +193,7 @@
                   </span>
 
                   <div class="rotate-90">
-                    <MaterialIcon size="0.9rem" color="fill-neutral-500">
+                    <MaterialIcon size="0.9rem" color="fill-text">
                       <ChevronRight />
                     </MaterialIcon>
                   </div>
@@ -213,7 +213,7 @@
                       "right-0",
                       "z-10",
                       "border",
-                      "border-neutral-100",
+                      "border-text-light-95",
                       "rounded-sm",
                       "bg-white",
                       "shadow-lg",
@@ -258,7 +258,7 @@
     class={clsx([
       "flex",
       "border-b",
-      "border-primary",
+      "border-text-light-80",
       "p-2",
       "flex-wrap",
       "justify-around",
@@ -294,20 +294,20 @@
             "min-h-4",
             "mx-2",
             "border-l",
-            "border-neutral-300",
+            "border-text-light-50",
             "self-stretch",
           ])}
         ></div>
       {/if}
 
       <p class="flex flex-wrap">
-        <span class="text-sm text-neutral-800">
+        <span class="text-sm text-text-dark-25">
           {subtitle}
         </span>
 
         <!-- Breadcrumb parts -->
         {#each pathParts as pathPart, i (i)}
-          <span class={clsx(["mr-1", "text-xs", "text-neutral-500"])}>
+          <span class={clsx(["mr-1", "text-xs", "text-text"])}>
             <!--
               Only add slash to first item if subtitle is passed to
               avoid having the vertical divider and slash side by side
@@ -327,14 +327,14 @@
           "p-1",
           "rounded-sm",
           "border",
-          "border-neutral-200",
+          "border-text-light-80",
           "transition-colors",
-          "hover:bg-neutral-100",
+          "hover:bg-text-light-95",
         ])}
         data-testid="mobile-menu-button"
         onclick={() => (mobileExpanded = !mobileExpanded)}
       >
-        <MaterialIcon size="1.5rem" color="fill-neutral-500">
+        <MaterialIcon size="1.5rem" color="fill-text">
           <Menu />
         </MaterialIcon>
       </button>
