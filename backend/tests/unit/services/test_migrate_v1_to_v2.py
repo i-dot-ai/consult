@@ -14,7 +14,6 @@ from consultations.services.migrate_v1_to_v2 import (
     _assign_stage,
     _backfill_question_types,
     _convert_demographics,
-    _convert_multiple_choice_to_responses,
     _fill_response_text,
     _refresh_denormalised_counts,
     audit_consultation,
@@ -23,7 +22,6 @@ from consultations.services.migrate_v1_to_v2 import (
 from factories import (
     CandidateThemeFactory,
     ConsultationFactory,
-    MultiChoiceAnswerFactory,
     QuestionFactory,
     RespondentFactory,
     ResponseFactory,
@@ -45,23 +43,15 @@ def v1_consultation():
     closed_question = QuestionFactory(
         consultation=consultation, has_free_text=False, has_multiple_choice=True
     )
-    closed_response = ResponseFactory(
-        question=closed_question, respondent=respondent, free_text=None
-    )
-    closed_response.chosen_options.add(
-        MultiChoiceAnswerFactory(question=closed_question, text="Red"),
-        MultiChoiceAnswerFactory(question=closed_question, text="Blue"),
-    )
+    for option in ("Red", "Blue"):
+        ResponseFactory(
+            question=closed_question, respondent=respondent, free_text=None, text=option
+        )
 
     hybrid_question = QuestionFactory(
         consultation=consultation, has_free_text=True, has_multiple_choice=True
     )
-    hybrid_response = ResponseFactory(
-        question=hybrid_question, respondent=respondent, free_text="Specify other"
-    )
-    hybrid_response.chosen_options.add(
-        MultiChoiceAnswerFactory(question=hybrid_question, text="Maybe")
-    )
+    ResponseFactory(question=hybrid_question, respondent=respondent, free_text="Specify other")
 
     QuestionFactory(consultation=consultation, has_free_text=False, has_multiple_choice=False)
     for field_name, field_value in [("Nation", "England"), ("Age", "18-35")]:
@@ -82,8 +72,6 @@ def test_audit_counts_v1_shaped_data(v1_consultation):
     assert counts["questions_closed_only"] == 1
     assert counts["questions_hybrid"] == 1
     assert counts["questions_without_flags"] == 1
-    assert counts["multiple_choice_links"] == 3
-    assert counts["multi_choice_answers"] == 3
     assert counts["demographic_options"] == 2
     assert counts["respondent_demographic_links"] == 2
     assert counts["missing_data_source"] == 1
@@ -111,7 +99,6 @@ def test_migrate_full_chain_end_to_end(v1_consultation):
     assert counts["questions_without_type"] == 1  # the neither-flag question, report-only
     assert counts["missing_data_source"] == 0
     # kept for v1 consumers (decision: keep all)
-    assert counts["multiple_choice_links"] == 3
     assert counts["demographic_options"] == 2
 
     # idempotent: re-running after completion changes nothing
@@ -167,9 +154,7 @@ def test_survey_import_status_complete_when_all_typed():
 def test_convert_demographics(v1_consultation):
     _convert_demographics(v1_consultation)
 
-    nation = v1_consultation.question_set.get(
-        type=Question.QuestionType.DEMOGRAPHIC, text="Nation"
-    )
+    nation = v1_consultation.question_set.get(type=Question.QuestionType.DEMOGRAPHIC, text="Nation")
     age = v1_consultation.question_set.get(type=Question.QuestionType.DEMOGRAPHIC, text="Age")
     assert nation.status == Question.ThemeStatus.CONFIGURED
     assert list(nation.response_set.exclude(text__isnull=True).values_list("text", flat=True)) == [
@@ -260,48 +245,54 @@ def test_migrate_marks_consultations_without_survey_provider_as_v1():
 
 def test_refresh_denormalised_counts(v1_consultation):
     _backfill_question_types(v1_consultation)
-    _convert_multiple_choice_to_responses(v1_consultation)
 
-    closed_question = next(
-        q
-        for q in v1_consultation.question_set.all()
-        if q.type == Question.QuestionType.CLOSED
-        and {a.text for a in q.multichoiceanswer_set.all()} == {"Red", "Blue"}
+    open_question = v1_consultation.question_set.get(
+        type=Question.QuestionType.OPEN, closed_question__isnull=True
     )
-    open_question = next(
-        q
-        for q in v1_consultation.question_set.all()
-        if q.type == Question.QuestionType.OPEN and q.closed_question_id is None
-    )
-    hybrid_original = next(
-        q
-        for q in v1_consultation.question_set.all()
-        if q.type == Question.QuestionType.OPEN and q.closed_question_id is not None
+    hybrid_original = v1_consultation.question_set.get(
+        type=Question.QuestionType.OPEN, closed_question__isnull=False
     )
     hybrid_sibling = hybrid_original.closed_question
-    assert hybrid_sibling.total_response_count == 0  # zeroed until the refresh runs
+    closed_question = (
+        v1_consultation.question_set.filter(type=Question.QuestionType.CLOSED)
+        .exclude(id=hybrid_sibling.id)
+        .get()
+    )
+    ResponseFactory(
+        question=hybrid_sibling,
+        respondent=hybrid_original.response_set.get().respondent,
+        free_text=None,
+        text="Maybe",
+    )
+    hybrid_sibling.total_response_count = 0
+    hybrid_sibling.save(update_fields=["total_response_count"])
 
     _refresh_denormalised_counts(v1_consultation)
 
     closed_question.refresh_from_db()
-    assert (closed_question.total_response_count, closed_question.free_text_response_count,
-            closed_question.multi_choice_response_count) == (1, 0, 1)
+    assert (
+        closed_question.total_response_count,
+        closed_question.free_text_response_count,
+        closed_question.multi_choice_response_count,
+    ) == (1, 0, 1)
     open_question.refresh_from_db()
-    assert (open_question.total_response_count, open_question.free_text_response_count,
-            open_question.multi_choice_response_count) == (1, 1, 0)
+    assert (
+        open_question.total_response_count,
+        open_question.free_text_response_count,
+        open_question.multi_choice_response_count,
+    ) == (1, 1, 0)
     hybrid_original.refresh_from_db()
-    assert (hybrid_original.total_response_count, hybrid_original.free_text_response_count,
-            hybrid_original.multi_choice_response_count) == (1, 1, 1)
-
-    # the sibling has no v1 representation: counts come from its option rows
+    assert (
+        hybrid_original.total_response_count,
+        hybrid_original.free_text_response_count,
+        hybrid_original.multi_choice_response_count,
+    ) == (1, 1, 1)
     hybrid_sibling.refresh_from_db()
-    assert (hybrid_sibling.total_response_count, hybrid_sibling.free_text_response_count,
-            hybrid_sibling.multi_choice_response_count) == (1, 0, 1)
-
-    # original options keep their v1 response counts; sibling clones stay 0
-    assert closed_question.multichoiceanswer_set.get(text="Red").response_count == 1
-    assert hybrid_original.multichoiceanswer_set.get(text="Maybe").response_count == 1
-    assert hybrid_sibling.multichoiceanswer_set.get(text="Maybe").response_count == 0
+    assert (
+        hybrid_sibling.total_response_count,
+        hybrid_sibling.free_text_response_count,
+        hybrid_sibling.multi_choice_response_count,
+    ) == (1, 0, 1)
 
 
 def test_question_type_enum_value_for_demographics():
@@ -314,10 +305,10 @@ def test_fill_response_text(v1_consultation):
     responses = list(Response.objects.filter(question__consultation=v1_consultation))
     copied = [r for r in responses if r.free_text not in (None, "")]
     untouched = [r for r in responses if r.free_text in (None, "")]
-    # every content-bearing row is dual-written; empty/None rows stay untyped
+    # every content-bearing row is dual-written; option rows already carry their text
     assert {r.text for r in copied} == {"Hello world", "Specify other"}
     assert all(r.text == r.free_text for r in copied)
-    assert all(r.text is None for r in untouched)
+    assert {r.text for r in untouched} == {"Red", "Blue"}
 
     # idempotent: a second pass copies nothing new
     assert (
@@ -358,65 +349,7 @@ def test_backfill_question_types(v1_consultation):
     hybrid_original = next(q for q in open_questions if q.closed_question_id is not None)
     sibling = hybrid_original.closed_question
     assert sibling in closed_questions
-    assert {answer.text for answer in sibling.multichoiceanswer_set.all()} == {"Maybe"}
+    assert sibling.text == hybrid_original.text
 
-    # Nothing on the original row was moved: its text and chosen option stay
-    hybrid_response = Response.objects.get(question=hybrid_original, free_text="Specify other")
-    assert hybrid_response.chosen_options.count() == 1
-
-
-def test_convert_multiple_choice_to_responses(v1_consultation):
-    _backfill_question_types(v1_consultation)
-    closed_question = next(
-        q
-        for q in v1_consultation.question_set.all()
-        if q.type == Question.QuestionType.CLOSED
-        and {a.text for a in q.multichoiceanswer_set.all()} == {"Red", "Blue"}
-    )
-    hybrid_sibling = next(
-        q
-        for q in v1_consultation.question_set.all()
-        if q.type == Question.QuestionType.CLOSED
-        and {a.text for a in q.multichoiceanswer_set.all()} == {"Maybe"}
-    )
-
-    _convert_multiple_choice_to_responses(v1_consultation)
-
-    # closed-only question: one row per selected option, original untouched
-    option_rows = closed_question.response_set.exclude(text__isnull=True)
-    assert {(row.text) for row in option_rows} == {"Red", "Blue"}
-    assert option_rows.count() == 2
-
-    # hybrid: option row lands on the closed sibling, keyed by option text
-    hybrid_rows = hybrid_sibling.response_set.exclude(text__isnull=True)
-    assert [row.text for row in hybrid_rows] == ["Maybe"]
-
-    # idempotent: re-running converts nothing new
-    total_rows = Response.objects.filter(question__consultation=v1_consultation).count()
-    _convert_multiple_choice_to_responses(v1_consultation)
-    assert Response.objects.filter(question__consultation=v1_consultation).count() == total_rows
-
-
-def test_convert_skips_untyped_questions_with_options(v1_consultation):
-    neither_flag_question = v1_consultation.question_set.get(
-        has_free_text=False, has_multiple_choice=False
-    )
-    respondent = RespondentFactory(consultation=v1_consultation)
-    neither_flag_response = ResponseFactory(
-        question=neither_flag_question, respondent=respondent, free_text=None
-    )
-    neither_flag_response.chosen_options.add(
-        MultiChoiceAnswerFactory(question=neither_flag_question, text="Odd")
-    )
-
-    _backfill_question_types(v1_consultation)
-    _convert_multiple_choice_to_responses(v1_consultation)
-
-    # the untyped question is left alone: still untyped, original row untouched
-    untyped = v1_consultation.question_set.filter(has_free_text=False, has_multiple_choice=False)
-    assert untyped.count() == 1 and untyped.get() == neither_flag_question
-    neither_flag_response.refresh_from_db()
-    assert neither_flag_response.text is None
-    assert neither_flag_response.chosen_options.count() == 1
-    assert not neither_flag_question.response_set.exclude(text__isnull=True).exists()
-
+    # Nothing on the original row was moved
+    assert Response.objects.filter(question=hybrid_original, free_text="Specify other").exists()

@@ -82,7 +82,6 @@ def test_generated_data_uses_v2_schema():
 
     demographic_questions = questions.filter(type=models.Question.QuestionType.DEMOGRAPHIC)
     assert models.Response.objects.filter(question__in=demographic_questions).count() == 30
-    assert not models.MultiChoiceAnswer.objects.filter(question__consultation=consultation).exists()
     assert not models.DemographicOption.objects.filter(consultation=consultation).exists()
 
 

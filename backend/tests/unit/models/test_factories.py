@@ -7,7 +7,6 @@ import pytest
 import factories
 from authentication.models import User
 from consultations import models
-from consultations.models import MultiChoiceAnswer
 
 
 @pytest.mark.django_db
@@ -30,19 +29,6 @@ def test_question_factories(free_text_question):
     assert models.Question.objects.filter(id=free_text_question.id).exists()
     assert free_text_question.has_free_text
     assert not free_text_question.has_multiple_choice
-    assert not MultiChoiceAnswer.objects.filter(question=free_text_question).exists()
-
-    # Test question with multiple choice only
-    mc_question = factories.QuestionWithMultipleChoiceFactory()
-    assert mc_question.has_multiple_choice
-    assert mc_question.multiple_choice_options
-    assert len(mc_question.multiple_choice_options) >= 2
-
-    # Test question with both free text and multiple choice
-    both_question = factories.QuestionWithBothFactory()
-    assert both_question.has_free_text
-    assert both_question.has_multiple_choice
-    assert both_question.multiple_choice_options
 
 
 @pytest.mark.django_db
@@ -73,21 +59,6 @@ def test_response_factories():
     response = factories.ResponseFactory()
     assert models.Response.objects.filter(id=response.id).exists()
     assert response.free_text
-    assert response.chosen_options.count() == 0
-
-    # Test response with multiple choice
-    mc_response = factories.ResponseWithMultipleChoiceFactory()
-    assert mc_response.free_text == ""
-    assert mc_response.chosen_options
-    assert all(
-        opt in mc_response.question.multiple_choice_options
-        for opt in mc_response.chosen_options.all()
-    )
-
-    # Test response with both
-    both_response = factories.ResponseWithBothFactory()
-    assert both_response.free_text
-    assert both_response.chosen_options
 
 
 @pytest.mark.django_db

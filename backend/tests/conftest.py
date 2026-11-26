@@ -114,7 +114,6 @@ def multi_choice_question(consultation):
 
 @pytest.fixture
 def multi_choice_responses(multi_choice_question):
-    """Two respondents: the first selected red and blue, the second red only."""
     respondent_1 = RespondentFactory(consultation=multi_choice_question.consultation)
     respondent_2 = RespondentFactory(consultation=multi_choice_question.consultation)
     rows = Response.objects.bulk_create(
@@ -408,26 +407,6 @@ def embedded_responses():
         "search_mode": data["search_mode"],
     }
     Consultation.objects.filter(id=question.consultation.id).delete()
-
-
-@pytest.fixture
-def legacy_consultation():
-    """A v1-shaped consultation: a closed question with options selected through
-    chosen_options and no typed questions, as the pre-v2 pipeline left them."""
-    consultation = factories.ConsultationFactory(is_v1=True)
-    question = factories.QuestionFactory(
-        consultation=consultation, number=1, has_free_text=False, has_multiple_choice=True
-    )
-    red = factories.MultiChoiceAnswerFactory(question=question, text="Red")
-    blue = factories.MultiChoiceAnswerFactory(question=question, text="Blue")
-    for options in ([red, blue], [red]):
-        response = factories.ResponseFactory(
-            question=question,
-            respondent=factories.RespondentFactory(consultation=consultation),
-            free_text=None,
-        )
-        response.chosen_options.add(*options)
-    return consultation
 
 
 @pytest.fixture
