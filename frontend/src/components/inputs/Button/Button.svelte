@@ -57,16 +57,29 @@
     "border",
     justify === "left" && "text-start",
     justify === "right" && "text-end",
-    variant === "default" && "border-gray-300 bg-white",
-    variant === "gray" && "border-gray-300 bg-neutral-100",
-    variant === "primary" && "border-gray-300 bg-primary text-white",
-    variant === "approve" && "border-gray-300 bg-secondary text-white",
-    variant === "warning" && "border-yellow-300 bg-yellow-50",
-    variant === "danger" && "border-red-700 bg-transparent text-red-700",
-    variant === "ghost" && "border-transparent",
-    variant === "dot" && "border-transparent text-neutral-400",
+    variant === "default" && "border-text-light-50 bg-white",
+    variant === "gray" && "border-text-light-50 bg-text-light-95",
+    variant === "primary" && "border-text-light-50 bg-primary text-white",
+    variant === "approve" && "border-text-light-50 bg-success text-white",
+    variant === "warning" && clsx([
+      disabled ? "border-text-light-50" : "border-warning-light-50",
+      "bg-warning-light-95",
+    ]),
+    variant === "danger" && clsx([
+      disabled ? "border-text-light-50" : "border-error",
+      "bg-transparent text-error",
+    ]),
+    variant === "ghost" && clsx([
+      disabled ? "border-text-light-50" : "border-transparent",
+      "hover:bg-text-light-80",
+    ]),
+    variant === "dot" && "border-transparent text-text",
     variant === "outline" &&
-      clsx(["bg-transparent", "border border-primary", "text-primary"]),
+      clsx([
+        "bg-transparent", "border",
+        disabled ? "border-text-light-50" : "border-primary",
+        "text-primary",
+      ]),
     variant === "text" && "underline border-0 p-0",
     "transition-colors",
     "duration-300",
@@ -77,30 +90,32 @@
     variant === "dot"
       ? clsx([
           highlightVariant === "primary" && "hover:text-primary",
-          highlightVariant === "approve" && "hover:text-secondary",
+          highlightVariant === "approve" && "hover:text-success",
         ])
       : clsx([
-          variant === "warning" && "hover:bg-yellow-100",
-          variant === "danger" && "hover:bg-red-800 hover:text-white",
+          variant === "warning" && "hover:bg-warning-light-80",
+          variant === "danger" && "hover:bg-error hover:text-white",
           variant === "text" && "hover:text-primary",
           variant !== "warning" &&
             variant !== "danger" &&
             variant !== "text" &&
-            "hover:bg-gray-100",
+            "hover:bg-text-light-80",
         ]),
     fixedHoverColor && "fixed-hover-color",
     variant === "primary" && "hover:border-primary hover:text-primary",
-    variant === "approve" && "hover:border-secondary hover:text-secondary",
+    variant === "approve" && "hover:border-success hover:text-success",
 
     disabled &&
       clsx([
         "disabled",
-        variant !== "text" && "disabled:bg-gray-200",
-        "disabled:text-gray-400",
+        variant !== "text" && "disabled:bg-text-light-80",
+        "disabled:text-text",
         "disabled:cursor-not-allowed",
-        variant !== "text" && "disabled:hover:bg-gray-200",
-        variant !== "text" && "disabled:hover:border-gray-300",
-        "disabled:hover:text-gray-400",
+        variant !== "text" && clsx([
+          "disabled:hover:bg-text-light-80",
+          "disabled:hover:border-text-light-50",
+        ]),
+        "disabled:hover:text-text",
       ]),
 
     highlighted &&
@@ -108,13 +123,13 @@
       variant !== "dot" &&
       clsx([
         highlightVariant === "dark" &&
-          "bg-neutral-800! text-white hover:bg-neutral-700",
+          "bg-text-dark-25! text-white hover:bg-text-dark-50!",
         highlightVariant === "light" &&
-          "border border-pink-200 bg-pink-100! text-neutral-800 hover:bg-pink-200",
+          "border border-primary-light-80 bg-primary-light-95! text-text-dark-25 hover:bg-primary-light-80",
         highlightVariant === "primary" &&
-          "bg-primary! text-white hover:bg-pink-500",
+          "bg-primary! text-white hover:bg-primary",
         highlightVariant === "approve" &&
-          "border-secondary text-secondary hover:bg-teal-500",
+          "border-success text-success hover:bg-success",
       ]),
 
     highlighted &&
@@ -122,7 +137,7 @@
       variant === "dot" &&
       clsx([
         highlightVariant === "primary" && "text-primary",
-        highlightVariant === "approve" && "text-secondary",
+        highlightVariant === "approve" && "text-success",
       ]),
   ])}
   {disabled}
@@ -147,7 +162,7 @@
 
 <style>
   *:is(button, a)[data-variant="approve"]:not(.disabled):hover :global(svg) {
-    fill: var(--color-secondary);
+    fill: var(--color-success);
   }
   *:is(button, a)[data-variant="primary"]:not(.disabled):hover :global(svg) {
     fill: var(--color-primary);

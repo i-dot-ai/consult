@@ -60,6 +60,7 @@ import FileUploadStory from "../screens/surveyImport/FileUpload/FileUploadStory.
 import ChecksPageStory from "../screens/surveyImport/ChecksPage/ChecksPageStory.svelte";
 import ReviewQuestionsPageStory from "../surveyImport/ReviewQuestionsPage/ReviewQuestionsPageStory.svelte";
 import ConsultationPeopleStory from "../screens/ConsultationPeople/ConsultationPeopleStory.svelte";
+import ButtonStory from "../inputs/Button/ButtonStory.svelte.ts";
 
 interface StoryProp {
   name: string;
@@ -146,4 +147,5 @@ export default [
   ReviewQuestionsPageStory,
   ChartsAndFiltersPageStory,
   ConsultationPeopleStory,
+  ButtonStory,
 ] as Story[];
