@@ -32,6 +32,9 @@ export default {
         { value: "default", label: "Default" },
         { value: "primary", label: "Primary" },
         { value: "approve", label: "Approve" },
+        { value: "approve-dark", label: "Approve Dark" },
+        { value: "gray", label: "Gray" },
+        { value: "white", label: "White" },
       ],
     },
     {
