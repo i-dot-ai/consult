@@ -108,7 +108,7 @@
       <ul class="flex flex-col gap-2">
         {#if storiesToDisplay.length === 0}
           <li>
-            <p class="text-center text-neutral-500">No matching stories</p>
+            <p class="text-center text-text">No matching stories</p>
           </li>
         {/if}
 
@@ -132,11 +132,10 @@
                       "py-1",
                       "rounded-lg",
                       "transition-colors",
-                      "text-neutral-700",
-                      "hover:text-pink-500",
-                      "hover:bg-neutral-100",
-                      currStory?.name === story.name &&
-                        "text-primary hover:text-pink-600",
+                      "hover:bg-text-light-95",
+                      currStory?.name === story.name
+                        ? "text-primary hover:text-primary"
+                        : "text-text hover:text-primary",
                     ])}
                     onclick={(e) => {
                       e.preventDefault();
@@ -171,7 +170,7 @@
             <Button size="xs" handleClick={() => panel?.requestFullscreen()}>
               <span class="ml-1 mr-1">Fullscreen</span>
 
-              <MaterialIcon color="fill-neutral-500">
+              <MaterialIcon color="fill-text">
                 <Fullscreen />
               </MaterialIcon>
             </Button>
@@ -213,7 +212,7 @@
             <hr class="my-4" />
 
             <div class="mt-4 pl-4">
-              <h3 class="text-neutral-500">Props</h3>
+              <h3 class="text-text">Props</h3>
 
               {#each currStory.props as prop (prop.name)}
                 {@const inputId = `input-${prop.name.toLowerCase().replaceAll(" ", "-")}`}
@@ -227,7 +226,7 @@
                 {#if prop.type === "number"}
                   <input
                     id={inputId}
-                    class="rounded-lg border border-neutral-300 p-2"
+                    class="rounded-lg border border-text-light-50 p-2"
                     type="number"
                     value={(prop.value as string).toString()}
                     oninput={(e) => {
@@ -313,10 +312,10 @@
               {#if currStory.mocks}
                 <hr class="my-4" />
 
-                <h3 class="text-neutral-500">Mocks</h3>
+                <h3 class="text-text">Mocks</h3>
 
                 {#each currStory.mocks as currMock, i (i)}
-                  <h4 class="text-sm text-neutral-700">
+                  <h4 class="text-sm text-text-dark-25">
                     {currMock.name || "Unnamed Mock"}
                   </h4>
 
@@ -362,7 +361,7 @@
           {/if}
         </div>
       {:else}
-        <p class="my-8 text-center text-neutral-600">
+        <p class="my-8 text-center text-text">
           Please select a component to view
         </p>
       {/if}
