@@ -9,7 +9,7 @@ from faker import Faker
 
 from authentication.models import User
 from consultations import models
-from consultations.models import DemographicOption, MultiChoiceAnswer
+from consultations.models import DemographicOption
 from embeddings import embed_text
 
 fake = Faker()
@@ -55,45 +55,6 @@ class ClosedQuestionFactory(QuestionFactory):
 class DemographicQuestionFactory(QuestionFactory):
     type = models.Question.QuestionType.DEMOGRAPHIC
     has_free_text = False
-
-
-class MultiChoiceAnswerFactory(DjangoModelFactory):
-    text = factory.Faker("word")
-    question = factory.SubFactory(QuestionFactory)
-
-    class Meta:
-        model = MultiChoiceAnswer
-
-
-class QuestionWithMultipleChoiceFactory(QuestionFactory):
-    class Meta:
-        model = models.Question
-        skip_postgeneration_save = True
-
-    has_free_text = False
-    has_multiple_choice = True
-
-    @factory.post_generation
-    def create_multiple_choice_responses(self, create, extracted, **kwargs):
-        if not create:
-            return
-        MultiChoiceAnswerFactory.create_batch(random.randint(2, 5), question=self)
-
-
-class QuestionWithBothFactory(QuestionFactory):
-    class Meta:
-        model = models.Question
-        skip_postgeneration_save = True
-
-    has_free_text = True
-    has_multiple_choice = True
-
-    @factory.post_generation
-    def create_multiple_choice_responses(self, create, extracted, **kwargs):
-        if not create:
-            return
-
-        MultiChoiceAnswerFactory.create_batch(random.randint(2, 5), question=self)
 
 
 class RespondentFactory(DjangoModelFactory):
@@ -148,46 +109,6 @@ class ResponseFactory(DjangoModelFactory):
         if not create:
             return
         self.question.update_response_counts()
-
-
-class ResponseWithMultipleChoiceFactory(ResponseFactory):
-    question = factory.SubFactory(QuestionWithMultipleChoiceFactory)
-    free_text = ""
-
-    @factory.post_generation
-    def themes(self, create, extracted, **kwargs):
-        if not create:
-            return
-
-        chosen_options = random.sample(
-            self.question.multiple_choice_options,
-            k=random.randint(1, len(self.question.multiple_choice_options)),
-        )
-        self.chosen_options.set(chosen_options)
-        self.save()
-
-    @factory.post_generation
-    def update_response_counts(self, create, extracted, **kwargs):
-        if not create:
-            return
-        MultiChoiceAnswer.update_response_counts(self.question)
-        self.question.update_response_counts()
-
-
-class ResponseWithBothFactory(ResponseFactory):
-    question = factory.SubFactory(QuestionWithBothFactory)
-    free_text = factory.LazyAttribute(lambda o: fake.paragraph())
-
-    @factory.post_generation
-    def themes(self, create, extracted, **kwargs):
-        if not create:
-            return
-        chosen_options = random.sample(
-            self.question.multiple_choice_options,
-            k=random.randint(1, len(self.question.multiple_choice_options)),
-        )
-        self.chosen_options.set(chosen_options)
-        self.save()
 
 
 class SelectedThemeFactory(DjangoModelFactory):
