@@ -84,7 +84,7 @@
                     expanded && "rotate-90",
                   ])}
                 >
-                  <MaterialIcon size="1.2rem" color="fill-secondary">
+                  <MaterialIcon size="1.2rem" color="fill-success">
                     <ChevronRight />
                   </MaterialIcon>
                 </div>
@@ -104,7 +104,7 @@
           </div>
         </div>
 
-        <p class="text-sm text-neutral-500">
+        <p class="text-sm text-text">
           {theme.description}
         </p>
 
@@ -140,8 +140,8 @@
               }}
               disabled={$responsesStore.isLoading}
             >
-              <div class="flex items-center gap-1 text-secondary">
-                <MaterialIcon color="fill-secondary">
+              <div class="flex items-center gap-1 text-success">
+                <MaterialIcon color="fill-success">
                   <Visibility />
                 </MaterialIcon>
                 <span class="whitespace-nowrap">
@@ -156,7 +156,7 @@
       {#if showResponses && !disabled}
         <aside
           transition:fly={{ x: 300 }}
-          class="grow pt-4 sm:ml-4 sm:w-2/3 sm:border-l sm:border-neutral-200 sm:pl-4 sm:pt-0"
+          class="grow pt-4 sm:ml-4 sm:w-2/3 sm:border-l sm:border-text-light-80 sm:pl-4 sm:pt-0"
         >
           <ResponsesList
             variant="generated"
