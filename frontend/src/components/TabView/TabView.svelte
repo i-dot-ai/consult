@@ -96,14 +96,14 @@
         "items-center",
         "overflow-x-auto",
         "rounded-2xl",
-        variant === "default" && "bg-neutral-200",
+        variant === "default" && "bg-text-light-50",
       ])}
       aria-label="Question details"
     >
       {#if tabs.length > 1 || variant === "default"}
         {#if variant !== "default"}
           <Button variant="ghost" handleClick={() => incrementTab()}>
-            <MaterialIcon color="fill-neutral-500">
+            <MaterialIcon color="fill-text">
               <ArrowForward />
             </MaterialIcon>
           </Button>
@@ -129,12 +129,12 @@
                 "duration-300",
                 "cursor-pointer",
                 $writableValue === tab.id && "bg-white",
-                "hover:bg-neutral-100",
+                "hover:bg-text-light-80",
               ])}
             >
               {#if tab.icon}
                 <div class="shrink-0">
-                  <MaterialIcon color="fill-neutral-500" title={tab.title}>
+                  <MaterialIcon color="fill-text" title={tab.title}>
                     {@const Icon = tab.icon}
                     <Icon />
                   </MaterialIcon>
@@ -162,9 +162,8 @@
                 "transition-colors",
                 "duration-300",
                 "cursor-pointer",
-                "bg-neutral-300",
-                $writableValue === tab.id && "bg-primary",
-                "hover:bg-pink-200",
+                $writableValue === tab.id ? "bg-primary" : "bg-text-light-50",
+                "hover:bg-primary-light-50",
               ])}
               aria-label={tab.title}
               title={tab.title}
