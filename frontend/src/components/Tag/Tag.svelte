@@ -32,20 +32,20 @@
     "text-xs",
     variant === "default" &&
       clsx([
-        "bg-neutral-100",
-        "text-neutral-800",
-        border && "border border-neutral-300",
+        "bg-text-light-95",
+        "text-text-dark-25",
+        border && "border border-text-light-50",
       ]),
     variant === "dark" && clsx(["bg-neutral-200", "text-neutral-800"]),
     variant === "primary" && clsx(["bg-primary", "text-white"]),
     variant === "primary-light" &&
-      clsx(["bg-pink-100", "text-primary", "border border-pink-300"]),
+      clsx(["bg-primary-light-95", "text-primary", "border border-primary-light-80"]),
     variant === "warning" &&
-      clsx(["text-yellow-700", "bg-yellow-100", "border border-yellow-400"]),
+      clsx(["text-warning", "bg-warning-light-95", "border border-warning-light-80"]),
     variant === "success" &&
-      clsx(["text-secondary", "bg-teal-50", "border border-teal-400"]),
+      clsx(["text-success", "bg-success-light-95", "border border-success-light-80"]),
     variant === "error" &&
-      clsx(["text-red-500", "bg-red-50", "border border-red-400"]),
+      clsx(["text-error", "bg-error-light-95", "border border-error-light-80"]),
   ])}
 >
   {@render children()}
