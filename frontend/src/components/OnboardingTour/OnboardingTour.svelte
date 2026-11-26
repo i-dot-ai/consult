@@ -182,7 +182,7 @@
       <header class="mb-8 flex items-start justify-between">
         <div class="flex items-center gap-2">
           {#if steps[currStep].icon}
-            <div class="rounded-full bg-pink-100 p-1">
+            <div class="rounded-full bg-primary-light-95 p-1">
               <MaterialIcon color="fill-primary" size="1.2rem">
                 {@const Icon = steps[currStep].icon}
                 <Icon />
@@ -194,7 +194,7 @@
             <h3 class="mb-1 text-sm">
               {steps[currStep].title}
             </h3>
-            <p class="text-xs text-neutral-500">
+            <p class="text-xs text-text">
               {steps[currStep].subtitle ||
                 `Step ${currStep + 1} of ${steps.length}`}
             </p>
@@ -202,13 +202,13 @@
         </div>
 
         <Button variant="ghost" handleClick={close}>
-          <MaterialIcon color="fill-neutral-500">
+          <MaterialIcon color="fill-text">
             <Close />
           </MaterialIcon>
         </Button>
       </header>
 
-      <p class="text-xs leading-5 text-neutral-700">
+      <p class="text-xs leading-5 text-text-dark-25">
         {#if typeof steps[currStep].body === "string"}
           <!-- eslint-disable-next-line svelte/no-at-html-tags -->
           {@html steps[currStep].body}
