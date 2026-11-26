@@ -304,7 +304,7 @@
       </TitleRow>
     </div>
 
-    <Panel bg={true} border={true}>
+    <Panel border={true}>
       {#if !dataRequested || $questionsStore.isLoading}
         <div transition:slide class="my-8">
           <LoadingIndicator size="5rem" />
