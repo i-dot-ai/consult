@@ -93,7 +93,7 @@
   >
     {#each items as item, i (i)}
       <li class="" aria-current={i === currStage ? "page" : undefined}>
-        <a href={item.url} class="block p-4 hover:bg-neutral-100">
+        <a href={item.url} class="block p-4 hover:bg-text-light-95">
           <div class="flex flex-col items-center justify-start gap-4">
             <div
               data-testid={i > currStage
@@ -104,11 +104,11 @@
               class={clsx([
                 "flex h-8 w-8 items-center justify-center rounded-full ring-3",
                 // future stages
-                i > currStage && "bg-pink-300 ring-pink-100",
+                i > currStage && "bg-text-light-50 ring-text-light-80",
                 // past stages
-                i < currStage && "bg-secondary ring-teal-100",
+                i < currStage && "bg-success ring-success-light-80",
                 // current stage
-                i === currStage && "animate-pulse bg-pink-700 ring-pink-200",
+                i === currStage && "animate-pulse bg-primary ring-primary-light-80",
               ])}
             >
               {#if i < currStage}
@@ -125,7 +125,7 @@
                 "text-center",
                 "text-xs",
                 "lg:min-h-0",
-                i < currStage ? "text-secondary" : "text-neutral-500",
+                i < currStage ? "text-success" : "text-text",
               ])}>{item.text}</span
             >
           </div>
@@ -139,7 +139,7 @@
             "-mt-16",
             "lg:-mt-8",
             "min-w-8",
-            i < currStage ? "border-secondary" : "border-pink-300",
+            i < currStage ? "border-success" : "border-primary-light-50",
           ])}
         />
       {/if}
@@ -148,7 +148,7 @@
 
   <div class="group my-2">
     <Button variant="ghost" href={Routes.HowItWorks} size="sm">
-      <MaterialIcon color="fill-neutral-500">
+      <MaterialIcon color="fill-text">
         <Help />
       </MaterialIcon>
 
