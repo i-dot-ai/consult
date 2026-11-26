@@ -77,12 +77,12 @@
             <td class="pr-4">
               <div in:fade class="p-2">
                 <h3
-                  class="blink mb-2 w-max select-none bg-neutral-100 text-sm font-bold text-neutral-100"
+                  class="blink mb-2 w-max select-none bg-text-light-80 text-text-light-80 text-sm font-bold"
                 >
                   {"SKELETON ".repeat(3)}
                 </h3>
                 <p
-                  class="blink select-none bg-neutral-100 text-sm text-neutral-100"
+                  class="blink select-none text-sm bg-text-light-80 text-text-light-80"
                 >
                   {"SKELETON ".repeat(5)}
                 </p>
@@ -91,7 +91,7 @@
 
             <td class="pr-4">
               <div class="mt-8">
-                <span class="blink select-none bg-neutral-100 text-neutral-100">
+                <span class="blink select-none bg-text-light-80 text-text-light-80">
                   000 SKELETON
                 </span>
               </div>
@@ -99,7 +99,7 @@
             <td class="pr-4">
               <div class="mt-8 flex items-center gap-1">
                 <span
-                  class="blink w-[5ch] select-none bg-neutral-100 text-neutral-100"
+                  class="blink w-[5ch] select-none bg-text-light-80 text-text-light-80"
                 >
                   000%
                 </span>
@@ -120,13 +120,13 @@
             animate:flip={{ duration: 300 + themes.length * TABLE_FLIP_SPEED }}
             class={clsx([
               "text-xs",
-              !theme.highlighted && "border-y border-neutral-300",
+              !theme.highlighted && "border-y border-text-light-80",
               "py-2",
               "cursor-pointer",
               "transition-colors",
               "duration-300",
-              "hover:bg-neutral-100",
-              theme.highlighted && "bg-pink-100",
+              "hover:bg-text-light-80",
+              theme.highlighted && "bg-primary-light-95",
             ])}
             onclick={theme.handleClick}
             tabindex="0"
@@ -136,7 +136,7 @@
             <td class="pr-4">
               <div in:fade class="p-2">
                 <h3 class="text-sm font-normal">{theme.name}</h3>
-                <p class="text-sm font-light text-neutral-500">
+                <p class="text-sm font-light text-text-light-25">
                   {theme.description}
                 </p>
               </div>
@@ -144,7 +144,7 @@
             <td class="pr-4">
               {#if countsLoading}
                 <span
-                  class="blink select-none rounded-sm bg-neutral-200 text-neutral-200"
+                  class="blink select-none rounded-sm bg-text-light-50 text-text-light-50"
                 >
                   00000
                 </span>
@@ -156,7 +156,7 @@
               <div class="flex items-center gap-1">
                 {#if countsLoading}
                   <span
-                    class="blink w-[5ch] select-none rounded-sm bg-neutral-200 text-neutral-200"
+                    class="blink w-[5ch] select-none rounded-sm bg-text-light-50 text-text-light-50"
                   >
                     000%
                   </span>
