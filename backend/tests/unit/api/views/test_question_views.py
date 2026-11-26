@@ -2,9 +2,8 @@ import pytest
 from django.urls import reverse
 from rest_framework_simplejwt.tokens import RefreshToken
 
-from consultations.models import MultiChoiceAnswer, Question
+from consultations.models import Question, Response
 from factories import (
-    MultiChoiceAnswerFactory,
     QuestionFactory,
     RespondentFactory,
     ResponseAnnotationFactoryNoThemes,
@@ -194,7 +193,7 @@ class TestQuestionViewSet:
         assert data["question_text"] == multi_choice_question.text
         assert data["total_response_count"] == 2
         answer_counts = {x["text"]: x["response_count"] for x in data["multiple_choice_answer"]}
-        assert answer_counts == {"blue": 1, "green": 0, "red": 2}
+        assert answer_counts == {"blue": 1, "red": 2}
 
     def test_get_multiple_choice_question_with_demographic_filter(
         self,
@@ -205,39 +204,18 @@ class TestQuestionViewSet:
         southern_demographic,
     ):
         """Test that demographic filters correctly update multiple choice counts"""
-        from consultations.models import Response
-
-        # Create multi-choice answers
-        red = multi_choice_question.multichoiceanswer_set.get(text="red")
-        blue = multi_choice_question.multichoiceanswer_set.get(text="blue")
-
-        # Create respondents with demographics
-        # Respondent 1: northern, chooses red and blue
-        respondent_1 = RespondentFactory(consultation=multi_choice_question.consultation)
-        respondent_1.demographics.add(northern_demographic)
-        response_1 = Response.objects.create(
-            respondent=respondent_1, question=multi_choice_question, text="red"
-        )
-        response_1.chosen_options.add(red, blue)
-
-        # Respondent 2: northern, chooses red
-        respondent_2 = RespondentFactory(consultation=multi_choice_question.consultation)
-        respondent_2.demographics.add(northern_demographic)
-        response_2 = Response.objects.create(
-            respondent=respondent_2, question=multi_choice_question, text="red"
-        )
-        response_2.chosen_options.add(red)
-
-        # Respondent 3: southern, chooses blue
-        respondent_3 = RespondentFactory(consultation=multi_choice_question.consultation)
-        respondent_3.demographics.add(southern_demographic)
-        response_3 = Response.objects.create(
-            respondent=respondent_3, question=multi_choice_question, text="blue"
-        )
-        response_3.chosen_options.add(blue)
-
-        # Update denormalised counts
-        MultiChoiceAnswer.update_response_counts(multi_choice_question)
+        consultation = multi_choice_question.consultation
+        for demographic, options in (
+            (northern_demographic, ["red", "blue"]),
+            (northern_demographic, ["red"]),
+            (southern_demographic, ["blue"]),
+        ):
+            respondent = RespondentFactory(consultation=consultation)
+            respondent.demographics.add(demographic)
+            Response.objects.bulk_create(
+                Response(respondent=respondent, question=multi_choice_question, text=option)
+                for option in options
+            )
         multi_choice_question.update_response_counts()
 
         url = reverse(
@@ -257,7 +235,7 @@ class TestQuestionViewSet:
         assert response.status_code == 200
         data = response.json()
         answer_counts = {x["text"]: x["response_count"] for x in data["multiple_choice_answer"]}
-        assert answer_counts == {"blue": 2, "red": 2, "green": 0}
+        assert answer_counts == {"blue": 2, "red": 2}
         assert data["total_response_count"] == 3
         assert data["multi_choice_response_count"] == 3
 
@@ -270,7 +248,7 @@ class TestQuestionViewSet:
         assert response.status_code == 200
         data = response.json()
         answer_counts = {x["text"]: x["response_count"] for x in data["multiple_choice_answer"]}
-        assert answer_counts == {"blue": 1, "red": 2, "green": 0}
+        assert answer_counts == {"blue": 1, "red": 2}
         assert data["total_response_count"] == 2
         assert data["multi_choice_response_count"] == 2
 
@@ -283,7 +261,7 @@ class TestQuestionViewSet:
         assert response.status_code == 200
         data = response.json()
         answer_counts = {x["text"]: x["response_count"] for x in data["multiple_choice_answer"]}
-        assert answer_counts == {"blue": 1, "red": 0, "green": 0}
+        assert answer_counts == {"blue": 1, "red": 0}
         assert data["total_response_count"] == 1
         assert data["multi_choice_response_count"] == 1
 
@@ -685,8 +663,6 @@ class TestQuestionViewSet:
             number=1,
             text="whats your favourite colour",
         )
-        MultiChoiceAnswerFactory.create(question=hybrid_question, text="red")
-
         url = reverse(
             "question-detail",
             kwargs={

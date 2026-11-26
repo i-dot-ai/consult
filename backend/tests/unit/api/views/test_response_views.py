@@ -48,7 +48,7 @@ class TestResponseViewSet:
         - 1 query to get authentication user for is_flagged annotation
         - 1 query to count filtered responses
         - 1 query to get responses with related data (includes is_read annotation)
-        - 1 query to prefetch multiple choice answers
+        - 1 query to prefetch selected answers on closed questions
         - 1 query to prefetch demographic data
         """
         with django_assert_num_queries(6):
@@ -445,42 +445,34 @@ class TestResponseViewSet:
             assert response.json()["all_respondents"][0]["is_flagged"] == is_flagged
 
     @pytest.mark.parametrize(
-        ("chosen_options", "expected_responses"),
+        ("answers", "expected_responses"),
         [
-            (["red", "blue"], 2),
-            (["red"], 2),
-            (["blue"], 1),
-            (["not-a-real-answer"], 2),
-            ([], 2),
+            (["red", "blue"], 3),
+            (["red"], 3),
+            (["blue"], 2),
+            (["not-a-real-answer"], 0),
+            ([], 3),
         ],
     )
-    def test_get_filtered_response_chosen_options(
+    def test_get_filtered_response_answers(
         self,
         client,
         staff_user_token,
         staff_user,
         multi_choice_responses,
         multi_choice_question,
-        chosen_options,
+        answers,
         expected_responses,
     ):
+        """Each selected option is a row, so a filter keeps every row of a matching respondent."""
         url = reverse(
             "response-list",
             kwargs={"consultation_pk": multi_choice_question.consultation.id},
         )
 
-        _chosen_options = multi_choice_question.multichoiceanswer_set.filter(
-            question=multi_choice_question, text__in=chosen_options
-        )
-
-        chosen_options_query = ",".join(str(x.pk) for x in _chosen_options)
-
         response = client.get(
             url,
-            query_params={
-                "multiple_choice_answer": chosen_options_query,
-                "question_id": multi_choice_question.id,
-            },
+            query_params={"answers": answers, "question_id": multi_choice_question.id},
             headers={"Authorization": f"Bearer {staff_user_token}"},
         )
 
