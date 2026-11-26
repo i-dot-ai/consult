@@ -143,7 +143,7 @@
     </TitleRow>
   </div>
 
-  <Panel bg={true} border={true}>
+  <Panel border={true}>
     {#if !dataRequested || $questionsStore.isLoading}
       <LoadingMessage message="Loading Questions..." />
     {:else if $questionsStore.error}
