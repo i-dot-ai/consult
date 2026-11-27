@@ -264,7 +264,7 @@ export const applyHighlight = (
   const regex = new RegExp(matchedText, "gi");
   return fullText.replace(
     regex,
-    (match) => `<span class="bg-yellow-300">${match}</span>`,
+    (match) => `<span class="bg-warning-light-80">${match}</span>`,
   );
 };
 
