@@ -71,12 +71,12 @@
       return "fill-primary";
     }
     if (variant === "secondary") {
-      return "fill-secondary";
+      return "fill-success";
     }
     if (variant === "warning") {
-      return "fill-orange-600";
+      return "fill-warning";
     }
-    return "fill-neutral-500";
+    return "fill-text";
   };
 </script>
 
@@ -128,11 +128,11 @@
           use:melt={$titleMelt}
           class={clsx(
             compact
-              ? ["text-base", "font-medium", "text-neutral-900"]
+              ? ["text-base", "font-medium", "text-text-dark-50"]
               : [
                   "text-lg",
-                  variant === "secondary" && "text-secondary",
-                  variant === "warning" && "text-orange-600",
+                  variant === "secondary" && "text-success",
+                  variant === "warning" && "text-warning",
                 ],
           )}
         >
