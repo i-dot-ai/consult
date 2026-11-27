@@ -4,6 +4,6 @@
   let { children } = $props();
 </script>
 
-<p class={clsx(["mb-4", "text-lg", "text-neutral-700"])}>
+<p class={clsx(["mb-4", "text-lg", "text-text-dark-25"])}>
   {@render children()}
 </p>
