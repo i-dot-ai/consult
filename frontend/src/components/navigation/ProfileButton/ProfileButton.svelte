@@ -46,11 +46,12 @@
         "border-2",
         "border-transparent",
         "rounded-full",
-        "bg-neutral-700",
+        "bg-text-dark-25",
         "text-xs",
         "transition-colors",
+        "cursor-pointer",
         "hover:border-primary",
-        "hover:bg-neutral-600",
+        "hover:bg-text-dark-50",
       ])}
     >
       <MaterialIcon size="1.5rem" color="fill-white">
