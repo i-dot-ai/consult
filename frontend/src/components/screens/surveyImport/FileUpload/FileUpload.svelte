@@ -120,7 +120,7 @@
       {#if !deepValidation.query.data?.valid}
         <div class="p-2">
           <div class="flex items-center gap-2">
-            <MaterialIcon color="fill-red-800" size="1.5rem">
+            <MaterialIcon color="fill-error-dark-25" size="1.5rem">
               <Warning />
             </MaterialIcon>
             <Title level={2}>
@@ -135,13 +135,13 @@
 
             {#if deepValidation.query.data?.errors}
               <div
-                class="border border-2 border-red-500 p-4 rounded-lg mt-4 mb-8"
+                class="border border-2 border-error p-4 rounded-lg mt-4 mb-8"
               >
-                <p class="text-sm text-red-500 mb-4">There is a problem</p>
+                <p class="text-sm text-error mb-4">There is a problem</p>
 
                 <ul class="list-disc">
                   {#each deepValidation.query.data?.errors as error, i (i)}
-                    <li class="text-red-500 text-sm ml-8">
+                    <li class="text-error text-sm ml-8">
                       {#if error.cell}
                         <span>Cell {error.cell}:</span>
                       {/if}
