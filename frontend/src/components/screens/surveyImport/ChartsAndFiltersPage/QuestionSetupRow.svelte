@@ -308,7 +308,7 @@
       {#if nameError}
         <p
           id={`short-name-${question.id}-error`}
-          class="mt-1 text-sm font-bold text-red-600"
+          class="mt-1 text-sm font-bold text-error"
           role="alert"
         >
           {nameError}
