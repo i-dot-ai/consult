@@ -26,7 +26,7 @@
   >
     <div
       class={clsx([
-        "bg-neutral-100",
+        "bg-text-light-95",
         "w-24",
         "h-24",
         "rounded-full",
@@ -35,7 +35,7 @@
         "justify-center",
       ])}
     >
-      <MaterialIcon color="fill-neutral-600" size="4rem">
+      <MaterialIcon color="fill-text" size="4rem">
         <CheckCircle />
       </MaterialIcon>
     </div>
@@ -45,7 +45,7 @@
         File structure valid
       </span>
     </Title>
-    <p class={clsx(["text-md", "text-center", "text-neutral-600"])}>
+    <p class={clsx(["text-md", "text-center", "text-text"])}>
       We've successfully validated your data file and there are <br />
       <strong>{numQuestions < 0 ? "0" : numQuestions.toString()}</strong> questions
       detected.
