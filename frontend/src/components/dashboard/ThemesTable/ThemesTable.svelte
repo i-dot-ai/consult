@@ -68,7 +68,7 @@
             class={clsx([
               "text-xs",
               "border-y",
-              "border-neutral-300",
+              "border-text-light-50",
               "py-2",
               "transition-colors",
               "duration-300",
