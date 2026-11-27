@@ -83,24 +83,24 @@
 </script>
 
 {#snippet finalisingInProgressContent()}
-  <p class="my-4 text-center text-sm text-neutral-500">
+  <p class="my-4 text-center text-sm text-text">
     Review and sign off themes for each consultation question.
     {finalisedQuestionCount} of {questionsCount} questions signed off.
   </p>
 
-  <p class="my-4 text-center text-sm text-neutral-500">
+  <p class="my-4 text-center text-sm text-text">
     <strong>Next:</strong> Once all questions are signed off, you can confirm and
     proceed to AI assignment.
   </p>
 {/snippet}
 
 {#snippet finalisingCompleteContent()}
-  <p class="my-4 text-center text-sm text-neutral-500">
+  <p class="my-4 text-center text-sm text-text">
     You have successfully reviewed and signed off themes for all {questionsCount}
     consultation questions.
   </p>
 
-  <p class="my-4 text-center text-sm text-neutral-500">
+  <p class="my-4 text-center text-sm text-text">
     <strong>Next:</strong> Confirm and proceed to the AI assignment phase where responses
     will be assigned to your selected themes.
   </p>
@@ -122,33 +122,33 @@
 {/snippet}
 
 {#snippet assigningContent()}
-  <p class="my-4 text-center text-sm text-neutral-500">
+  <p class="my-4 text-center text-sm text-text">
     You have completed finalising themes phase for all {questionsCount} consultation
     questions.
   </p>
 
-  <p class="my-4 text-center text-sm text-neutral-500">
+  <p class="my-4 text-center text-sm text-text">
     AI is currently assigning consultation responses to your selected themes.
     This process analyses each response and assigns it to the most relevant
     themes you've selected.
   </p>
 
-  <p class="my-4 text-center text-sm text-neutral-500">
+  <p class="my-4 text-center text-sm text-text">
     <strong>Next:</strong> When assigning themes is complete, you'll be able to access
     the Analysis Dashboard to view all assigned responses and detailed insights.
   </p>
 {/snippet}
 
 {#snippet analysisContent()}
-  <p class="my-4 text-center text-sm text-neutral-500">
+  <p class="my-4 text-center text-sm text-text">
     All consultation responses have been successfully assigned against your
     selected themes.
   </p>
 
-  <p class="my-4 text-center text-sm text-neutral-500">
+  <p class="my-4 text-center text-sm text-text">
     <strong>Next:</strong> View the mapped data in the
     <a
-      class="text-secondary hover:underline"
+      class="text-success hover:underline"
       href={getConsultationDashboardUrl(consultation.id)}
     >
       Analysis Dashboard
@@ -170,19 +170,19 @@
   <div class="flex min-w-16 flex-col items-center">
     <div
       class={clsx("my-2 rounded-full p-2", {
-        "bg-secondary": status === "done",
-        "bg-neutral-200": status === "todo",
-        "bg-secondary ring-4 ring-teal-100": status === "current",
+        "bg-success": status === "done",
+        "bg-text-light-80": status === "todo",
+        "bg-success ring-4 ring-success-light-50": status === "current",
       })}
     >
       <MaterialIcon
-        color={status === "todo" ? "fill-neutral-500" : "fill-white"}
+        color={status === "todo" ? "fill-text" : "fill-white"}
         size="1.2rem"
       >
         <Icon />
       </MaterialIcon>
     </div>
-    <h3 class={clsx("text-xs", { "text-secondary": status === "current" })}>
+    <h3 class={clsx("text-xs", { "text-success": status === "current" })}>
       {label}
     </h3>
   </div>
@@ -199,7 +199,7 @@
         "gap-4",
         "text-xs",
         "text-center",
-        "text-neutral-700",
+        "text-text-dark-25",
         "mb-8",
         "w-3/4",
         "mx-auto",
@@ -215,7 +215,7 @@
     </ol>
 
     <div class="px-0 md:px-16">
-      <h2 class="text-center text-secondary">
+      <h2 class="text-center text-success">
         {title}
       </h2>
       {#if isFinalisingThemes && allQuestionsFinalised}
