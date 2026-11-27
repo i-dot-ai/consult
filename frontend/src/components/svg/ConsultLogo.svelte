@@ -12,7 +12,7 @@
     closed with a full stop in the settled green.</desc
   >
   <g
-    stroke="var(--color-text)"
+    stroke="var(--color-consult-logo-text)"
     stroke-width="2.4"
     stroke-linecap="round"
     fill="none"
@@ -29,7 +29,7 @@
     font-family="Inter, Arial, sans-serif"
     font-size="17"
     font-weight="700"
-    fill="var(--color-text)"
-    >Consult<tspan fill="var(--color-primary)">.</tspan></text
+    fill="var(--color-consult-logo-text)"
+    >Consult<tspan fill="var(--color-consult-logo-dot)">.</tspan></text
   >
 </svg>

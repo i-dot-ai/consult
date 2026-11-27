@@ -49,7 +49,8 @@
   --color-text-light-80: var(--color-text-light-80);
   --color-text-light-95: var(--color-text-light-95);
 
-  --color-secondary: var(--color-secondary);
+  --color-consult-logo-dot: var(--color-consult-logo-dot);
+  --color-consult-logo-text: var(--color-consult-logo-text);
 
   --color-iaiteal-50: oklch(0.96 0.02 175);
   --color-iaiteal-100: oklch(0.91 0.05 175);
@@ -158,8 +159,8 @@
   --color-text-light-80: oklch(0.9254 0.0115 252.09);
   --color-text-light-95: oklch(0.975 0.0062 255.47);
 
-  --color-secondary: oklch(0.6429 0.103 186.61);
-  --color-secondary-dark: oklch(0.4275 0.0746 187.12);
+  --color-consult-logo-dot: oklch(0.389 0.0889 153.22);
+  --color-consult-logo-text: oklch(0.1532 0.0017 196.98);
 }
 
 .blink {
