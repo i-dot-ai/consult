@@ -13,7 +13,7 @@
     "list-disc",
     "pl-6",
     "mb-6",
-    "text-neutral-700",
+    "text-text-dark-25",
     "space-y-2",
     "[&>li]:text-lg",
   ])}
