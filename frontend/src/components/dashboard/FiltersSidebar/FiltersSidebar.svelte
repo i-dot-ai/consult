@@ -36,7 +36,7 @@
           <section>
             <Panel level={2} border={true} bg={false}>
               <h3
-                class="blink w-max select-none bg-neutral-100 text-neutral-100"
+                class="blink w-max select-none bg-text-light-95 text-text-light-95"
               >
                 skeleton
               </h3>
@@ -44,20 +44,20 @@
                 <div class="demo-filter relative w-full pb-3">
                   <div class="mb-1 grid grid-cols-3 gap-1">
                     <span
-                      class="blink select-none bg-neutral-100 text-left text-neutral-100"
+                      class="blink select-none bg-text-light-95 text-left text-text-light-95"
                       >skeleton</span
                     >
                     <span
-                      class="blink select-none bg-neutral-100 text-right text-neutral-100"
+                      class="blink select-none bg-text-light-95 text-right text-text-light-95"
                       >000%</span
                     >
                     <span
-                      class="blink select-none bg-neutral-100 text-right text-neutral-100"
+                      class="blink select-none bg-text-light-95 text-right text-text-light-95"
                       >00000</span
                     >
                   </div>
                   <div
-                    class="blink w-full select-none bg-neutral-100 text-neutral-100"
+                    class="blink w-full select-none bg-text-light-95 text-text-light-95"
                   >
                     {"_".repeat(10)}
                   </div>
