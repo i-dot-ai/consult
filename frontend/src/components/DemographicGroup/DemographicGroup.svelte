@@ -39,7 +39,7 @@
         </h3>
 
         <div class={clsx(["transition-transform", !expanded && "-rotate-90"])}>
-          <MaterialIcon color="fill-neutral-400" size="1.3rem">
+          <MaterialIcon color="fill-text-light-25" size="1.3rem">
             <KeyboardArrowDown />
           </MaterialIcon>
         </div>
@@ -67,7 +67,7 @@
 
                 {#if countsLoading}
                   <span
-                    class="blink select-none rounded-sm bg-neutral-200 text-neutral-200"
+                    class="blink select-none rounded-sm bg-text-light-80 text-text-light-80"
                   >
                     0000
                   </span>
