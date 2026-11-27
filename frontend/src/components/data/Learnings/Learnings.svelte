@@ -45,7 +45,7 @@
   };
 </script>
 
-<div class={clsx(["border", "border-secondary", "p-4", "rounded-lg"])}>
+<div class={clsx(["border", "border-success", "p-4", "rounded-lg"])}>
   <div class={clsx(["flex", "gap-2", "justify-between", "items-center"])}>
     <Title level={3}>
       <span class={clsx(["block", "text-sm", "font-medium", "mt-2", "mb-4"])}>
@@ -59,7 +59,7 @@
         handleClick={onClose}
         ariaLabel="close-learnings-panel"
       >
-        <MaterialIcon color="fill-neutral-500">
+        <MaterialIcon color="fill-text">
           <Close />
         </MaterialIcon>
       </Button>
@@ -68,12 +68,12 @@
 
   <div
     {id}
-    class={clsx(["bg-neutral-100", "px-4", "pt-6", "pb-8", "rounded-lg"])}
+    class={clsx(["bg-text-light-95", "px-4", "pt-6", "pb-8", "rounded-lg"])}
   >
     <div class="flex gap-4">
       {#if items.length === 0}
         <p
-          class={clsx(["w-full", "text-neutral-600", "text-sm", "text-center"])}
+          class={clsx(["w-full", "text-text-dark-25", "text-sm", "text-center"])}
         >
           No learnings available
         </p>
@@ -89,10 +89,10 @@
             "px-4",
             "font-bold",
             "text-xs",
-            "text-neutral-700",
+            "text-text-dark-50",
             "bg-white",
             "border-2",
-            "border-neutral-500",
+            "border-text",
           ])}
         >
           {#if currItem.icon}
@@ -113,14 +113,14 @@
               />
             </div>
           {:else}
-            <MaterialIcon color="fill-neutral-700" size="1.5rem">
+            <MaterialIcon color="fill-text-dark-50" size="1.5rem">
               <Star fill={true} />
             </MaterialIcon>
             {currItem.abbreviation || currItem.organisation.charAt(0)}
           {/if}
         </div>
         <div>
-          <p class={clsx(["text-sm", "text-neutral-600", "mb-2"])}>
+          <p class={clsx(["text-sm", "text-text-dark-25", "mb-2"])}>
             {`"${currItem.text}"`}
           </p>
 
@@ -129,7 +129,7 @@
               {currItem.author}
             </span>
           </Title>
-          <p class={clsx(["text-xs", "text-neutral-600"])}>
+          <p class={clsx(["text-xs", "text-text-dark-25"])}>
             {currItem.organisation}
           </p>
         </div>
@@ -168,7 +168,7 @@
             }
           }}
         >
-          <MaterialIcon color="fill-neutral-500">
+          <MaterialIcon color="fill-text">
             <ChevronRight />
           </MaterialIcon>
         </Button>
@@ -204,7 +204,7 @@
             }
           }}
         >
-          <MaterialIcon color="fill-neutral-500">
+          <MaterialIcon color="fill-text">
             <ChevronRight />
           </MaterialIcon>
         </Button>
@@ -213,7 +213,7 @@
 
     <div class="m-auto mt-4 flex justify-center md:block">
       <Button handleClick={onPersistentClose} variant="ghost">
-        <div class={clsx(["underline", "text-xs", "text-neutral-500"])}>
+        <div class={clsx(["underline", "text-xs", "text-text"])}>
           Don't show me this again
         </div>
       </Button>
