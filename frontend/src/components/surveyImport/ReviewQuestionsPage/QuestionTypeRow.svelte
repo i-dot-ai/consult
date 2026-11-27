@@ -177,11 +177,11 @@
 
 <div
   class={clsx([
-    "flex flex-wrap items-start gap-4 border-t border-neutral-200 px-7 py-4",
-    changeTags.length > 0 && "bg-neutral-50",
+    "flex flex-wrap items-start gap-4 border-t border-text-light-80 px-7 py-4",
+    changeTags.length > 0 && "bg-text-light-95",
   ])}
 >
-  <span class="w-16 shrink-0 pt-1.5 text-md text-neutral-500">
+  <span class="w-16 shrink-0 pt-1.5 text-md text-text">
     Q{question.number}
   </span>
   <div class="min-w-48 flex-1 pt-1.5">
@@ -190,7 +190,7 @@
         {#if draftError}
           <p
             id={`wording-${question.id}-error`}
-            class="mb-1 text-sm font-bold text-red-600"
+            class="mb-1 text-sm font-bold text-error"
             role="alert"
           >
             {draftError}
@@ -219,14 +219,14 @@
         </div>
       </div>
     {:else}
-      <p class="text-md text-neutral-900">{question.text}</p>
+      <p class="text-md text-text-dark-50">{question.text}</p>
     {/if}
     {#if changeTags.length > 0}
       <div class="mt-2 flex flex-wrap gap-2">
         {#each changeTags as tag (tag)}
           <Tag border={true}>
             <span class="flex items-center gap-1">
-              <MaterialIcon color="fill-neutral-500" size="0.8rem">
+              <MaterialIcon color="fill-text" size="0.8rem">
                 <EditSquare />
               </MaterialIcon>
               {tag}
@@ -248,20 +248,20 @@
       </Button>
     </div>
     {#if showAnswers}
-      <div class="mt-3 rounded-lg bg-neutral-100 p-3 text-sm">
+      <div class="mt-3 rounded-lg bg-text-light-95 p-3 text-sm">
         {#if answersFailed}
-          <p class="text-neutral-500">No answers for this question.</p>
+          <p class="text-text">No answers for this question.</p>
         {:else if answers === undefined}
-          <p class="text-neutral-500">Loading answers...</p>
+          <p class="text-text">Loading answers...</p>
         {:else if answers.length === 0}
-          <p class="text-neutral-500">No answers for this question.</p>
+          <p class="text-text">No answers for this question.</p>
         {:else}
-          <p class="mb-1.5 text-xs text-neutral-500">
+          <p class="mb-1.5 text-xs text-text">
             A sample. {answers.length} of {question.response_count} answers to this
             question
           </p>
           {#each answers as text, index (index)}
-            <p class="leading-relaxed text-neutral-900 not-last:mb-2">{text}</p>
+            <p class="leading-relaxed text-text-dark-50 not-last:mb-2">{text}</p>
           {/each}
         {/if}
       </div>
@@ -270,7 +270,7 @@
     {#if question.type === "closed"}
       {#if proposed && !linking && linkedQuestions.length === 0}
         <div
-          class="mt-2 rounded-lg bg-neutral-100 p-3 text-sm leading-relaxed text-neutral-500"
+          class="mt-2 rounded-lg bg-text-light-95 p-3 text-sm leading-relaxed text-text"
           role="group"
           aria-label={`Suggested link for question ${question.number}`}
         >
@@ -293,7 +293,7 @@
       {:else if linking}
         <div class="mt-2">
           {#if linkTargets.length === 0}
-            <p class="text-sm text-neutral-500">
+            <p class="text-sm text-text">
               Set an open question first, then link it to this one.
             </p>
           {:else}
@@ -334,7 +334,7 @@
           {#each linkedQuestions as linked (linked.id)}
             <Tag border={true} wrap={true}>
               <span class="flex flex-wrap items-center gap-1">
-                <MaterialIcon color="fill-neutral-500" size="0.8rem">
+                <MaterialIcon color="fill-text" size="0.8rem">
                   <Link />
                 </MaterialIcon>
                 Explains Q{linked.number}. Its answers can be filtered by this
@@ -399,7 +399,7 @@
   @reference "../../../styles/global.css";
 
   .type-cell :global(label) {
-    @apply text-sm text-neutral-500 md:text-sm;
+    @apply text-sm text-text md:text-sm;
   }
 
   .link-picker :global(label) {
