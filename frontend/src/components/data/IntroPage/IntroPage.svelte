@@ -63,7 +63,7 @@
     </span>
   </Title>
 
-  <p class={clsx(["text-neutral-500", "text-md"])}>
+  <p class={clsx(["text-text", "text-md"])}>
     Prepare and structure your data ready for AI analysis. <br />
     If you're still collecting responses, use this phase to understand what's needed
     before your consultation closes.
@@ -75,7 +75,7 @@
     <span class={clsx(["text-md", "mb-2"])}> What you'll do </span>
   </Title>
 
-  <p class={clsx(["text-neutral-500", "text-xs", "my-4"])}>
+  <p class={clsx(["text-text", "text-xs", "my-4"])}>
     You'll complete 5 individual steps, organised into 3 phases:
   </p>
 
