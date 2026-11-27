@@ -47,7 +47,7 @@
 >
   {#if !hideLabel}
     <label
-      class="grow cursor-pointer pr-4 leading-none text-neutral-800"
+      class="grow cursor-pointer pr-4 leading-none text-text-dark-50"
       for={id}
       id={`${id}-label`}
     >
@@ -65,12 +65,12 @@
       "relative",
       "cursor-pointer",
       "rounded-full",
-      "bg-neutral-300",
+      "bg-text-light-50",
       "transition-colors",
-      "data-[state=checked]:bg-neutral-800",
+      "data-[state=checked]:bg-text-dark-50",
       "shrink-0",
-      "data-[state=checked]:hover:bg-neutral-600",
-      "hover:bg-neutral-400",
+      "data-[state=checked]:hover:bg-text-dark-25",
+      "hover:bg-text-light-25",
     ])}
     {id}
     aria-labelledby={`${id}-label`}
