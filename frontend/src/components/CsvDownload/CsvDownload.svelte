@@ -42,10 +42,10 @@
   data-testid="csv-download"
 >
   <Button size="sm">
-    <MaterialIcon color="fill-neutral-700">
+    <MaterialIcon color="fill-text-dark-25">
       <Download />
     </MaterialIcon>
 
-    <span class="text-xs text-neutral-700"> Export </span>
+    <span class="text-xs text-text-dark-25"> Export </span>
   </Button>
 </a>
