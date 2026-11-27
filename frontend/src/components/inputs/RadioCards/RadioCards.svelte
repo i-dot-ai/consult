@@ -25,12 +25,12 @@
 </script>
 
 <fieldset class="m-0 border-0 p-0">
-  <legend class="text-base leading-tight font-medium text-neutral-900">
+  <legend class="text-base leading-tight font-medium text-text-dark-50">
     <h2 class="leading-inherit m-0 text-inherit">{legend}</h2>
   </legend>
 
   {#if hint}
-    <p class="mt-1 text-sm text-neutral-500">{hint}</p>
+    <p class="mt-1 text-sm text-text">{hint}</p>
   {/if}
 
   <div class="mt-4 grid gap-2.5 sm:grid-cols-2">
@@ -55,19 +55,19 @@
             "rounded-lg border px-3.5 py-4 text-sm transition-colors",
             // ring-inset thickens the selected border without resizing the card
             checked
-              ? "border-neutral-900 bg-neutral-100 ring-1 ring-neutral-900 ring-inset"
-              : "border-neutral-300 bg-white hover:bg-neutral-100",
-            "peer-focus-visible:outline-3 peer-focus-visible:outline-yellow-400 peer-focus-visible:outline-offset-0",
+              ? "border-text-dark-50 bg-text-light-95 ring-1 ring-text-dark-50 ring-inset"
+              : "border-text-light-50 bg-white hover:bg-text-light-95",
+            "peer-focus-visible:outline-3 peer-focus-visible:outline-warning peer-focus-visible:outline-offset-0",
           ])}
         >
           <span class="flex flex-col">
-            <span class="text-neutral-900">{item.text}</span>
+            <span class="text-text-dark-50">{item.text}</span>
             {#if item.hint}
-              <span class="mt-0.5 text-xs text-neutral-500">{item.hint}</span>
+              <span class="mt-0.5 text-xs text-text">{item.hint}</span>
             {/if}
           </span>
           {#if checked}
-            <MaterialIcon color="fill-neutral-900" size="1rem">
+            <MaterialIcon color="fill-text-dark-50" size="1rem">
               <Check />
             </MaterialIcon>
           {/if}
