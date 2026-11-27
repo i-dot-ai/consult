@@ -169,7 +169,7 @@
     </Text>
 
     {#if themesToImport.length > 0}
-      <div class="rounded-sm border border-green-200 bg-green-50 p-3">
+      <div class="rounded-sm border border-success-light-80 bg-success-light-95 p-3">
         <p class="text-sm font-medium text-success-dark-50">
           {themesToImport.reduce(
             (sum, q) => sum + (q.source_themes?.length || 0),
@@ -207,7 +207,7 @@
                   class={clsx([
                     "rounded-sm px-2 py-0.5 text-xs",
                     question.status === "will_import" &&
-                      "bg-green-100 text-success-dark-50",
+                      "bg-success-light-95 text-success-dark-50",
                     question.status !== "will_import" &&
                       "bg-error-light-95 text-error-dark-25",
                   ])}
@@ -269,7 +269,7 @@
 
 {#if result}
   <div class="mt-6 flex flex-col gap-4">
-    <div class="rounded-sm border border-green-200 bg-green-50 p-3">
+    <div class="rounded-sm border border-success-light-80 bg-success-light-95 p-3">
       <p class="text-sm font-medium text-success-dark-50">
         Successfully imported {result.total_themes_imported} finalised theme(s) from
         <strong>{result.source_consultation.title}</strong>.
