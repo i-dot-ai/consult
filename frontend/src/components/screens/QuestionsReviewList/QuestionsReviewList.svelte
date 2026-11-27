@@ -96,7 +96,7 @@
           handleClick={() => handleShowNext(question.id!)}
           disabled={loadingStates[question.id!] || false}
         >
-          <MaterialIcon color="fill-neutral-500" size="1rem">
+          <MaterialIcon color="fill-text" size="1rem">
             <Visibility />
           </MaterialIcon>
           {#if loadingStates[question.id!]}
