@@ -46,7 +46,7 @@
 
 <form class={clsx(["flex", "flex-col", "gap-4"])}>
   {#if "general" in errors}
-    <small class="text-sm text-red-500" transition:slide={{ duration: 300 }}>
+    <small class="text-sm text-error" transition:slide={{ duration: 300 }}>
       {errors.general}
     </small>
   {/if}
