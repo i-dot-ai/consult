@@ -38,7 +38,7 @@
 
   <div class="mt-4">
     {#if items.length === 0}
-      <p class={clsx(["w-full", "text-neutral-500", "text-sm"])}>
+      <p class={clsx(["w-full", "text-text", "text-sm"])}>
         No checklist items available
       </p>
     {/if}
@@ -46,7 +46,7 @@
     {#each items as item (item.id)}
       <div
         class={clsx(
-          "bg-neutral-50",
+          "bg-text-light-95",
           "shadow-sm",
           "text-xs",
           "p-2",
@@ -89,7 +89,7 @@
               ariaLabel={`Show/Hide ${item.id}-details`}
             >
               <span
-                class="-ml-2 text-nowrap text-secondarydark hover:underline"
+                class="-ml-2 text-nowrap text-success-dark-25 hover:underline"
               >
                 {expanded.includes(item.id)
                   ? "Hide example"
@@ -102,7 +102,7 @@
             <div
               id={`${item.id}-details`}
               transition:slide
-              class="my-2 rounded-lg bg-white p-2 text-neutral-500"
+              class="my-2 rounded-lg bg-white p-2 text-text"
             >
               {#if typeof item.text === "string"}
                 {item.text}
