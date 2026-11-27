@@ -86,7 +86,7 @@
             <div data-testid="question-icon">
               <MaterialIcon
                 size="1.3rem"
-                color={disabled ? "fill-neutral-400" : "fill-secondary"}
+                color={disabled ? "fill-text" : "fill-success"}
               >
                 {#if !isFreeTextQuestion}
                   <Checklist />
@@ -112,8 +112,8 @@
                 "transition-colors",
                 "duration-1000",
                 "select-none",
-                "bg-neutral-100",
-                "text-neutral-100",
+                "bg-text-light-95",
+                "text-text-light-95",
                 "blink",
               ])}
             >
@@ -130,8 +130,8 @@
                   clsx([
                     "w-max",
                     "select-none",
-                    "bg-neutral-100",
-                    "text-neutral-100",
+                    "bg-text-light-95",
+                    "text-text-light-95",
                     "blink",
                   ]),
               ])}
@@ -161,7 +161,7 @@
             >
               {#if countsLoading}
                 <span
-                  class="blink select-none rounded-sm bg-neutral-200 text-neutral-200"
+                  class="blink select-none rounded-sm bg-text-light-80 text-text-light-80"
                 >
                   00000 responses
                 </span>
@@ -173,7 +173,7 @@
             {#if subtext}
               <small
                 class={clsx([
-                  "text-xs text-neutral-500",
+                  "text-xs text-text",
                   disabled && "opacity-75",
                 ])}
               >
