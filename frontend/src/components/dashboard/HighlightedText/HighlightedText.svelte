@@ -15,7 +15,7 @@
 {#each parts as part, i (i)}
   {#if highlight.toLowerCase() === part.toLowerCase()}
     <span
-      class="bg-yellow-300"
+      class="bg-warning-light-80"
       data-testid={testId ? testId : "highlighted-text"}>{part}</span
     >
   {:else}{part}{/if}
