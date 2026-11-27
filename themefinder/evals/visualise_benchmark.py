@@ -13,6 +13,7 @@ Usage:
 """
 
 import argparse
+from html import escape
 import json
 import re
 from collections.abc import Callable
@@ -1320,10 +1321,12 @@ def _html_output_consistency_section(data: BenchmarkData) -> str:
         count = row.get("output_consistency_count")
         f1_value = "-" if pd.isna(f1) else f"{f1:.3f}"
         count_value = "-" if pd.isna(count) else f"{count:.3f}"
+        model_tag = escape(str(row["model_tag"]))
+        component = escape(str(row["eval"]))
         rows.append(
             "<tr>"
-            f"<td>{row['model_tag']}</td>"
-            f"<td>{row['eval']}</td>"
+            f"<td>{model_tag}</td>"
+            f"<td>{component}</td>"
             f"<td class='num'>{n_runs}</td>"
             f"<td class='num'>{f1_value}</td>"
             f"<td class='num'>{count_value}</td>"

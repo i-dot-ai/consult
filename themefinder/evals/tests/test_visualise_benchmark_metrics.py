@@ -95,6 +95,28 @@ def test_repeated_aggregate_row_preserves_repeat_counts_and_framework_scores():
     assert ">0.900<" in consistency_html
 
 
+def test_output_consistency_escapes_dynamic_html_values():
+    data = BenchmarkData(
+        benchmark_id="demo",
+        results_df=pd.DataFrame(
+            [
+                {
+                    "model_tag": "<untrusted-model>",
+                    "eval": "find&themes",
+                    "n_runs": 3,
+                    "output_consistency_f1": 0.9,
+                    "output_consistency_count": 1.0,
+                }
+            ]
+        ),
+    )
+
+    consistency_html = _html_output_consistency_section(data)
+
+    assert "<td>&lt;untrusted-model&gt;</td>" in consistency_html
+    assert "<td>find&amp;themes</td>" in consistency_html
+
+
 def test_detects_aggregate_metrics_without_component_specific_mappings():
     results = pd.DataFrame(
         [

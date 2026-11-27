@@ -752,11 +752,9 @@ class ComparisonRunner:
         """
         output_path = self.get_output_path()
 
-        raw_df = self.generate_summary_table()
-        raw_df.to_csv(output_path / "raw_results.csv", index=False)
-
-        aggregated = self.generate_aggregated_table()
-        aggregated.to_csv(output_path / "aggregated_results.csv", index=False)
+        results_df = self.generate_summary_table()
+        results_df.to_csv(output_path / "raw_results.csv", index=False)
+        results_df.to_csv(output_path / "aggregated_results.csv", index=False)
 
         console.print(f"[green]Results saved to {output_path}[/green]")
 
