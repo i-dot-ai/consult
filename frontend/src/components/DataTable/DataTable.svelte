@@ -302,18 +302,18 @@
       "overflow-x-auto",
       "rounded-lg",
       "border",
-      "border-neutral-200",
+      "border-text-light-80",
       "bg-white",
     ])}
   >
-    <table class={clsx(["min-w-full", "divide-y", "divide-neutral-200"])}>
+    <table class={clsx(["min-w-full", "divide-y", "divide-text-light-80"])}>
       {#if caption}
         <caption class="sr-only">
           {caption}
         </caption>
       {/if}
 
-      <thead class="bg-neutral-50">
+      <thead class="bg-text-light-95">
         <tr>
           {#each visibleColumns as column (column.key)}
             <th
@@ -325,7 +325,7 @@
                 "text-xs",
                 "font-[500]",
                 "tracking-wide",
-                "text-neutral-600",
+                "text-text",
                 column.align === "center" && "text-center",
                 column.align === "right" && "text-right",
               ])}
@@ -346,21 +346,21 @@
                     {column.label}
                   </span>
 
-                  <span aria-hidden="true" class="text-neutral-400">
+                  <span aria-hidden="true" class="text-text">
                     {#if sort?.key === column.key && sort.direction === "asc"}
                       <div class="rotate-90">
-                        <MaterialIcon color="fill-neutral-500">
+                        <MaterialIcon color="fill-text-light-950">
                           <ArrowForward />
                         </MaterialIcon>
                       </div>
                     {:else if sort?.key === column.key && sort.direction === "desc"}
                       <div class="-rotate-90">
-                        <MaterialIcon color="fill-neutral-500">
+                        <MaterialIcon color="fill-text-light-950">
                           <ArrowForward />
                         </MaterialIcon>
                       </div>
                     {:else}
-                      <MaterialIcon color="fill-neutral-500">
+                      <MaterialIcon color="fill-text-light-950">
                         <SwapVert />
                       </MaterialIcon>
                     {/if}
@@ -383,7 +383,7 @@
               "py-12",
               "text-center",
               "text-sm",
-              "text-neutral-500",
+              "text-text-light-950",
             ])}
           >
             {@render content()}
@@ -404,7 +404,7 @@
           role="alert"
           class="flex justify-center items-center flex-col gap-2"
         >
-          <MaterialIcon size="3rem" color="fill-neutral-300">
+          <MaterialIcon size="3rem" color="fill-text-light-50">
             <Error />
           </MaterialIcon>
 
@@ -416,7 +416,7 @@
         <span>{emptyText}</span>
       {/snippet}
 
-      <tbody class="divide-y divide-neutral-200">
+      <tbody class="divide-y divide-text-light-80">
         {#if loadingCondition && !errorCondition}
           {@render messageRow(loadingMessage)}
         {:else if errorCondition}
@@ -429,8 +429,8 @@
               class={clsx([
                 "transition-colors",
                 striped
-                  ? "even:bg-neutral-50 hover:bg-neutral-100"
-                  : "hover:bg-neutral-50",
+                  ? "even:bg-text-light-95 hover:bg-text-light-95"
+                  : "hover:bg-text-light-95",
                 Boolean(onRowClick) && "cursor-pointer",
               ])}
               onclick={() => onRowClick?.(row)}
@@ -447,7 +447,7 @@
                     "px-4",
                     "py-3",
                     "text-sm",
-                    "text-neutral-700",
+                    "text-text-dark-25",
                     column.align === "center" && "text-center",
                     column.align === "right" && "text-right",
                   ])}
