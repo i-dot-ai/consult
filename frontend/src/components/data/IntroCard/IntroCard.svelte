@@ -48,7 +48,7 @@
 >
   <div
     class={clsx([
-      isActive ? "bg-secondary" : "bg-teal-100",
+      isActive ? "bg-success" : "bg-success-light-80",
       "p-2",
       "rounded-full",
       "w-12",
@@ -59,14 +59,14 @@
     <div class={clsx([isActive && "growshrink"])}>
       <MaterialIcon
         size="2rem"
-        color={isActive ? "fill-white" : "fill-secondary"}
+        color={isActive ? "fill-white" : "fill-success"}
       >
         <Icon />
       </MaterialIcon>
     </div>
   </div>
 
-  <small class={clsx(["text-secondary", "text-xs", "text-center", "mt-1"])}>
+  <small class={clsx(["text-success", "text-xs", "text-center", "mt-1"])}>
     {getStepsText(steps)}
   </small>
 
@@ -74,7 +74,7 @@
     {title}
   </h3>
 
-  <p class={clsx(["text-neutral-500", "text-xs", "text-center"])}>
+  <p class={clsx(["text-text", "text-xs", "text-center"])}>
     {subtitle}
   </p>
 
@@ -89,7 +89,7 @@
       data-testid="intro-card-arrow"
     >
       <MaterialIcon
-        color={isActive ? "fill-secondary" : "fill-neutral-400"}
+        color={isActive ? "fill-success" : "fill-text"}
         size="1.5rem"
       >
         <ArrowForward />
