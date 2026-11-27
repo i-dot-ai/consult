@@ -50,8 +50,8 @@
       >
         {#snippet title()}
           <p class={clsx(["text-sm", "text-start", "py-2"])}>
-            <strong class={clsx(["text-yellow-600"])}>Hint:</strong>
-            <span class={clsx(["text-neutral-600"])}>
+            <strong class={clsx(["text-warning"])}>Hint:</strong>
+            <span class={clsx(["text-text-dark-25"])}>
               Following these export settings will make it quicker to integrate
               your data into Consult and reduce the work you'll need to do when
               defining questions later.
@@ -61,11 +61,11 @@
 
         {#snippet content()}
           <div class={clsx(["text-sm"])}>
-            <strong class={clsx(["text-yellow-600"])}>
+            <strong class={clsx(["text-warning"])}>
               Why this matters:
             </strong>
 
-            <ul class="list-disc pl-8 text-neutral-600 marker:text-yellow-600">
+            <ul class="list-disc pl-8 text-text-dark-25 marker:text-warning">
               <li>
                 Properly formatted exports reduce data cleaning time by up to
                 70%
@@ -91,7 +91,7 @@
     </span>
   </Title>
 
-  <p class={clsx(["text-sm", "text-neutral-500"])}>
+  <p class={clsx(["text-sm", "text-text"])}>
     Select your consultation platform to see tailored export instructions
   </p>
 
@@ -158,14 +158,14 @@
             "top-0",
             "-left-4",
             "border-2",
-            "border-neutral-300",
+            "border-text-light-50",
             "rounded-full",
             "w-6",
             "h-6",
             "flex",
             "justify-center",
             "items-center",
-            "group-hover:border-secondary",
+            "group-hover:border-success",
             "transition-colors",
             "text-xs",
           ])}
@@ -223,7 +223,7 @@
           makeSnippet(`Choose <strong>CSV</strong> as your file format`),
           makeSnippet(`
             <p>Under export options, check the following:</p>
-            <ul class="list-disc ml-8 marker:text-neutral-400 flex flex-col gap-2 mt-2">
+            <ul class="list-disc ml-8 marker:text-text-light-50 flex flex-col gap-2 mt-2">
               <li><strong>Use choice text</strong> — not "Use numeric values." This exports the actual response text rather than coded numbers</li>
               <li>Include all response fields</li>
               <li>Keep original question text — this ensures full question wording appears in your column headers</li>
@@ -243,7 +243,7 @@
         makeSnippet(`Select <strong>CSV</strong> as your export format`),
         makeSnippet(`
           <p>Under export options, check:</p>
-          <ul class="list-disc ml-8 marker:text-neutral-400 flex flex-col gap-2 mt-2">
+          <ul class="list-disc ml-8 marker:text-text-light-50 flex flex-col gap-2 mt-2">
             <li>Full question text in column headers (not abbreviated or coded)</li>
             <li>All responses included — not just complete submissions</li>
             <li>All questions included — even those left unanswered</li>
@@ -297,7 +297,7 @@
           <span class="mb-4 block font-medium">Preparing your file</span>
         </Title>
 
-        <p class="text-neutral-500">
+        <p class="text-text">
           If you've collected responses using Microsoft Forms, Google Forms, a
           spreadsheet, or another tool, your file needs to meet the following
           requirements before uploading.
@@ -308,7 +308,7 @@
 
           <ul
             class={clsx([
-              "text-neutral-500",
+              "text-text",
               "list-disc",
               "ml-4",
               "flex",
@@ -330,7 +330,7 @@
             <li><strong>No merged cells</strong></li>
           </ul>
         </Panel>
-        <p class="mb-4 text-neutral-500">
+        <p class="mb-4 text-text">
           Not sure if your file is set up correctly?
         </p>
 
@@ -346,7 +346,7 @@
               "text-xs",
             ])}
           >
-            <MaterialIcon color="fill-neutral-500" size="1.2rem">
+            <MaterialIcon color="fill-text" size="1.2rem">
               <Download />
             </MaterialIcon>
             Download blank template and use it as a guide
@@ -361,7 +361,7 @@
   <div class={clsx(["flex", "justify-between", "gap-1", "flex-wrap", "my-12"])}>
     <Button handleClick={() => {}}>
       <div class="rotate-180">
-        <MaterialIcon color="fill-neutral-500" size="0.9rem">
+        <MaterialIcon color="fill-text" size="0.9rem">
           <ArrowForward />
         </MaterialIcon>
       </div>
