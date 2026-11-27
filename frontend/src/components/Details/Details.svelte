@@ -11,7 +11,7 @@
 </script>
 
 <details
-  class="mb-5 text-base leading-5 text-neutral-900 md:text-lg md:leading-6"
+  class="mb-5 text-base leading-5 text-text-dark-50 md:text-lg md:leading-6"
   {open}
 >
   <summary class="relative cursor-pointer text-primary hover:underline">
@@ -19,7 +19,7 @@
       {summaryText}
     </span>
   </summary>
-  <div class="ml-6 border-l-4 border-neutral-400 pl-6 pt-4">
+  <div class="ml-6 border-l-4 border-text-light-25 pl-6 pt-4">
     {@render children()}
   </div>
 </details>
