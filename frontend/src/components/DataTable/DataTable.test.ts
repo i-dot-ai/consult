@@ -56,7 +56,7 @@ describe("DataTable", () => {
     const rows = screen.getAllByTestId("datatable-row");
     expect(rows.length).toBeGreaterThan(1);
     rows.forEach((row) => {
-      expect(row).toHaveClass("even:bg-neutral-50");
+      expect(row).toHaveClass("even:bg-text-light-95");
     });
   });
 
