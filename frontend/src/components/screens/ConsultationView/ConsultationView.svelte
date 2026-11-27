@@ -22,7 +22,6 @@
   } from "../../../global/queries/consultations/queries";
   import { buildCurrentUserGetQuery } from "../../../global/queries/users/queries";
   import {
-    getConsultationAnswersUrl,
     getConsultationDashboardUrl,
     getConsultationUsersUrl,
     getFinaliseThemesUrl,
@@ -104,11 +103,8 @@
     url: getConsultationUsersUrl(consultationId),
   });
 
-  const VIEW_RESPONSES_LINK = $derived({
-    text: "View all responses",
-    description: "Every response, as it was uploaded",
-    url: getConsultationAnswersUrl(consultationId),
-  });
+  const COMMON_MANAGER_LINKS = $derived([MANAGE_PEOPLE_LINK]);
+  const COMMON_USER_LINKS = $derived([WHO_CAN_SEE_LINK]);
 
   function getDataSetupPanelText(surveyImportStatus?: SurveyImportStatus) {
     if (surveyImportStatus === "import_failed") {
@@ -157,17 +153,17 @@
       panelButtonText: "View Dashboard",
       panelButtonUrl: getConsultationDashboardUrl(consultationId),
       tagVariant: "success",
-      adminLinks: [MANAGE_PEOPLE_LINK, VIEW_RESPONSES_LINK],
-      ownerLinks: [MANAGE_PEOPLE_LINK, VIEW_RESPONSES_LINK],
-      userLinks: [WHO_CAN_SEE_LINK, VIEW_RESPONSES_LINK],
+      adminLinks: COMMON_MANAGER_LINKS,
+      ownerLinks: COMMON_MANAGER_LINKS,
+      userLinks: COMMON_USER_LINKS,
     },
     assigning_themes: {
       panelText:
         "Consult is assigning every response to the finalised themes. This can take more than 20 minutes. Nothing else can start until this finishes.",
       tagVariant: "default",
-      adminLinks: [MANAGE_PEOPLE_LINK, VIEW_RESPONSES_LINK],
-      ownerLinks: [MANAGE_PEOPLE_LINK, VIEW_RESPONSES_LINK],
-      userLinks: [WHO_CAN_SEE_LINK, VIEW_RESPONSES_LINK],
+      adminLinks: COMMON_MANAGER_LINKS,
+      ownerLinks: COMMON_MANAGER_LINKS,
+      userLinks: COMMON_USER_LINKS,
     },
     finalising_themes: {
       panelText:
@@ -175,17 +171,17 @@
       panelButtonText: "Finalise themes",
       panelButtonUrl: getFinaliseThemesUrl(consultationId),
       tagVariant: "warning",
-      adminLinks: [MANAGE_PEOPLE_LINK, VIEW_RESPONSES_LINK],
-      ownerLinks: [MANAGE_PEOPLE_LINK, VIEW_RESPONSES_LINK],
-      userLinks: [WHO_CAN_SEE_LINK, VIEW_RESPONSES_LINK],
+      adminLinks: COMMON_MANAGER_LINKS,
+      ownerLinks: COMMON_MANAGER_LINKS,
+      userLinks: COMMON_USER_LINKS,
     },
     finding_themes: {
       panelText:
         "The responses have been uploaded and all questions configured. Consult will now find themes across the open question responses. Nothing else can start until this finishes.",
       tagVariant: "default",
-      adminLinks: [MANAGE_PEOPLE_LINK, VIEW_RESPONSES_LINK],
-      ownerLinks: [MANAGE_PEOPLE_LINK, VIEW_RESPONSES_LINK],
-      userLinks: [WHO_CAN_SEE_LINK, VIEW_RESPONSES_LINK],
+      adminLinks: COMMON_MANAGER_LINKS,
+      ownerLinks: COMMON_MANAGER_LINKS,
+      userLinks: COMMON_USER_LINKS,
     },
     setup: {
       panelText: getDataSetupPanelText(consultationData?.survey_import_status),
@@ -199,6 +195,8 @@
       tagVariant: getDataSetupTagVariant(
         consultationData?.survey_import_status,
       ),
+      // Do not use the list here as this may not include view all response links
+      // once that is added back in.
       adminLinks: [MANAGE_PEOPLE_LINK],
       ownerLinks: [MANAGE_PEOPLE_LINK],
       userLinks: [WHO_CAN_SEE_LINK],
