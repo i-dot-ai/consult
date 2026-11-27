@@ -512,7 +512,7 @@
             >
               {#snippet label()}
                 <div class="flex items-center gap-2">
-                  <MaterialIcon size="1.1rem" color="fill-yellow-600">
+                  <MaterialIcon size="1.1rem" color="fill-warning">
                     <Diamond />
                   </MaterialIcon>
                   <span class="text-sm">Evidence rich</span>
