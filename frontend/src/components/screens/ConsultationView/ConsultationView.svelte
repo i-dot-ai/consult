@@ -267,7 +267,7 @@
           {alertText}
 
           <Button variant="ghost" handleClick={() => (alertText = "")}>
-            <MaterialIcon color="fill-neutral-500">
+            <MaterialIcon color="fill-text">
               <Close />
             </MaterialIcon>
           </Button>
@@ -340,7 +340,7 @@
         disabled={isRenameSaving}
       >
         <div class="flex gap-1 items-center text-xs">
-          <MaterialIcon color="fill-neutral-500">
+          <MaterialIcon color="fill-text">
             {#if isRenaming}
               <Close />
             {:else}
@@ -367,12 +367,12 @@
   </div>
 
   {#if isRenaming}
-    <small transition:fade class="text-neutral-500 text-xs mt-2">
+    <small transition:fade class="text-text text-xs mt-2">
       Use the name it was published under, so your team can find it.
     </small>
   {/if}
 
-  <p class="text-neutral-500 text-sm mt-2">
+  <p class="text-text text-sm mt-2">
     {#if user.query.isPending || consultation.query.isPending}
       <SkeletonText length={7} />
     {:else}
@@ -393,7 +393,7 @@
         </Tag>
       </div>
 
-      <p class="text-neutral-700 text-sm">
+      <p class="text-text-dark-25 text-sm">
         {content.panelText}
       </p>
 
@@ -411,7 +411,7 @@
 
       {#if consultationData?.stage === "finding_themes"}
         <Panel bg={true} border={true}>
-          <p class="text-sm leading-relaxed text-neutral-900">
+          <p class="text-sm leading-relaxed text-text-dark-50">
             Finding themes can take more than 20 minutes, but can take longer
             depending on the size of your consultation. You can leave and come
             back from the consultation page at any time. Your consultation
@@ -437,7 +437,7 @@
           {link.text}
         </Link>
 
-        <p class="text-sm text-neutral-500">{link.description}</p>
+        <p class="text-sm text-text">{link.description}</p>
       </div>
     {/each}
   </section>
