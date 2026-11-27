@@ -130,7 +130,7 @@ describe("Checkbox Component", () => {
     });
 
     const checkbox = screen.getByRole("checkbox");
-    expect(checkbox).toHaveClass("border-red-600");
+    expect(checkbox).toHaveClass("border-error");
   });
 
   it("hides label when hideLabel is true", () => {
