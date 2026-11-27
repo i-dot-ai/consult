@@ -36,10 +36,10 @@
       "h-9 w-full",
       "p-1",
       "border",
-      "border-gray-300",
+      "border-text-light-50",
       "rounded-xs",
       "focus:outline-2",
-      "focus:outline-yellow-300",
+      "focus:outline-warning-light-50",
       variant === "search" && "pl-8 pr-4",
     ])}
     type={inputType}
@@ -80,7 +80,7 @@
 
   {#if variant === "search"}
     <div class="absolute left-2 top-1/2 mt-0.5 -translate-y-1/2 transform">
-      <MaterialIcon color="fill-neutral-400" size="1.2rem">
+      <MaterialIcon color="fill-text" size="1.2rem">
         <Search />
       </MaterialIcon>
     </div>
