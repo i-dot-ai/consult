@@ -101,7 +101,7 @@
   <div>
     Set these three export options:
     <ul
-      class="mt-1.5 ml-4 flex list-disc flex-col gap-1 text-sm text-neutral-500"
+      class="mt-1.5 ml-4 flex list-disc flex-col gap-1 text-sm text-text"
     >
       <li>Use choice text, so answers export as words rather than numbers</li>
       <li>Include all response fields</li>
@@ -115,7 +115,7 @@
 
 {#snippet heading(text: string)}
   <Title level={2}>
-    <span class="text-base font-medium text-neutral-900">{text}</span>
+    <span class="text-base font-medium text-text-dark-50">{text}</span>
   </Title>
 {/snippet}
 
@@ -123,10 +123,10 @@
   <ol class="mt-4 flex list-none flex-col gap-3">
     {#each items as item, i (i)}
       <li
-        class="flex items-start gap-3 text-base leading-relaxed text-neutral-900"
+        class="flex items-start gap-3 text-base leading-relaxed text-text-dark-50"
       >
         <span
-          class="mt-0.5 flex h-5 w-5 shrink-0 items-center justify-center rounded-full border border-neutral-500 text-xs text-neutral-500"
+          class="mt-0.5 flex h-5 w-5 shrink-0 items-center justify-center rounded-full border border-text text-xs text-text"
           aria-hidden="true"
         >
           {i + 1}
@@ -141,7 +141,7 @@
 
 {#snippet callout(text: string)}
   <div
-    class="mt-4 rounded-lg border border-neutral-300 bg-neutral-100 px-4 py-3.5 text-sm leading-relaxed text-neutral-500"
+    class="mt-4 rounded-lg border border-text-light-50 bg-text-light-95 px-4 py-3.5 text-sm leading-relaxed text-text"
   >
     {text}
   </div>
@@ -172,12 +172,12 @@
   isExternal={true}
 />
 
-<p class="mt-3.5 mb-6 text-base leading-relaxed text-neutral-500">
+<p class="mt-3.5 mb-6 text-base leading-relaxed text-text">
   Consult supports responses exported from Qualtrics and Citizen Space. Choose
   which one you used for the export instructions.
 </p>
 
-<div class="rounded-xl border border-neutral-300 bg-white p-7">
+<div class="rounded-xl border border-text-light-50 bg-white p-7">
   <div class="max-w-lg">
     <RadioCards
       name="data-source"
@@ -192,7 +192,7 @@
   <div class="mt-6">
     {#if selected === "qualtrics"}
       {@render heading("Exporting from Qualtrics")}
-      <p class="mt-1 text-sm text-neutral-500">
+      <p class="mt-1 text-sm text-text">
         Five steps in Qualtrics, then come back here.
       </p>
       {@render numbered(QUALTRICS_STEPS)}
@@ -202,7 +202,7 @@
     {:else}
       {@render heading("Exporting from Citizen Space")}
       {@render numbered(CITIZEN_SPACE_STEPS)}
-      <p class="mt-4 text-sm text-neutral-500">
+      <p class="mt-4 text-sm text-text">
         Citizen Space exports one row per response with the question wording
         already in row 1.
       </p>
@@ -210,9 +210,9 @@
   </div>
 </div>
 
-<div class="mt-5 rounded-xl border border-neutral-300 bg-white p-7">
+<div class="mt-5 rounded-xl border border-text-light-50 bg-white p-7">
   {@render heading("Responses that came in by email")}
-  <p class="mt-1 text-sm leading-relaxed text-neutral-500">
+  <p class="mt-1 text-sm leading-relaxed text-text">
     Consult reads one file, so email responses have to go into the same
     spreadsheet as the rest. Add each one as a new row in your Qualtrics or
     Citizen Space export, putting each answer in the column for the question it
@@ -223,7 +223,7 @@
   )}
 </div>
 
-<small class="mt-3 block text-sm leading-relaxed text-neutral-500">
+<small class="mt-3 block text-sm leading-relaxed text-text">
   Collected responses another way? There are no export instructions for other
   tools, but Consult reads any <strong>.xlsx</strong> or <strong>.csv</strong>
   laid out the way step 2 describes.
