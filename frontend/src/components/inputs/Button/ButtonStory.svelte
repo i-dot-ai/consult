@@ -38,7 +38,7 @@
 <div>
   <Title level={2} text="With Icon" />
   <Button>
-    <MaterialIcon color="fill-neutral-400">
+    <MaterialIcon color="fill-text-light-25">
       <Search />
     </MaterialIcon>
 
