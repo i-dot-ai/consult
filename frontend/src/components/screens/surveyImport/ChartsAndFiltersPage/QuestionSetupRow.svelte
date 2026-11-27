@@ -242,7 +242,7 @@
   }
 </script>
 
-<div class="border-t border-neutral-200 first:border-t-0">
+<div class="border-t border-text-light-80 first:border-t-0">
   <button
     type="button"
     class="group flex w-full flex-wrap items-start justify-between gap-4 py-4 text-left"
@@ -252,16 +252,16 @@
   >
     <span class="min-w-48 flex-1">
       <span
-        class="block text-md font-medium text-neutral-900 group-hover:underline group-hover:underline-offset-2"
+        class="block text-md font-medium text-text-dark-50 group-hover:underline group-hover:underline-offset-2"
       >
         Question {question.number}
         {#if question.short_name}
           · {question.short_name}
         {:else}
-          · <span class="font-normal text-neutral-500">needs a short name</span>
+          · <span class="font-normal text-text">needs a short name</span>
         {/if}
       </span>
-      <span class="mt-0.5 block text-sm leading-relaxed text-neutral-500">
+      <span class="mt-0.5 block text-sm leading-relaxed text-text">
         {question.text}
       </span>
     </span>
@@ -272,7 +272,7 @@
       <Tag>{answersLabel}</Tag>
       <Tag>{kindLabel}</Tag>
       <span class={clsx(["transition-transform", expanded && "rotate-180"])}>
-        <MaterialIcon color="fill-neutral-500" size="1rem">
+        <MaterialIcon color="fill-text" size="1rem">
           <KeyboardArrowDown />
         </MaterialIcon>
       </span>
@@ -314,20 +314,20 @@
           {nameError}
         </p>
       {/if}
-      <p class="mt-1.5 text-sm leading-relaxed text-neutral-500">
+      <p class="mt-1.5 text-sm leading-relaxed text-text">
         This labels the filter on your dashboard, so it is worth a few words of
         your own. None has been guessed, because a bad label is harder to spot
         than a missing one.
       </p>
 
       {#if kind === "demographic"}
-        <p class="mt-3.5 text-sm leading-relaxed text-neutral-500">
+        <p class="mt-3.5 text-sm leading-relaxed text-text">
           This is a demographic question, so you can use it to filter every
           question on your dashboard. To change that, set it to closed on the
           previous step.
         </p>
       {:else if kind === "hybrid"}
-        <p class="mt-3.5 text-sm leading-relaxed text-neutral-500">
+        <p class="mt-3.5 text-sm leading-relaxed text-text">
           This is a hybrid question. It filters {linkedNumbers} rather than the whole
           dashboard. To change that, edit the pairing on the previous step.
         </p>
@@ -343,10 +343,10 @@
         </div>
       {/if}
 
-      <p class="mt-4 text-xs text-neutral-500">Answers found in your file</p>
+      <p class="mt-4 text-xs text-text">Answers found in your file</p>
       {#if answersFailed}
         <p
-          class="mt-1 flex flex-wrap items-center gap-2 text-sm text-neutral-500"
+          class="mt-1 flex flex-wrap items-center gap-2 text-sm text-text"
         >
           <span>The answers could not be loaded.</span><Button
             variant="text"
@@ -356,13 +356,13 @@
           >
         </p>
       {:else if answers === undefined}
-        <p class="mt-1 text-sm text-neutral-500">Loading answers...</p>
+        <p class="mt-1 text-sm text-text">Loading answers...</p>
       {:else if answers.length === 0}
-        <p class="mt-1 text-sm text-neutral-500">
+        <p class="mt-1 text-sm text-text">
           No answers to this question.
         </p>
       {:else}
-        <p class="mt-1 text-sm text-neutral-500">
+        <p class="mt-1 text-sm text-text">
           {#if ordered.isScale}
             These answers form a scale, so they're shown in scale order rather
             than by count. Your dashboard will use the same order.
@@ -370,7 +370,7 @@
             Ordered by how often each answer was given.
           {/if}
         </p>
-        <p class="mt-2 mb-2.5 text-sm leading-relaxed text-neutral-500">
+        <p class="mt-2 mb-2.5 text-sm leading-relaxed text-text">
           {answers.length}
           {answers.length === 1 ? "answer" : "answers"}{spellings >
           answers.length
@@ -397,7 +397,7 @@
               handleClick={clearSelection}>Clear selection</Button
             >
           {:else}
-            <span class="text-xs text-neutral-500">
+            <span class="text-xs text-text">
               Tick two or more answers to merge them
             </span>
           {/if}
@@ -405,7 +405,7 @@
 
         {#if merging}
           <div
-            class="mb-3.5 rounded-lg bg-neutral-100 px-3.5 py-3"
+            class="mb-3.5 rounded-lg bg-text-light-95 px-3.5 py-3"
             role="group"
             aria-label={`Merge answers to question ${question.number}`}
           >
@@ -438,14 +438,14 @@
                 </Button>
               </div>
             </div>
-            <p class="mt-2 text-xs leading-relaxed text-neutral-500">
+            <p class="mt-2 text-xs leading-relaxed text-text">
               Their counts are added together. You can use one of the existing
               names or write a new one.
             </p>
           </div>
         {/if}
 
-        <div class="rounded-lg bg-neutral-100 px-3 py-1">
+        <div class="rounded-lg bg-text-light-95 px-3 py-1">
           <table class="w-full">
             <caption class="sr-only"
               >Answers to question {question.number}</caption
@@ -455,8 +455,8 @@
                 {@const note = getGroupedNote(answer)}
                 <tr
                   class={clsx([
-                    "border-t border-neutral-200 first:border-t-0",
-                    note && "bg-neutral-200",
+                    "border-t border-text-light-80 first:border-t-0",
+                    note && "bg-text-light-80",
                   ])}
                 >
                   <td class="w-8 py-2 pl-2 align-middle">
@@ -471,7 +471,7 @@
                         toggleSelected(answer.text, checked)}
                     />
                   </td>
-                  <td class="py-2 pr-2 align-middle text-md text-neutral-900">
+                  <td class="py-2 pr-2 align-middle text-md text-text-dark-50">
                     {#if renaming === answer.text}
                       <div class="flex flex-wrap items-center gap-2">
                         <div class="rename-name max-w-xs flex-1">
@@ -499,14 +499,14 @@
                           Cancel
                         </Button>
                       </div>
-                      <span class="mt-0.5 block text-xs text-neutral-500">
+                      <span class="mt-0.5 block text-xs text-text">
                         Renaming to a name already in the list merges the two,
                         and their counts are added together.
                       </span>
                     {:else}
                       {answer.text}
                       {#if note}
-                        <span class="mt-0.5 block text-xs text-neutral-500">
+                        <span class="mt-0.5 block text-xs text-text">
                           {note}
                         </span>
                       {/if}
@@ -520,7 +520,7 @@
                     />
                   </td>
                   <td
-                    class="w-24 py-2 pr-2 text-right align-middle text-sm whitespace-nowrap text-neutral-500"
+                    class="w-24 py-2 pr-2 text-right align-middle text-sm whitespace-nowrap text-text"
                   >
                     {answer.count} ({getPercentage(answer.count, total, 0)}%)
                   </td>
@@ -544,15 +544,15 @@
           </table>
         </div>
 
-        <p class="mt-4 text-xs text-neutral-500">
+        <p class="mt-4 text-xs text-text">
           How it will look on your dashboard
         </p>
-        <div class="mt-1 rounded-lg bg-neutral-100 px-4 py-3">
-          <p class="mb-1.5 text-sm font-medium text-neutral-900">
+        <div class="mt-1 rounded-lg bg-text-light-95 px-4 py-3">
+          <p class="mb-1.5 text-sm font-medium text-text-dark-50">
             {question.short_name || "Not named yet"}
           </p>
           {#each ordered.answers.slice(0, PREVIEW_ROWS) as answer (answer.text)}
-            <div class="flex justify-between gap-3 text-xs text-neutral-500">
+            <div class="flex justify-between gap-3 text-xs text-text">
               <span>{answer.text}</span>
               <span>{answer.count}</span>
             </div>
@@ -564,7 +564,7 @@
             </div>
           {/each}
           {#if ordered.answers.length > PREVIEW_ROWS}
-            <p class="text-xs text-neutral-500">
+            <p class="text-xs text-text">
               and {ordered.answers.length - PREVIEW_ROWS} more
             </p>
           {/if}
@@ -587,15 +587,15 @@
   }
 
   .name-field :global(label) {
-    @apply mb-1 block text-xs text-neutral-500;
+    @apply mb-1 block text-xs text-text;
   }
 
   .merge-name :global(label) {
-    @apply mb-1 block text-sm text-neutral-900;
+    @apply mb-1 block text-sm text-text-dark-50;
   }
 
   .role-field :global(legend h2) {
-    @apply text-xs font-normal text-neutral-500;
+    @apply text-xs font-normal text-text;
   }
 
   .role-field :global(label) {
