@@ -125,7 +125,7 @@
   }}
 >
   <div slot="trigger">
-    <MaterialIcon color="fill-neutral-500">
+    <MaterialIcon color="fill-text">
       <EditSquare />
     </MaterialIcon>
   </div>
@@ -134,7 +134,7 @@
     <TitleRow level={3} title="Edit Response Labels">
       <div slot="aside">
         <Button variant="ghost" handleClick={() => (panelOpen = false)}>
-          <MaterialIcon color="fill-neutral-500">
+          <MaterialIcon color="fill-text">
             <Close />
           </MaterialIcon>
         </Button>
@@ -152,7 +152,7 @@
             {theme.name}
 
             <Button variant="ghost" handleClick={() => removeTheme(theme.id)}>
-              <MaterialIcon color="fill-neutral-500">
+              <MaterialIcon color="fill-text">
                 <Close />
               </MaterialIcon>
             </Button>
@@ -206,7 +206,7 @@
     <hr class="my-4" />
 
     {#if $responseUpdateStore.error}
-      <small class="my-2 block text-red-500" transition:slide
+      <small class="my-2 block text-error" transition:slide
         >{$responseUpdateStore.error}</small
       >
     {/if}
