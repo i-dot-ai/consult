@@ -120,7 +120,7 @@
 <div class={isLoading ? "opacity-60 transition-opacity" : ""}>
   {#if error}
     <p
-      class="mb-4 rounded-sm border border-red-200 bg-red-50 px-4 py-2 text-sm text-red-700"
+      class="mb-4 rounded-sm border border-error-light-80 bg-error-light-95 px-4 py-2 text-sm text-error-dark-25"
     >
       {error}
     </p>
@@ -154,11 +154,11 @@
               {@const user = availableUsers.find((u) => u.id === userId)}
               {#if user}
                 <span
-                  class="inline-flex items-center gap-1 rounded-full border border-neutral-200 bg-neutral-50 px-2 py-0.5 text-xs text-neutral-700"
+                  class="inline-flex items-center gap-1 rounded-full border border-text-light-80 bg-text-light-95 px-2 py-0.5 text-xs text-text-dark-25"
                 >
                   {user.email}
                   <button
-                    class="text-neutral-400 hover:text-neutral-600"
+                    class="text-text hover:text-text"
                     onclick={() => {
                       selectedUserIds = selectedUserIds.filter(
                         (id) => id !== userId,
@@ -172,7 +172,7 @@
               {/if}
             {/each}
             <button
-              class="text-xs text-neutral-400 underline hover:text-neutral-600"
+              class="text-xs text-text underline hover:text-text"
               onclick={() => {
                 selectedUserIds = [];
                 fetchEvaluation();
@@ -181,7 +181,7 @@
               Clear all
             </button>
           </div>
-          <p class="mt-2 text-xs text-neutral-500">
+          <p class="mt-2 text-xs text-text">
             Showing only responses read by {selectedUserIds.length === 1
               ? "this user"
               : "these users"}. F1 compares original AI assignments against
@@ -195,27 +195,27 @@
   <div
     class="my-6 rounded-lg border-l-4 p-5 {data.summary.status ===
     'insufficient_data'
-      ? 'border-amber-500 bg-amber-50'
+      ? 'border-warning bg-warning-light-95'
       : data.summary.status === 'below_benchmark'
-        ? 'border-red-600 bg-red-50'
-        : 'border-green-600 bg-green-50'}"
+        ? 'border-error bg-error-light-95'
+        : 'border-success bg-success-light-95'}"
   >
     <p
       class="text-lg font-bold {data.summary.status === 'insufficient_data'
-        ? 'text-amber-900'
+        ? 'text-warning-dark-50'
         : data.summary.status === 'below_benchmark'
-          ? 'text-red-900'
-          : 'text-green-900'}"
+          ? 'text-error-dark-50'
+          : 'text-success-dark-50'}"
     >
       {bannerTitle}
     </p>
     <ul
       class="mt-3 list-disc space-y-1 pl-5 text-sm {data.summary.status ===
       'insufficient_data'
-        ? 'text-amber-800'
+        ? 'text-warning-dark-25'
         : data.summary.status === 'below_benchmark'
-          ? 'text-red-800'
-          : 'text-green-800'}"
+          ? 'text-error-dark-25'
+          : 'text-success-dark-25'}"
     >
       <li>
         Theme assignment is the step where Consult classifies each response
@@ -238,7 +238,7 @@
   <div class="grid grid-cols-2 gap-4 md:grid-cols-4">
     <div class="rounded-lg border p-4">
       <div class="text-2xl font-bold">{data.summary.responses_read}</div>
-      <div class="text-sm text-neutral-500">
+      <div class="text-sm text-text">
         of {data.summary.responses} responses read ({formatPercent(
           data.summary.responses_read,
           data.summary.responses,
@@ -247,7 +247,7 @@
     </div>
     <div class="rounded-lg border p-4">
       <div class="text-2xl font-bold">{data.summary.responses_edited}</div>
-      <div class="text-sm text-neutral-500">
+      <div class="text-sm text-text">
         of {data.summary.responses_read} read were edited ({formatPercent(
           data.summary.responses_edited,
           data.summary.responses_read,
@@ -256,13 +256,13 @@
     </div>
     <div class="rounded-lg border p-4">
       <div class="text-2xl font-bold">{formatF1(data.summary.f1)}</div>
-      <div class="text-sm text-neutral-500">F1 score</div>
+      <div class="text-sm text-text">F1 score</div>
     </div>
     <div class="rounded-lg border p-4">
       <div class="text-2xl font-bold">
         {formatF1(data.summary.f1_all_themes)}
       </div>
-      <div class="text-sm text-neutral-500">F1 score (all themes)</div>
+      <div class="text-sm text-text">F1 score (all themes)</div>
     </div>
   </div>
 
@@ -270,18 +270,18 @@
 
   <div class="mt-3 flex flex-wrap items-center gap-4 text-sm">
     {#if questionsAboveBenchmark > 0}
-      <span class="rounded-full bg-green-100 px-3 py-1 text-green-800">
+      <span class="rounded-full bg-success-light-95 px-3 py-1 text-success-dark-25">
         {questionsAboveBenchmark} questions performing well
       </span>
     {/if}
     {#if questionsBelowBenchmark > 0}
-      <span class="rounded-full bg-red-100 px-3 py-1 text-red-800">
+      <span class="rounded-full bg-error-light-95 px-3 py-1 text-error-dark-25">
         {questionsBelowBenchmark} questions need attention (F1 &lt; {data.config
           .benchmark_f1})
       </span>
     {/if}
     {#if questionsNeedingMoreReads > 0}
-      <span class="rounded-full bg-neutral-100 px-3 py-1 text-neutral-600">
+      <span class="rounded-full bg-text-light-95 px-3 py-1 text-text">
         {questionsNeedingMoreReads} questions need more responses read
       </span>
     {/if}
@@ -311,7 +311,7 @@
           {@const warning = getQuestionWarning(question)}
           <tr
             class="border-b {question.status === 'below_benchmark'
-              ? 'border-l-4 border-l-red-500'
+              ? 'border-l-4 border-l-error'
               : ''}"
           >
             <td class="py-2 pl-2 pr-4">{question.number}</td>
@@ -323,7 +323,7 @@
                 {question.text}
               </a>
               {#if warning}
-                <p class="mt-1 text-sm italic text-neutral-500">{warning}</p>
+                <p class="mt-1 text-sm italic text-text">{warning}</p>
               {/if}
             </td>
             <td class="py-2 pr-4">{question.responses}</td>
