@@ -61,13 +61,13 @@
               {/if}
             </header>
 
-            <p class="my-4 text-sm text-neutral-700">
+            <p class="my-4 text-sm text-text-dark-25">
               {theme.description}
             </p>
 
             <hr class="mb-4" />
 
-            <small class="mb-4 block text-xs text-neutral-500">
+            <small class="mb-4 block text-xs text-text">
               {theme.version > 1 ? "Edited" : "Added"}
               {formatTimeDeltaText(
                 getTimeDeltaInMinutes(new Date(), new Date(theme.modified_at)),
@@ -80,14 +80,14 @@
                 handleClick={() => (editing = !editing)}
                 testId="selected-theme-edit-button"
               >
-                <MaterialIcon color="fill-neutral-500">
+                <MaterialIcon color="fill-text">
                   <EditSquare />
                 </MaterialIcon>
                 Edit
               </Button>
 
               <Button size="sm" handleClick={() => removeTheme(theme.id)}>
-                <MaterialIcon color="fill-neutral-500">
+                <MaterialIcon color="fill-text">
                   <Delete />
                 </MaterialIcon>
                 Remove
