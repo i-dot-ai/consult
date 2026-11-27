@@ -120,7 +120,7 @@
 
           {#if evidenceRich && !skeleton}
             <Tag variant="warning">
-              <MaterialIcon size="1rem" color="fill-yellow-700">
+              <MaterialIcon size="1rem" color="fill-warning-dark-25">
                 <Diamond />
               </MaterialIcon>
 
