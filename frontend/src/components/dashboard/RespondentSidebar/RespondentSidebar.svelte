@@ -28,7 +28,7 @@
 
 <Panel>
   <div class="mb-6 flex items-center gap-2">
-    <MaterialIcon size="1.5rem" color="fill-neutral-700">
+    <MaterialIcon size="1.5rem" color="fill-text-dark-25">
       <Person />
     </MaterialIcon>
     <h2 class="text-sm">Respondent Demographics</h2>

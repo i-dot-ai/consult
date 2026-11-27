@@ -45,8 +45,8 @@
 
 <div in:slide class="mt-4 flex items-start gap-2 text-xs">
   {#if Icon}
-    <div class="h-max rounded-lg bg-neutral-100 p-1">
-      <MaterialIcon size="1.3rem" color="fill-neutral-700">
+    <div class="h-max rounded-lg bg-text-light-95 p-1">
+      <MaterialIcon size="1.3rem" color="fill-text-dark-25">
         <Icon />
       </MaterialIcon>
     </div>
@@ -54,7 +54,7 @@
 
   <div class="flex w-full flex-col flex-wrap bg-white">
     <div class="flex items-start justify-between">
-      <h3 class="uppercase text-neutral-500">{title}</h3>
+      <h3 class="uppercase text-text">{title}</h3>
 
       {#if editable}
         <div class="-mt-1">
@@ -63,7 +63,7 @@
             handleClick={toggleEditing}
             testId="edit-button"
           >
-            <MaterialIcon color="fill-neutral-700">
+            <MaterialIcon color="fill-text-dark-25">
               <EditSquare />
             </MaterialIcon>
           </Button>
@@ -108,7 +108,7 @@
               testId="cancel-button"
             >
               <div class="flex w-full justify-center gap-2">
-                <MaterialIcon color="fill-neutral-500">
+                <MaterialIcon color="fill-text">
                   <Close />
                 </MaterialIcon>
 
@@ -119,7 +119,7 @@
         </div>
       </div>
     {:else}
-      <p class={clsx([!subtitle && "text-neutral-400"])} data-testid={testId}>
+      <p class={clsx([!subtitle && "text-text"])} data-testid={testId}>
         {subtitle || "Add a stakeholder's name"}
       </p>
     {/if}
