@@ -79,7 +79,7 @@
 <form class="pt-4">
   {#each questions as question (question.id)}
     {#if errors[question.id!]}
-      <div class="shrink grow pt-1 text-sm text-red-600">
+      <div class="shrink grow pt-1 text-sm text-error">
         {errors[question.id!]}
       </div>
     {/if}
