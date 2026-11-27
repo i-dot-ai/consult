@@ -39,7 +39,7 @@
   this={tag}
   use:cssVars={maxChars ? { "title-max-width": `${maxChars}ch` } : {}}
   class={clsx([
-    "text-neutral-700",
+    "text-text-dark-25",
     weight === "bold" && "font-bold",
     weight === "light" && "font-light",
     level === 1 && context === "dashboard" && "text-xl",
