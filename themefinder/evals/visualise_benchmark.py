@@ -13,6 +13,7 @@ Usage:
 """
 
 import argparse
+from html import escape
 import json
 import re
 from collections.abc import Callable
@@ -84,19 +85,24 @@ class BenchmarkData:
 
     @property
     def total_cost(self) -> float:
-        """Get total cost from local CSV data."""
+        """Get the sum of the task-model costs persisted in the result rows."""
         if self.results_df.empty or "cost_usd" not in self.results_df.columns:
             return 0.0
         return self.results_df["cost_usd"].sum(min_count=1)
 
     @property
     def total_traces(self) -> int:
-        """Get total number of evaluation runs."""
+        """Get total Langfuse aggregate traces represented by the CSV."""
         return len(self.results_df)
 
     @property
+    def total_evaluation_runs(self) -> int:
+        """Get the number of underlying repeated task evaluations."""
+        return int(_repeat_counts(self.results_df).sum())
+
+    @property
     def avg_latency(self) -> float:
-        """Get the average summed gateway latency per evaluation run."""
+        """Get the average summed gateway latency from persisted result rows."""
         if self.results_df.empty or "latency_seconds" not in self.results_df.columns:
             return 0.0
         return self.results_df["latency_seconds"].mean()
@@ -318,9 +324,40 @@ def detect_eval_metrics(df: pd.DataFrame, eval_type: str) -> dict[str, list[str]
         if matching_cols:
             non_null = eval_df[matching_cols].notna().any().any()
             if non_null:
-                # Sort by question part number
-                matching_cols.sort(key=lambda x: int(re.search(r"\d+", x).group()))
+                # Aggregate repeat columns have no question-part suffix; keep
+                # those before the per-question legacy columns.
+                matching_cols.sort(
+                    key=lambda column: (
+                        int(match.group(1))
+                        if (match := re.search(r"question_part_(\d+)", column))
+                        else 0
+                    )
+                )
                 detected[metric_name] = matching_cols
+
+    for column in df.columns:
+        if not column.endswith("_mean") or column.startswith("output_consistency_"):
+            continue
+        if not eval_df[column].notna().any():
+            continue
+
+        metric_base_name = column.removesuffix("_mean")
+        question_part_metric_name = f"question_part_0_{metric_base_name}"
+        metric_name = next(
+            (
+                name
+                for name, pattern in eval_patterns.items()
+                if re.match(pattern, question_part_metric_name)
+            ),
+            metric_base_name,
+        )
+        detected.setdefault(metric_name, []).append(column)
+
+    for column in df.columns:
+        if not column.startswith("output_consistency_"):
+            continue
+        if eval_df[column].notna().any():
+            detected.setdefault(column, []).append(column)
 
     return detected
 
@@ -339,6 +376,13 @@ def detect_all_metrics(df: pd.DataFrame) -> dict[str, dict[str, list[str]]]:
 def _sum_available(values: pd.Series) -> float:
     """Sum a metric without turning an entirely missing column into zero."""
     return values.sum(min_count=1)
+
+
+def _repeat_counts(df: pd.DataFrame) -> pd.Series:
+    """Return one weight per CSV row; legacy rows represent one run."""
+    if "n_runs" not in df.columns:
+        return pd.Series(1, index=df.index, dtype="int64")
+    return pd.to_numeric(df["n_runs"], errors="coerce").fillna(1).astype("int64")
 
 
 def _build_agg_dict(df: pd.DataFrame) -> dict[str, str | Callable]:
@@ -372,7 +416,7 @@ def aggregate_by_model(data: BenchmarkData) -> pd.DataFrame:
     else:
         agg = df.groupby("model_tag").size().reset_index(name="eval_count")
 
-    agg["eval_count"] = df.groupby("model_tag").size().values
+    agg["eval_count"] = _repeat_counts(df).groupby(df["model_tag"]).sum().values
     return agg.sort_values("model_tag")
 
 
@@ -683,8 +727,9 @@ def print_summary(data: BenchmarkData) -> None:
     console.print(f"Dataset: [bold]{data.dataset}[/bold]")
     console.print(f"Models: {', '.join(data.models)}")
     console.print(f"Eval types: {', '.join(data.eval_types)}")
-    console.print(f"Total runs: {data.total_traces}")
-    console.print(f"Total cost: ${data.total_cost:.4f}")
+    console.print(f"Aggregate traces: {data.total_traces}")
+    console.print(f"Underlying task runs: {data.total_evaluation_runs}")
+    console.print(f"Sum of reported per-repeat costs: ${data.total_cost:.4f}")
     console.print(f"Avg summed gateway latency: {data.avg_latency:.1f}s")
     console.print(f"Avg processing time: {data.avg_processing_time:.1f}s")
     console.print()
@@ -707,7 +752,7 @@ def print_model_table(data: BenchmarkData) -> None:
     has_tokens = "total_tokens" in agg.columns
 
     if has_cost:
-        table.add_column("Total Cost", justify="right", style="green")
+        table.add_column("Sum of Per-Repeat Costs", justify="right", style="green")
     if has_latency:
         table.add_column("Avg Summed Gateway Latency", justify="right")
     if has_processing_time:
@@ -748,7 +793,7 @@ def print_eval_table(data: BenchmarkData) -> None:
     has_tokens = "total_tokens" in agg.columns
 
     if has_cost:
-        table.add_column("Total Cost", justify="right", style="green")
+        table.add_column("Sum of Per-Repeat Costs", justify="right", style="green")
     if has_latency:
         table.add_column("Avg Summed Gateway Latency", justify="right")
     if has_processing_time:
@@ -937,6 +982,7 @@ def generate_html_report(data: BenchmarkData, output_path: str) -> None:
         _html_header(data),
         _html_summary_cards(data),
         _html_model_summary_table(data),
+        _html_output_consistency_section(data),
         _html_cost_latency_processing_charts(
             models,
             model_costs,
@@ -1114,8 +1160,9 @@ def _html_summary_cards(data: BenchmarkData) -> str:
             {dataset_pills}
             <div class="stat-pill"><span class="value">{len(data.models)}</span><span class="label">Models</span></div>
             <div class="stat-pill"><span class="value">{len(data.eval_types)}</span><span class="label">Evals</span></div>
-            <div class="stat-pill"><span class="value">{data.total_traces}</span><span class="label">Runs</span></div>
-            <div class="stat-pill"><span class="value">${data.total_cost:.2f}</span><span class="label">Cost</span></div>
+            <div class="stat-pill"><span class="value">{data.total_evaluation_runs}</span><span class="label">Task Runs</span></div>
+            <div class="stat-pill"><span class="value">{data.total_traces}</span><span class="label">Aggregate Traces</span></div>
+            <div class="stat-pill"><span class="value">${data.total_cost:.2f}</span><span class="label">Sum of Per-Repeat Costs</span></div>
             <div class="stat-pill"><span class="value">{data.avg_latency:.0f}s</span><span class="label">Avg Summed Gateway Latency</span></div>
             <div class="stat-pill"><span class="value">{data.avg_processing_time:.0f}s</span><span class="label">Avg Processing Time</span></div>
         </div>
@@ -1135,7 +1182,7 @@ def _html_model_summary_table(data: BenchmarkData) -> str:
     primary_metrics = {
         "generation": "groundedness",
         "find_themes": "groundedness",
-        "condensation": "compression_quality",
+        "condensation": "information_retention",
         "refinement": "information_equivalence",
         "mapping": "f1",
     }
@@ -1151,7 +1198,7 @@ def _html_model_summary_table(data: BenchmarkData) -> str:
     for et in eval_types:
         if et in primary_metrics:
             header_cells.append(f"<th class='num'>{et.title()}</th>")
-    header_cells.append("<th class='num'>Cost</th>")
+    header_cells.append("<th class='num'>Per-Repeat Cost (sum)</th>")
     header_cells.append("<th class='num'>Avg Summed Gateway Latency</th>")
     header_cells.append("<th class='num'>Processing</th>")
     header_cells.append("<th class='num'>Tokens</th>")
@@ -1215,7 +1262,7 @@ def _html_model_summary_table(data: BenchmarkData) -> str:
         else:
             cells.append("<td class='num'>-</td>")
 
-        # Summed gateway latency per evaluation run
+        # Summed gateway latency reported for each component evaluation.
         if "latency_seconds" in model_df.columns:
             latency = model_df["latency_seconds"].mean()
             cells.append(f"<td class='num'>{latency:.0f}s</td>")
@@ -1231,7 +1278,7 @@ def _html_model_summary_table(data: BenchmarkData) -> str:
 
         # Tokens
         if "total_tokens" in model_df.columns:
-            tokens = model_df["total_tokens"].sum()
+            tokens = model_df["total_tokens"].sum(min_count=1)
             cells.append(f"<td class='num'>{tokens:,}</td>")
         else:
             cells.append("<td class='num'>-</td>")
@@ -1243,6 +1290,57 @@ def _html_model_summary_table(data: BenchmarkData) -> str:
             <div class="card-title">Model Performance Summary</div>
             <table>
                 <thead><tr>{"".join(header_cells)}</tr></thead>
+                <tbody>{"".join(rows)}</tbody>
+            </table>
+        </div>
+"""
+
+
+def _html_output_consistency_section(data: BenchmarkData) -> str:
+    """Render framework output-consistency scores without mixing components."""
+    required = {"output_consistency_f1", "output_consistency_count"}
+    if data.results_df.empty or not required.intersection(data.results_df.columns):
+        return ""
+
+    columns = [
+        "model_tag",
+        "eval",
+        "n_runs",
+        "output_consistency_f1",
+        "output_consistency_count",
+    ]
+    present_columns = [
+        column for column in columns if column in data.results_df.columns
+    ]
+    rows = []
+    for _, row in (
+        data.results_df[present_columns].sort_values(["eval", "model_tag"]).iterrows()
+    ):
+        n_runs = int(row.get("n_runs", 1))
+        f1 = row.get("output_consistency_f1")
+        count = row.get("output_consistency_count")
+        f1_value = "-" if pd.isna(f1) else f"{f1:.3f}"
+        count_value = "-" if pd.isna(count) else f"{count:.3f}"
+        model_tag = escape(str(row["model_tag"]))
+        component = escape(str(row["eval"]))
+        rows.append(
+            "<tr>"
+            f"<td>{model_tag}</td>"
+            f"<td>{component}</td>"
+            f"<td class='num'>{n_runs}</td>"
+            f"<td class='num'>{f1_value}</td>"
+            f"<td class='num'>{count_value}</td>"
+            "</tr>"
+        )
+
+    return f"""
+        <div class="card">
+            <div class="card-title">Output Consistency</div>
+            <table>
+                <thead><tr>
+                    <th>Model</th><th>Component</th><th class='num'>Runs</th>
+                    <th class='num'>F1</th><th class='num'>Count</th>
+                </tr></thead>
                 <tbody>{"".join(rows)}</tbody>
             </table>
         </div>
@@ -1275,13 +1373,13 @@ def _html_cost_latency_processing_charts(
         return ""
 
     sections = [
-        '<div class="section-header">Cost, Summed Gateway Latency & Processing Time</div><div class="chart-row">'
+        '<div class="section-header">Reported Per-Repeat Cost, Summed Gateway Latency & Processing Time</div><div class="chart-row">'
     ]
 
     if has_cost:
         sections.append("""
         <div class="card">
-            <div class="card-title">Cost by Model</div>
+            <div class="card-title">Reported Per-Repeat Cost by Model</div>
             <div class="chart" id="cost-model"></div>
         </div>
 """)
@@ -1892,6 +1990,7 @@ def main():
             "avg_latency": data.avg_latency,
             "avg_processing_time": data.avg_processing_time,
             "trace_count": data.total_traces,
+            "run_count": data.total_evaluation_runs,
         }
         print(json.dumps(output, indent=2, default=str))
         return

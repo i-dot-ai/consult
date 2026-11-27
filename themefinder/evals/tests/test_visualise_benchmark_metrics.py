@@ -9,6 +9,7 @@ from visualise_benchmark import (
     BenchmarkData,
     _html_cost_latency_processing_charts,
     _html_model_summary_table,
+    _html_output_consistency_section,
     aggregate_by_model,
     detect_all_metrics,
     detect_eval_metrics,
@@ -51,10 +52,86 @@ def test_aggregates_and_displays_cost_gateway_latency_and_processing_time_separa
     html = _html_cost_latency_processing_charts(
         ["model-a"], [0.03], [3.0], [4.5], ["generation"], [0.01]
     )
-    assert "Cost, Summed Gateway Latency & Processing Time" in html
+    assert "Reported Per-Repeat Cost, Summed Gateway Latency & Processing Time" in html
     assert "USD" in html
     assert "Summed Gateway Latency by Model" in html
     assert "Processing Time by Model" in html
+
+
+def test_repeated_aggregate_row_preserves_repeat_counts_and_framework_scores():
+    data = BenchmarkData(
+        benchmark_id="demo",
+        results_df=pd.DataFrame(
+            [
+                {
+                    "model_tag": "model-a",
+                    "eval": "mapping",
+                    "n_runs": 3,
+                    "cost_usd": 0.01,
+                    "latency_seconds": 2.0,
+                    "processing_time_seconds": 3.0,
+                    "f1_score_mean": 0.8,
+                    "f1_score_stdev": 0.1,
+                    "output_consistency_f1": 0.9,
+                    "output_consistency_count": 1.0,
+                }
+            ]
+        ),
+    )
+
+    aggregated = aggregate_by_model(data)
+
+    assert data.total_traces == 1
+    assert data.total_evaluation_runs == 3
+    assert data.total_cost == pytest.approx(0.01)
+    assert aggregated.iloc[0]["cost_usd"] == pytest.approx(0.01)
+    assert detect_eval_metrics(data.results_df, "mapping") == {
+        "f1": ["f1_score_mean"],
+        "output_consistency_f1": ["output_consistency_f1"],
+        "output_consistency_count": ["output_consistency_count"],
+    }
+    consistency_html = _html_output_consistency_section(data)
+    assert "Output Consistency" in consistency_html
+    assert ">0.900<" in consistency_html
+
+
+def test_output_consistency_escapes_dynamic_html_values():
+    data = BenchmarkData(
+        benchmark_id="demo",
+        results_df=pd.DataFrame(
+            [
+                {
+                    "model_tag": "<untrusted-model>",
+                    "eval": "find&themes",
+                    "n_runs": 3,
+                    "output_consistency_f1": 0.9,
+                    "output_consistency_count": 1.0,
+                }
+            ]
+        ),
+    )
+
+    consistency_html = _html_output_consistency_section(data)
+
+    assert "<td>&lt;untrusted-model&gt;</td>" in consistency_html
+    assert "<td>find&amp;themes</td>" in consistency_html
+
+
+def test_detects_aggregate_metrics_without_component_specific_mappings():
+    results = pd.DataFrame(
+        [
+            {
+                "eval": "mapping",
+                "f1_score_mean": 0.8,
+                "new_metric_mean": 0.5,
+            }
+        ]
+    )
+
+    assert detect_eval_metrics(results, "mapping") == {
+        "f1": ["f1_score_mean"],
+        "new_metric": ["new_metric_mean"],
+    }
 
 
 def test_uses_legacy_duration_as_processing_time_when_loading_results(

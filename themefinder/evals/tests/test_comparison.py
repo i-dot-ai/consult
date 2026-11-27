@@ -63,6 +63,10 @@ async def test_run_delegates_to_evaluate_with_labels_and_no_platform(monkeypatch
         return_value={
             "question_part_1_f1_score": 0.75,
             "question_part_1_output": {"labels": {"1": ["A"]}},
+            "aggregate": {
+                "metrics": {"f1_score": {"mean": 0.75, "stdev": 0.1, "n": 3}},
+                "output_consistency": {"f1": 0.8, "count": 1.0},
+            },
             "metrics": {
                 "cost_usd": 0.0123,
                 "latency_seconds": 4.5,
@@ -76,20 +80,22 @@ async def test_run_delegates_to_evaluate_with_labels_and_no_platform(monkeypatch
     )
     runner = comparison.ComparisonRunner(
         comparison.ComparisonConfig(
-            dataset="demo", models=[model], max_concurrent_models=2
+            dataset="demo",
+            models=[model],
+            max_concurrent_models=2,
+            runs_per_model=3,
         ),
         evaluate,
     )
 
     result = await runner._execute_eval(
         model,
-        run_number=1,
         component="mapping",
         error_counter=comparison.ValidationErrorCounter("test-model"),
         judge_llm=None,
     )
 
-    session_id = f"benchmark_{runner.comparison_id}_test-model_mapping_run1"
+    session_id = f"benchmark_{runner.comparison_id}_test-model_mapping"
     evaluate.assert_awaited_once_with(
         component="mapping",
         dataset="demo",
@@ -97,7 +103,7 @@ async def test_run_delegates_to_evaluate_with_labels_and_no_platform(monkeypatch
         judge_llm=None,
         labels=RunLabels(
             name=session_id,
-            tags=("model:test-model", "run:1", f"benchmark:{runner.comparison_id}"),
+            tags=("model:test-model", "runs:3", f"benchmark:{runner.comparison_id}"),
             metadata={
                 "benchmark_id": runner.comparison_id,
                 "model": "test-model",
@@ -105,18 +111,108 @@ async def test_run_delegates_to_evaluate_with_labels_and_no_platform(monkeypatch
                 "reasoning_effort": None,
                 "judge_model": None,
                 "max_concurrent_models": 2,
-                "run_number": 1,
+                "n_runs": 3,
             },
         ),
+        runs=3,
     )
     assert result.session_id == session_id
-    assert result.scores["question_part_1_f1_score"] == 0.75
+    assert result.n_runs == 3
+    assert result.scores == {
+        "f1_score_mean": 0.75,
+        "f1_score_stdev": 0.1,
+        "output_consistency_f1": 0.8,
+        "output_consistency_count": 1.0,
+        "validation_errors": 0,
+        "total_warnings": 0,
+    }
     assert result.outputs["question_part_1_output"] == {"labels": {"1": ["A"]}}
+    assert result.outputs["aggregate"]["output_consistency"]["f1"] == 0.8
     assert result.cost_usd == 0.0123
     assert result.latency_seconds == 4.5
-    assert result.duration_seconds == 7.5
+    assert result.duration_seconds == 2.5
     assert result.processing_time_seconds == 5.25
     assert result.llm_call_count == 3
+
+
+async def test_single_run_preserves_direct_scores(monkeypatch):
+    model = comparison.ModelConfig(name="test-model")
+    monkeypatch.setattr(model, "create_llm", lambda: object())
+    evaluate = AsyncMock(return_value={"question_part_1_f1_score": 0.75})
+    runner = comparison.ComparisonRunner(
+        comparison.ComparisonConfig(dataset="demo", models=[model], runs_per_model=1),
+        evaluate,
+    )
+
+    result = await runner._execute_eval(
+        model,
+        component="mapping",
+        error_counter=comparison.ValidationErrorCounter("test-model"),
+        judge_llm=None,
+    )
+
+    assert result.n_runs == 1
+    assert result.scores == {
+        "question_part_1_f1_score": 0.75,
+        "validation_errors": 0,
+        "total_warnings": 0,
+    }
+    assert evaluate.await_args.kwargs["runs"] == 1
+
+
+async def test_component_timeout_scales_with_repeat_count(monkeypatch):
+    model = comparison.ModelConfig(name="test-model")
+    runner = comparison.ComparisonRunner(
+        comparison.ComparisonConfig(dataset="demo", models=[model], runs_per_model=3),
+        AsyncMock(),
+    )
+    expected = object()
+
+    async def execute(*args):
+        return expected
+
+    async def wait_for(awaitable, *, timeout):
+        assert timeout == comparison.EVALUATION_TIMEOUT_SECONDS * 3
+        return await awaitable
+
+    monkeypatch.setattr(runner, "_execute_eval", execute)
+    monkeypatch.setattr(comparison.asyncio, "wait_for", wait_for)
+
+    assert (
+        await runner._run_component_eval(
+            model,
+            component="mapping",
+            error_counter=comparison.ValidationErrorCounter("test-model"),
+            judge_llm=None,
+        )
+        is expected
+    )
+
+
+async def test_run_warns_when_an_aggregate_metric_is_unavailable(monkeypatch, caplog):
+    model = comparison.ModelConfig(name="test-model")
+    monkeypatch.setattr(model, "create_llm", lambda: object())
+    runner = comparison.ComparisonRunner(
+        comparison.ComparisonConfig(dataset="demo", models=[model], runs_per_model=2),
+        AsyncMock(
+            return_value={
+                "aggregate": {
+                    "metrics": {"f1_score": {"mean": None, "stdev": None}},
+                    "output_consistency": {},
+                }
+            }
+        ),
+    )
+
+    with caplog.at_level(logging.WARNING, logger="comparison"):
+        await runner._execute_eval(
+            model,
+            component="mapping",
+            error_counter=comparison.ValidationErrorCounter("test-model"),
+            judge_llm=None,
+        )
+
+    assert "Aggregate metric 'f1_score' is missing mean and stdev" in caplog.messages
 
 
 async def test_judge_model_is_built_once_per_model_and_passed_to_every_run(
@@ -125,7 +221,14 @@ async def test_judge_model_is_built_once_per_model_and_passed_to_every_run(
     set_gateway_credentials(monkeypatch)
     model = comparison.ModelConfig(name="test-model")
     monkeypatch.setattr(model, "create_llm", lambda: object())
-    evaluate = AsyncMock(return_value={"question_part_1_f1_score": 0.5})
+    evaluate = AsyncMock(
+        return_value={
+            "aggregate": {
+                "metrics": {"f1_score": {"mean": 0.5, "stdev": 0.0, "n": 2}},
+                "output_consistency": {"f1": 1.0, "count": 1.0},
+            }
+        }
+    )
     runner = comparison.ComparisonRunner(
         comparison.ComparisonConfig(
             dataset="demo",
@@ -145,11 +248,12 @@ async def test_judge_model_is_built_once_per_model_and_passed_to_every_run(
         judges_by_component.setdefault(call.kwargs["component"], []).append(
             call.kwargs["judge_llm"]
         )
-    first_judge, second_judge = judges_by_component["generation"]
-    assert first_judge is second_judge
-    assert first_judge.model == "judge-model"
-    assert first_judge.request_kwargs == {"temperature": 0}
-    assert judges_by_component["mapping"] == [None, None]
+    assert len(judges_by_component["generation"]) == 1
+    judge = judges_by_component["generation"][0]
+    assert judge.model == "judge-model"
+    assert judge.request_kwargs == {"temperature": 0}
+    assert judges_by_component["mapping"] == [None]
+    assert [call.kwargs["runs"] for call in evaluate.await_args_list] == [2, 2]
 
 
 class TestValidationErrorCounter:
@@ -366,11 +470,11 @@ def test_summary_table_keeps_the_benchmark_csv_columns():
         comparison.RunResult(
             model="test-model",
             model_tag="test-model",
-            run_number=1,
+            n_runs=3,
             component="mapping",
             dataset="demo",
             session_id="session",
-            scores={"f1": 0.5},
+            scores={"f1_score_mean": 0.5, "f1_score_stdev": 0.1},
             timestamp=comparison.datetime.now(),
             duration_seconds=5.25,
             processing_time_seconds=5.25,
@@ -378,11 +482,53 @@ def test_summary_table_keeps_the_benchmark_csv_columns():
     ]
 
     summary = runner.generate_summary_table()
+    aggregated = runner.generate_aggregated_table()
 
     assert summary.loc[0, "eval"] == "mapping"
+    assert summary.loc[0, "n_runs"] == 3
     assert summary.loc[0, "duration_seconds"] == 5.25
     assert summary.loc[0, "processing_time_seconds"] == 5.25
-    assert summary.loc[0, "f1"] == 0.5
+    assert summary.loc[0, "f1_score_mean"] == 0.5
+    assert aggregated.equals(summary)
+
+
+def test_cost_summary_reports_average_gateway_metrics(capsys):
+    comparison.print_cost_summary(
+        comparison.pd.DataFrame(
+            [
+                {
+                    "model_tag": "test-model",
+                    "n_runs": 3,
+                    "input_tokens": 100,
+                    "output_tokens": 20,
+                    "total_tokens": 120,
+                    "cost_usd": 0.01,
+                    "latency_seconds": 2.0,
+                    "processing_time_seconds": 3.0,
+                },
+                {
+                    "model_tag": "test-model",
+                    "n_runs": 1,
+                    "input_tokens": 50,
+                    "output_tokens": 10,
+                    "total_tokens": 60,
+                    "cost_usd": 0.02,
+                    "latency_seconds": 4.0,
+                    "processing_time_seconds": 5.0,
+                },
+            ]
+        )
+    )
+
+    rendered = capsys.readouterr().out
+
+    assert "Average Gateway Metrics by Model" in rendered
+    assert "75" in rendered
+    assert "15" in rendered
+    assert "90" in rendered
+    assert "$0.0150" in rendered
+    assert "3.0s" in rendered
+    assert "4.0s" in rendered
 
 
 def test_saves_results_under_the_benchmark_results_layout(tmp_path):
@@ -401,7 +547,7 @@ def test_saves_results_under_the_benchmark_results_layout(tmp_path):
         comparison.RunResult(
             model="test-model",
             model_tag="test-model",
-            run_number=1,
+            n_runs=1,
             component="mapping",
             dataset="demo",
             session_id="session",
@@ -419,7 +565,7 @@ def test_saves_results_under_the_benchmark_results_layout(tmp_path):
     output_path = tmp_path / runner.comparison_id
     assert (output_path / "raw_results.csv").exists()
     assert (output_path / "aggregated_results.csv").exists()
-    assert (output_path / "outputs" / "test-model_mapping_run1.json").exists()
+    assert (output_path / "outputs" / "test-model_mapping.json").exists()
     config = comparison.json.loads((output_path / "config.json").read_text())
     assert config["benchmark_id"] == runner.comparison_id
     assert config["evals"] == ["mapping"]

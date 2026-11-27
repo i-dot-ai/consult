@@ -34,11 +34,15 @@ from eval_types import RunLabels
 from utils import gateway
 
 QUICK_MODEL = "gpt-4.1-sweden-2025-03"
+# Per repeat; a single framework evaluation may run several repeats.
 EVALUATION_TIMEOUT_SECONDS = 20 * 60
+MAX_COMPONENT_EVALUATION_RETRIES = 3
+INITIAL_COMPONENT_RETRY_DELAY_SECONDS = 2.0
 TRANSIENT_ERROR_MARKERS = ("ENOTFOUND", "ECONNREFUSED", "ECONNRESET", "DNS", "503")
 RESULTS_DIR_NAME = "benchmark_results"
 
 console = Console()
+logger = logging.getLogger(__name__)
 
 Evaluate = Callable[..., Awaitable[dict[str, Any]]]
 
@@ -52,8 +56,8 @@ def _is_transient(error: Exception) -> bool:
     )
 
 
-# Run context for structured logging: (model, component, run_number)
-_run_context: ContextVar[tuple[str, str, int] | None] = ContextVar(
+# Run context for structured logging: (model, component, repeat context).
+_run_context: ContextVar[tuple[str, str, int | str] | None] = ContextVar(
     "_run_context", default=None
 )
 
@@ -195,15 +199,15 @@ class ComparisonConfig:
 
 @dataclass
 class RunResult:
-    """Result from a single evaluation run."""
+    """Aggregate result from one model/component evaluation."""
 
     model: str
     model_tag: str
-    run_number: int
+    n_runs: int
     component: str
     dataset: str
     session_id: str
-    scores: dict[str, float]
+    scores: dict[str, float | None]
     timestamp: datetime
     outputs: dict[str, Any] = field(default_factory=dict)  # Non-numeric outputs
 
@@ -316,7 +320,10 @@ class ComparisonRunner:
         )
         console.print(f"  Runs per model: {self.config.runs_per_model}")
         console.print(f"  Components: {', '.join(self.config.components)}")
-        console.print(f"  Total runs: {total_runs} ({runs_per_model} per model)\n")
+        console.print(
+            f"  Total repeated component runs: {total_runs} "
+            f"({runs_per_model} per model)\n"
+        )
 
         self._save_config()
         semaphore = (
@@ -360,53 +367,49 @@ class ComparisonRunner:
         judge_llm = self._create_judge_llm()
 
         model_results = []
-        runs_per_model = self.config.runs_per_model * len(self.config.components)
-        current = 0
 
         try:
-            for run_number in range(1, self.config.runs_per_model + 1):
-                for component in self.config.components:
-                    current += 1
-                    console.print(
-                        f"[bold][{model_config.tag}][/bold] "
-                        f"[{current}/{runs_per_model}] Run {run_number} | {component}"
-                    )
+            for current, component in enumerate(self.config.components, start=1):
+                console.print(
+                    f"[bold][{model_config.tag}][/bold] "
+                    f"[{current}/{len(self.config.components)}] "
+                    f"{self.config.runs_per_model} runs | {component}"
+                )
 
-                    max_eval_retries = 3
-                    retry_delay = 2.0
+                for attempt in range(MAX_COMPONENT_EVALUATION_RETRIES):
+                    try:
+                        result = await self._run_component_eval(
+                            model_config=model_config,
+                            component=component,
+                            error_counter=error_counter,
+                            judge_llm=judge_llm,
+                        )
+                        model_results.append(result)
 
-                    for attempt in range(max_eval_retries):
-                        try:
-                            result = await self._run_single_eval(
-                                model_config=model_config,
-                                run_number=run_number,
-                                component=component,
-                                error_counter=error_counter,
-                                judge_llm=judge_llm,
-                            )
-                            model_results.append(result)
+                        async with self._results_lock:
+                            self.results.append(result)
+                            self._print_scores(result.scores)
+                            self._save_incremental()
+                            self._save_outputs(result)
+                        break
 
-                            async with self._results_lock:
-                                self.results.append(result)
-                                self._print_scores(result.scores)
-                                self._save_incremental()
-                                self._save_outputs(result)
-                            break
-
-                        except Exception as error:
-                            if _is_transient(error) and attempt < max_eval_retries - 1:
-                                delay = retry_delay * (2**attempt)
-                                console.print(
-                                    f"  [yellow]Transient error (attempt {attempt + 1}/{max_eval_retries}), "
-                                    f"retrying in {delay:.1f}s...[/yellow]"
-                                )
-                                await asyncio.sleep(delay)
-                                continue
-
+                    except Exception as error:
+                        if (
+                            _is_transient(error)
+                            and attempt < MAX_COMPONENT_EVALUATION_RETRIES - 1
+                        ):
+                            delay = INITIAL_COMPONENT_RETRY_DELAY_SECONDS * (2**attempt)
                             console.print(
-                                f"  [bold][{model_config.tag}][/bold] [red]ERROR: {error}[/red]"
+                                f"  [yellow]Transient error (attempt {attempt + 1}/{MAX_COMPONENT_EVALUATION_RETRIES}), "
+                                f"retrying in {delay:.1f}s...[/yellow]"
                             )
-                            break
+                            await asyncio.sleep(delay)
+                            continue
+
+                        console.print(
+                            f"  [bold][{model_config.tag}][/bold] [red]ERROR: {error}[/red]"
+                        )
+                        break
 
         finally:
             logging.getLogger().removeHandler(error_counter)
@@ -415,10 +418,11 @@ class ComparisonRunner:
         return model_results
 
     def _create_judge_llm(self) -> OpenAILLM | None:
-        """One judge per model run.
+        """One judge per model.
 
-        A model's runs reuse it, but models run concurrently and the tracer rebinds
-        the judge's client to each run, so it is never shared across models.
+        A model's component evaluations reuse it, but models run concurrently and
+        the tracer rebinds the judge's client to each run, so it is never shared
+        across models.
         """
         if not self.config.judge_model:
             return None
@@ -431,22 +435,19 @@ class ComparisonRunner:
             timeout=600,
         )
 
-    async def _run_single_eval(
+    async def _run_component_eval(
         self,
         model_config: ModelConfig,
-        run_number: int,
         component: str,
         error_counter: ValidationErrorCounter,
         judge_llm: OpenAILLM | None,
     ) -> RunResult:
-        """Run a single evaluation under its logging context."""
-        token = _run_context.set((model_config.name, component, run_number))
+        """Run all repeats for one component under one logging context."""
+        token = _run_context.set((model_config.name, component, "aggregate"))
         try:
             return await asyncio.wait_for(
-                self._execute_eval(
-                    model_config, run_number, component, error_counter, judge_llm
-                ),
-                timeout=EVALUATION_TIMEOUT_SECONDS,
+                self._execute_eval(model_config, component, error_counter, judge_llm),
+                timeout=EVALUATION_TIMEOUT_SECONDS * self.config.runs_per_model,
             )
         finally:
             _run_context.reset(token)
@@ -454,23 +455,19 @@ class ComparisonRunner:
     async def _execute_eval(
         self,
         model_config: ModelConfig,
-        run_number: int,
         component: str,
         error_counter: ValidationErrorCounter,
         judge_llm: OpenAILLM | None,
     ) -> RunResult:
-        """Execute a single evaluation (called within the run context)."""
+        """Execute all configured repeats for one component."""
         error_counter.reset()
 
-        session_id = (
-            f"benchmark_{self.comparison_id}_"
-            f"{model_config.tag}_{component}_run{run_number}"
-        )
+        session_id = f"benchmark_{self.comparison_id}_{model_config.tag}_{component}"
         labels = RunLabels(
             name=session_id,
             tags=(
                 f"model:{model_config.tag}",
-                f"run:{run_number}",
+                f"runs:{self.config.runs_per_model}",
                 f"benchmark:{self.comparison_id}",
             ),
             metadata={
@@ -480,7 +477,7 @@ class ComparisonRunner:
                 "reasoning_effort": model_config.reasoning_effort,
                 "judge_model": self.config.judge_model,
                 "max_concurrent_models": self.config.max_concurrent_models,
-                "run_number": run_number,
+                "n_runs": self.config.runs_per_model,
             },
         )
 
@@ -497,21 +494,68 @@ class ComparisonRunner:
             # Mapping has no judge evaluator, and passing one only earns a warning per run.
             judge_llm=None if component == "mapping" else judge_llm,
             labels=labels,
+            runs=self.config.runs_per_model,
         )
-        duration_seconds = time.perf_counter() - started_at
+        duration_seconds = (
+            time.perf_counter() - started_at
+        ) / self.config.runs_per_model
 
-        all_scores = {}
+        all_scores: dict[str, float | None] = {}
         all_outputs = {}
         metrics = (scores or {}).get("metrics")
         if metrics is not None and not isinstance(metrics, dict):
             raise TypeError("Evaluation metrics must be returned as a dictionary")
+        aggregate = (scores or {}).get("aggregate")
+        if aggregate is not None and not isinstance(aggregate, dict):
+            raise TypeError("Evaluation aggregate must be returned as a dictionary")
+        if self.config.runs_per_model > 1 and aggregate is None:
+            raise ValueError("Repeated evaluations must return an aggregate result")
+
         for key, value in (scores or {}).items():
-            if key == "metrics":
-                continue
-            if isinstance(value, (int, float)):
-                all_scores[key] = value
-            else:
+            if key not in {"metrics", "aggregate"}:
                 all_outputs[key] = value
+        if aggregate is not None:
+            all_outputs["aggregate"] = aggregate
+            aggregate_metrics = aggregate.get("metrics", {})
+            if not isinstance(aggregate_metrics, dict) or not all(
+                isinstance(summary, dict) for summary in aggregate_metrics.values()
+            ):
+                raise TypeError(
+                    "Aggregate metrics must map names to summary dictionaries"
+                )
+            for name, summary in aggregate_metrics.items():
+                mean = summary.get("mean")
+                stdev = summary.get("stdev")
+                missing_fields = [
+                    field_name
+                    for field_name, value in (("mean", mean), ("stdev", stdev))
+                    if value is None
+                ]
+                if missing_fields:
+                    logger.warning(
+                        "Aggregate metric '%s' is missing %s",
+                        name,
+                        " and ".join(missing_fields),
+                    )
+                if mean is not None:
+                    all_scores[f"{name}_mean"] = float(mean)
+                if stdev is not None:
+                    all_scores[f"{name}_stdev"] = float(stdev)
+
+            consistency = aggregate.get("output_consistency", {})
+            if not isinstance(consistency, dict):
+                raise TypeError("Output consistency must be returned as a dictionary")
+            for name in ("f1", "count"):
+                value = consistency.get(name)
+                all_scores[f"output_consistency_{name}"] = (
+                    None if value is None else float(value)
+                )
+        else:
+            # A one-run evaluation does not produce the repeat aggregate. Preserve
+            # its direct scores so --runs 1 remains useful and backwards-compatible.
+            for key, value in (scores or {}).items():
+                if key != "metrics" and isinstance(value, (int, float)):
+                    all_scores[key] = float(value)
 
         all_scores["validation_errors"] = error_counter.validation_errors
         all_scores["total_warnings"] = error_counter.total_warnings
@@ -520,7 +564,7 @@ class ComparisonRunner:
         return RunResult(
             model=model_config.name,
             model_tag=model_config.tag,
-            run_number=run_number,
+            n_runs=self.config.runs_per_model,
             component=component,
             dataset=self.config.dataset,
             session_id=session_id,
@@ -537,7 +581,7 @@ class ComparisonRunner:
             llm_call_count=_metric_int(metrics, "llm_call_count") or 0,
         )
 
-    def _print_scores(self, scores: dict[str, float]) -> None:
+    def _print_scores(self, scores: dict[str, float | None]) -> None:
         """Print scores inline."""
         if not scores:
             console.print("  [dim]No scores returned[/dim]")
@@ -547,8 +591,7 @@ class ComparisonRunner:
         other_scores = {
             name: value
             for name, value in scores.items()
-            if name not in ("validation_errors", "total_warnings")
-            and isinstance(value, (int, float))
+            if name not in ("validation_errors", "total_warnings") and value is not None
         }
 
         score_texts = [f"{name}: {value:.3f}" for name, value in other_scores.items()]
@@ -601,7 +644,7 @@ class ComparisonRunner:
         outputs_dir = self.get_output_path() / "outputs"
         outputs_dir.mkdir(exist_ok=True)
 
-        filename = f"{result.model_tag}_{result.component}_run{result.run_number}.json"
+        filename = f"{result.model_tag}_{result.component}.json"
         with open(outputs_dir / filename, "w") as outputs_file:
             json.dump(result.outputs, outputs_file, indent=2, default=str)
 
@@ -615,7 +658,7 @@ class ComparisonRunner:
             row = {
                 "model": result.model,
                 "model_tag": result.model_tag,
-                "run": result.run_number,
+                "n_runs": result.n_runs,
                 "eval": result.component,
                 "session_id": result.session_id,
                 # Kept for consumers of the former benchmark CSV schema.
@@ -636,31 +679,18 @@ class ComparisonRunner:
         return pd.DataFrame(rows)
 
     def generate_aggregated_table(self) -> pd.DataFrame:
-        """Generate aggregated results (mean ± std) per model/component."""
-        summary = self.generate_summary_table()
-        if summary.empty:
-            return summary
+        """Return framework aggregates, one row per model/component.
 
-        metadata_columns = {"model", "model_tag", "run", "eval", "session_id"}
-        score_columns = [
-            column for column in summary.columns if column not in metadata_columns
-        ]
+        Repeat means, stdevs, and consistency values are already calculated by
+        the same evaluation path as a single-model run. Re-aggregating these
+        rows here would calculate statistics over statistics.
 
-        if not score_columns:
-            return pd.DataFrame()
-
-        aggregated_rows = []
-        for (model_tag, component), group in summary.groupby(["model_tag", "eval"]):
-            row = {"model_tag": model_tag, "eval": component, "n_runs": len(group)}
-            for column in score_columns:
-                if column in group.columns:
-                    values = group[column].dropna()
-                    if len(values) > 0:
-                        row[f"{column}_mean"] = values.mean()
-                        row[f"{column}_std"] = values.std()
-            aggregated_rows.append(row)
-
-        return pd.DataFrame(aggregated_rows)
+        The returned rows are also written to ``raw_results.csv`` for backwards
+        compatibility with the local-report loader. The legacy filename and
+        ``aggregated_results.csv`` therefore intentionally contain the same
+        already-aggregated data.
+        """
+        return self.generate_summary_table()
 
     def print_results_table(self) -> None:
         """Print results as Rich tables, one per component."""
@@ -680,19 +710,31 @@ class ComparisonRunner:
             table.add_column("Model", style="cyan")
             table.add_column("Runs", justify="right")
 
-            mean_columns = [
-                column for column in component_rows.columns if column.endswith("_mean")
+            score_names = {
+                name
+                for result in self.results
+                if result.component == component
+                for name in result.scores
+            }
+            score_columns = [
+                column
+                for column in component_rows.columns
+                if column in score_names and not column.endswith("_stdev")
             ]
-            for column in mean_columns:
-                table.add_column(column.replace("_mean", ""), justify="right")
+            for column in score_columns:
+                table.add_column(column.removesuffix("_mean"), justify="right")
 
             for _, row in component_rows.iterrows():
                 values = [str(row["model_tag"]), str(int(row["n_runs"]))]
-                for column in mean_columns:
+                for column in score_columns:
                     mean = row.get(column, float("nan"))
-                    std = row.get(column.replace("_mean", "_std"), float("nan"))
+                    stdev_column = column.removesuffix("_mean") + "_stdev"
+                    std = row.get(stdev_column, float("nan"))
                     if pd.notna(mean):
-                        values.append(f"{mean:.3f} ± {std:.3f}")
+                        if column.endswith("_mean") and pd.notna(std):
+                            values.append(f"{mean:.3f} ± {std:.3f}")
+                        else:
+                            values.append(f"{mean:.3f}")
                     else:
                         values.append("-")
                 table.add_row(*values)
@@ -701,20 +743,24 @@ class ComparisonRunner:
             console.print()
 
     def save_results(self) -> None:
-        """Save final aggregated results."""
+        """Save final aggregate rows under current and legacy CSV filenames.
+
+        ``raw_results.csv`` remains the backwards-compatible input expected by
+        the local HTML-report loader. Results are already aggregated by the
+        evaluation framework, so it intentionally contains the same rows as
+        ``aggregated_results.csv``.
+        """
         output_path = self.get_output_path()
 
-        raw_df = self.generate_summary_table()
-        raw_df.to_csv(output_path / "raw_results.csv", index=False)
-
-        aggregated = self.generate_aggregated_table()
-        aggregated.to_csv(output_path / "aggregated_results.csv", index=False)
+        results_df = self.generate_summary_table()
+        results_df.to_csv(output_path / "raw_results.csv", index=False)
+        results_df.to_csv(output_path / "aggregated_results.csv", index=False)
 
         console.print(f"[green]Results saved to {output_path}[/green]")
 
 
 def print_cost_summary(results_df: pd.DataFrame) -> None:
-    """Print gateway-supplied cost and timing totals by model."""
+    """Print average gateway metrics by model."""
     if results_df.empty:
         return
 
@@ -728,11 +774,16 @@ def print_cost_summary(results_df: pd.DataFrame) -> None:
         "latency_seconds",
         "processing_time_seconds",
     ]
-    totals = (
-        results_df.groupby("model_tag")[metric_columns]
-        .agg(lambda values: values.sum(min_count=1))
-        .reset_index()
-    )
+    available_metric_columns = [
+        column for column in metric_columns if column in results_df.columns
+    ]
+    if not available_metric_columns:
+        return
+    averages = results_df.groupby("model_tag")[available_metric_columns].mean()
+    for column in metric_columns:
+        if column not in averages:
+            averages[column] = float("nan")
+    averages = averages.reset_index()
 
     def format_count(value: float) -> str:
         return "-" if pd.isna(value) else f"{int(value):,}"
@@ -743,16 +794,16 @@ def print_cost_summary(results_df: pd.DataFrame) -> None:
     def format_seconds(value: float) -> str:
         return "-" if pd.isna(value) else f"{value:.1f}s"
 
-    table = Table(title="Total Costs by Model")
+    table = Table(title="Average Gateway Metrics by Model")
     table.add_column("Model", style="cyan")
-    table.add_column("Input Tokens", justify="right")
-    table.add_column("Output Tokens", justify="right")
-    table.add_column("Total Tokens", justify="right")
-    table.add_column("Cost (USD)", justify="right", style="green")
-    table.add_column("Summed Gateway Latency", justify="right")
-    table.add_column("Processing Time", justify="right")
+    table.add_column("Avg Input Tokens / Repeat", justify="right")
+    table.add_column("Avg Output Tokens / Repeat", justify="right")
+    table.add_column("Avg Total Tokens / Repeat", justify="right")
+    table.add_column("Avg Cost / Repeat (USD)", justify="right", style="green")
+    table.add_column("Avg Summed Gateway Latency", justify="right")
+    table.add_column("Avg Processing Time", justify="right")
 
-    for _, row in totals.iterrows():
+    for _, row in averages.iterrows():
         table.add_row(
             row["model_tag"],
             format_count(row["input_tokens"]),
@@ -762,16 +813,6 @@ def print_cost_summary(results_df: pd.DataFrame) -> None:
             format_seconds(row["latency_seconds"]),
             format_seconds(row["processing_time_seconds"]),
         )
-
-    table.add_row(
-        "[bold]TOTAL[/bold]",
-        f"[bold]{format_count(totals['input_tokens'].sum(min_count=1))}[/bold]",
-        f"[bold]{format_count(totals['output_tokens'].sum(min_count=1))}[/bold]",
-        f"[bold]{format_count(totals['total_tokens'].sum(min_count=1))}[/bold]",
-        f"[bold green]{format_decimal(totals['cost_usd'].sum(min_count=1), '$')}[/bold green]",
-        f"[bold]{format_seconds(totals['latency_seconds'].sum(min_count=1))}[/bold]",
-        f"[bold]{format_seconds(totals['processing_time_seconds'].sum(min_count=1))}[/bold]",
-    )
 
     console.print(table)
 
