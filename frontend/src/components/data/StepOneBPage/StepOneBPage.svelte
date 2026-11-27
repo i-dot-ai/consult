@@ -66,7 +66,7 @@
       id: "af",
       title: "Remove any Excel formulas — cells should contain raw text only",
       text: makeSnippet(`
-        <p>If a cell contains a formula like <code class="bg-neutral-100 px-1 rounded-sm">=CONCATENATE(A1,B1)</code>, copy the cell and paste as values only.</p>
+        <p>If a cell contains a formula like <code class="bg-text-light-95 px-1 rounded-sm">=CONCATENATE(A1,B1)</code>, copy the cell and paste as values only.</p>
         <p>In Excel: Copy → Paste Special → Values</p>
       `),
       checked: isItemChecked("af"),
@@ -177,7 +177,7 @@
 <Title level={1}>Step 1b: Prepare and get to know your data</Title>
 
 <section>
-  <p class={clsx(["text-sm", "text-neutral-500", "py-4", "pb-6"])}>
+  <p class={clsx(["text-sm", "text-text", "py-4", "pb-6"])}>
     Before uploading, you'll need to clean and format your spreadsheet. Use this
     as your chance to read through the responses — you'll go into the analysis
     phase with much stronger context.
@@ -230,7 +230,7 @@
       />
     </div>
 
-    <small class={clsx(["block", "mt-4", "text-xs", "text-neutral-500"])}
+    <small class={clsx(["block", "mt-4", "text-xs", "text-text"])}
       >As you review, note which questions are open (free-text) and which are
       closed (yes/no, multiple choice) — Consult will handle these differently
       during analysis.</small
@@ -242,7 +242,7 @@
   <div class={clsx(["flex", "justify-between", "gap-1", "flex-wrap", "my-12"])}>
     <Button handleClick={() => {}} size="sm">
       <div class="rotate-180">
-        <MaterialIcon color="fill-neutral-500" size="0.9rem">
+        <MaterialIcon color="fill-text" size="0.9rem">
           <ArrowForward />
         </MaterialIcon>
       </div>
@@ -287,7 +287,7 @@
       Checklist Complete!
     </h2>
 
-    <p class={clsx(["text-neutral-500", "text-md", "text-center"])}>
+    <p class={clsx(["text-text", "text-md", "text-center"])}>
       Great work preparing your data! You've completed all the important checks.
       Move to the next step when you're ready to upload your file.
     </p>
