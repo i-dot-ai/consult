@@ -86,7 +86,7 @@
     >
       {#if isSkeleton}
         <p
-          class="blink w-full select-none bg-neutral-200 text-xs text-neutral-100"
+          class="blink w-full select-none bg-text-light-80 text-xs text-text-light-95"
         >
           {name}
         </p>
@@ -107,9 +107,9 @@
       size="sm"
       handleClick={() => (location.href = getFinaliseThemesUrl(consultationId))}
     >
-      <div class="flex items-center gap-2 text-neutral-700">
+      <div class="flex items-center gap-2 text-text-dark-25">
         <div class="rotate-180">
-          <MaterialIcon color="fill-neutral-500">
+          <MaterialIcon color="fill-text">
             <ArrowForward />
           </MaterialIcon>
         </div>
@@ -143,7 +143,7 @@
     <Panel bg={false} border={true}>
       <div class="flex gap-4">
         <div class="mt-0.5">
-          <MaterialIcon color="fill-secondary" size="1.2rem">
+          <MaterialIcon color="fill-success" size="1.2rem">
             <Help />
           </MaterialIcon>
         </div>
@@ -151,7 +151,7 @@
         <div>
           <h2 class="text-md">
             {#if !dataRequested || $questionStore.isLoading}
-              <div class="blink select-none bg-neutral-100 text-neutral-100">
+              <div class="blink select-none bg-text-light-95 text-text-light-95">
                 SKELETON
               </div>
             {:else if $questionStore.error}
@@ -175,7 +175,7 @@
               <span class="py-0.5">Themes finalised </span>
             </Tag>
           </div>
-          <p class="text-sm text-neutral-500">
+          <p class="text-sm text-text">
             Themes for this question have been finalised. The selected themes
             are approved and ready for AI to assign to consultation responses.
           </p>
@@ -215,7 +215,7 @@
       <h2 class="text-md">Selected Themes</h2>
 
       <!-- TODO: Subtitle disabled -->
-      <!-- <p class="text-neutral-500 text-sm">
+      <!-- <p class="text-text text-sm">
         The following themes have been signed off for this question and are
         ready for analysis.
       </p> -->
