@@ -90,7 +90,7 @@
             "text-md",
             "font-medium",
             "uppercase",
-            "bg-gray-500",
+            "bg-text",
             "hidden",
             "sm:block",
           ])}

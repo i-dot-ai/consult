@@ -217,7 +217,7 @@
           `?themefinder_id=${themefinderId - 1}&question_id=${questionId}`)}
     >
       <div class="rotate-180">
-        <MaterialIcon color="fill-neutral-700">
+        <MaterialIcon color="fill-text-dark-25">
           <ChevronRight />
         </MaterialIcon>
       </div>
@@ -235,7 +235,7 @@
     >
       <span class="my-[0.1rem] ml-2">Next Respondent</span>
 
-      <MaterialIcon color="fill-neutral-700">
+      <MaterialIcon color="fill-text-dark-25">
         <ChevronRight />
       </MaterialIcon>
     </Button>
@@ -281,7 +281,7 @@
         <Panel>
           <article>
             <h2 class="text-sm">Responses to Consultation Questions</h2>
-            <p class="text-sm text-neutral-500">
+            <p class="text-sm text-text">
               All responses submitted by this respondent, ordered by question
               number
             </p>

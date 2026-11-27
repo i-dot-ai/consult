@@ -132,15 +132,9 @@
   <table class="text-sm">
     <thead>
       <tr class="border-b border-text-light-50">
-        <th class="pb-1 pr-8 text-left font-normal text-text"
-          >Exported from</th
-        >
-        <th class="pb-1 pr-8 text-left font-normal text-text"
-          >Questions</th
-        >
-        <th class="pb-1 text-left font-normal text-text"
-          >Responses start</th
-        >
+        <th class="pb-1 pr-8 text-left font-normal text-text">Exported from</th>
+        <th class="pb-1 pr-8 text-left font-normal text-text">Questions</th>
+        <th class="pb-1 text-left font-normal text-text">Responses start</th>
       </tr>
     </thead>
     <tbody>

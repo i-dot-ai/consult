@@ -61,22 +61,26 @@
     variant === "gray" && "border-text-light-50 bg-text-light-95",
     variant === "primary" && "border-text-light-50 bg-primary text-white",
     variant === "approve" && "border-text-light-50 bg-success text-white",
-    variant === "warning" && clsx([
-      disabled ? "border-text-light-50" : "border-warning-light-50",
-      "bg-warning-light-95",
-    ]),
-    variant === "danger" && clsx([
-      disabled ? "border-text-light-50" : "border-error",
-      "bg-transparent text-error",
-    ]),
-    variant === "ghost" && clsx([
-      disabled ? "border-text-light-50" : "border-transparent",
-      "hover:bg-text-light-80",
-    ]),
+    variant === "warning" &&
+      clsx([
+        disabled ? "border-text-light-50" : "border-warning-light-50",
+        "bg-warning-light-95",
+      ]),
+    variant === "danger" &&
+      clsx([
+        disabled ? "border-text-light-50" : "border-error",
+        "bg-transparent text-error",
+      ]),
+    variant === "ghost" &&
+      clsx([
+        disabled ? "border-text-light-50" : "border-transparent",
+        "hover:bg-text-light-80",
+      ]),
     variant === "dot" && "border-transparent text-text",
     variant === "outline" &&
       clsx([
-        "bg-transparent", "border",
+        "bg-transparent",
+        "border",
         disabled ? "border-text-light-50" : "border-primary",
         "text-primary",
       ]),
@@ -111,10 +115,11 @@
         variant !== "text" && "disabled:bg-text-light-80",
         "disabled:text-text",
         "disabled:cursor-not-allowed",
-        variant !== "text" && clsx([
-          "disabled:hover:bg-text-light-80",
-          "disabled:hover:border-text-light-50",
-        ]),
+        variant !== "text" &&
+          clsx([
+            "disabled:hover:bg-text-light-80",
+            "disabled:hover:border-text-light-50",
+          ]),
         "disabled:hover:text-text",
       ]),
 

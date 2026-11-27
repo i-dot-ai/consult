@@ -270,7 +270,9 @@
 
   <div class="mt-3 flex flex-wrap items-center gap-4 text-sm">
     {#if questionsAboveBenchmark > 0}
-      <span class="rounded-full bg-success-light-95 px-3 py-1 text-success-dark-25">
+      <span
+        class="rounded-full bg-success-light-95 px-3 py-1 text-success-dark-25"
+      >
         {questionsAboveBenchmark} questions performing well
       </span>
     {/if}

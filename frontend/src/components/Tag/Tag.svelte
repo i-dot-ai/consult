@@ -39,11 +39,23 @@
     variant === "dark" && clsx(["bg-text-light-80", "text-text-dark-25"]),
     variant === "primary" && clsx(["bg-primary", "text-white"]),
     variant === "primary-light" &&
-      clsx(["bg-primary-light-95", "text-primary", "border border-primary-light-80"]),
+      clsx([
+        "bg-primary-light-95",
+        "text-primary",
+        "border border-primary-light-80",
+      ]),
     variant === "warning" &&
-      clsx(["text-warning", "bg-warning-light-95", "border border-warning-light-80"]),
+      clsx([
+        "text-warning",
+        "bg-warning-light-95",
+        "border border-warning-light-80",
+      ]),
     variant === "success" &&
-      clsx(["text-success", "bg-success-light-95", "border border-success-light-80"]),
+      clsx([
+        "text-success",
+        "bg-success-light-95",
+        "border border-success-light-80",
+      ]),
     variant === "error" &&
       clsx(["text-error", "bg-error-light-95", "border border-error-light-80"]),
   ])}

@@ -270,7 +270,7 @@
 />
 
 {#if intro}
-  <p class="mt-3.5 mb-6 text-md leading-relaxed text-neutral-500">{intro}</p>
+  <p class="mt-3.5 mb-6 text-md leading-relaxed text-text">{intro}</p>
 {/if}
 
 {#if finishProblems.length > 0}
@@ -310,9 +310,9 @@
     <LoadingMessage message="Loading questions..." />
   </div>
 {:else if questionsQuery.query.isError}
-  <p class="mt-6 text-md text-neutral-500">Failed to load questions.</p>
+  <p class="mt-6 text-md text-text">Failed to load questions.</p>
 {:else if questions.length > 0}
-  <div class="rounded-xl border border-neutral-300 bg-white px-7">
+  <div class="rounded-xl border border-text-light-50 bg-white px-7">
     {#each questions as question (question.id)}
       <QuestionSetupRow
         {question}

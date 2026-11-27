@@ -345,9 +345,7 @@
 
       <p class="mt-4 text-xs text-text">Answers found in your file</p>
       {#if answersFailed}
-        <p
-          class="mt-1 flex flex-wrap items-center gap-2 text-sm text-text"
-        >
+        <p class="mt-1 flex flex-wrap items-center gap-2 text-sm text-text">
           <span>The answers could not be loaded.</span><Button
             variant="text"
             size="sm"
@@ -358,9 +356,7 @@
       {:else if answers === undefined}
         <p class="mt-1 text-sm text-text">Loading answers...</p>
       {:else if answers.length === 0}
-        <p class="mt-1 text-sm text-text">
-          No answers to this question.
-        </p>
+        <p class="mt-1 text-sm text-text">No answers to this question.</p>
       {:else}
         <p class="mt-1 text-sm text-text">
           {#if ordered.isScale}
@@ -544,9 +540,7 @@
           </table>
         </div>
 
-        <p class="mt-4 text-xs text-text">
-          How it will look on your dashboard
-        </p>
+        <p class="mt-4 text-xs text-text">How it will look on your dashboard</p>
         <div class="mt-1 rounded-lg bg-text-light-95 px-4 py-3">
           <p class="mb-1.5 text-sm font-medium text-text-dark-50">
             {question.short_name || "Not named yet"}

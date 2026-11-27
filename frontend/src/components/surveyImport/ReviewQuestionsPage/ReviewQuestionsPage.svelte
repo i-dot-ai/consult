@@ -296,9 +296,7 @@
   {#if questionsQuery.query.isPending}
     <div class="px-7 py-4 text-md text-text">Loading questions...</div>
   {:else if questionsQuery.query.isError}
-    <div class="px-7 py-4 text-md text-text">
-      Failed to load questions.
-    </div>
+    <div class="px-7 py-4 text-md text-text">Failed to load questions.</div>
   {:else}
     <div
       class="flex flex-wrap items-baseline justify-between gap-3 px-7 pt-4 pb-3"

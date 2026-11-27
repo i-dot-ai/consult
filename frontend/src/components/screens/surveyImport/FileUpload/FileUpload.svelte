@@ -74,9 +74,7 @@
       {#if deepValidation.query.isPending}
         <div class="my-4">
           <LoadingIndicator size="3rem" />
-          <p class="text-center text-text text-sm">
-            Checking your file...
-          </p>
+          <p class="text-center text-text text-sm">Checking your file...</p>
         </div>
       {:else}
         {#if showDeepValidationError}

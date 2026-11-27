@@ -95,7 +95,7 @@
                 >
                   {#if countsLoading}
                     <span
-                      class="blink select-none rounded-sm bg-neutral-200 text-neutral-200"
+                      class="blink select-none rounded-sm bg-text-light-80 text-text-light-80"
                     >
                       00%
                     </span>
@@ -113,7 +113,7 @@
 
                 {#if countsLoading}
                   <span
-                    class="blink hidden min-w-[4ch] select-none rounded-sm bg-neutral-200 text-neutral-200 sm:block"
+                    class="blink hidden min-w-[4ch] select-none rounded-sm bg-text-light-80 text-text-light-80 sm:block"
                   >
                     0000
                   </span>

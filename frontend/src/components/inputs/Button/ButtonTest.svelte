@@ -11,12 +11,6 @@
   } = $props();
 </script>
 
-<Button
-  {variant}
-  {highlighted}
-  {highlightVariant}
-  {disabled}
-  {handleClick}
->
+<Button {variant} {highlighted} {highlightVariant} {disabled} {handleClick}>
   {@render children()}
 </Button>

@@ -172,10 +172,7 @@
 
             {#if subtext}
               <small
-                class={clsx([
-                  "text-xs text-text",
-                  disabled && "opacity-75",
-                ])}
+                class={clsx(["text-xs text-text", disabled && "opacity-75"])}
               >
                 {subtext}
               </small>

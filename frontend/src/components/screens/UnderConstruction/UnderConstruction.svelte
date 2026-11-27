@@ -12,7 +12,5 @@
   </div>
 
   <Title level={2}>Under Construction</Title>
-  <p class="text-text">
-    This functionality is currently under construction
-  </p>
+  <p class="text-text">This functionality is currently under construction</p>
 </div>

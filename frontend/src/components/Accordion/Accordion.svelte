@@ -72,9 +72,7 @@
       {#if Icon}
         <div class={clsx(["self-start", "shrink-0", "my-2.5", "mx-1"])}>
           <MaterialIcon
-            color={variant === "warning"
-              ? "fill-warning"
-              : "fill-text-dark-25"}
+            color={variant === "warning" ? "fill-warning" : "fill-text-dark-25"}
             size="1.2rem"
           >
             <Icon />
@@ -113,9 +111,7 @@
           ariaLabel={`close ${ariaLabel || "accordion"}`}
         >
           <MaterialIcon
-            color={variant === "warning"
-              ? "fill-warning"
-              : "fill-text"}
+            color={variant === "warning" ? "fill-warning" : "fill-text"}
           >
             <Close />
           </MaterialIcon>
@@ -132,7 +128,8 @@
       variant === "light" && "bg-white border-text-light-50 p-4",
       variant === "gray" && "bg-text-light-95 border-text-light-50 p-4",
       variant === "gray-white" && "bg-text-light-95 border-text-light-50 p-4",
-      variant === "warning" && "bg-warning-light-95 border-warning-light-50 p-4",
+      variant === "warning" &&
+        "bg-warning-light-95 border-warning-light-50 p-4",
       variant === "ghost" && "bg-transparent border-transparent p-0 pt-2",
       "rounded-b-lg border border-t-0",
     ])}

@@ -100,7 +100,9 @@
   {/if}
 
   {#if nonExistentEmails.length > 0}
-    <div class="mt-4 rounded-sm border border-warning-light-50 bg-warning-light-95 p-4">
+    <div
+      class="mt-4 rounded-sm border border-warning-light-50 bg-warning-light-95 p-4"
+    >
       <h3 class="mb-2 font-semibold text-warning-dark-50">Users not found</h3>
       <p class="mb-3 text-sm text-warning-dark-25">
         The following email addresses do not exist in the system:

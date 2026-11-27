@@ -40,7 +40,7 @@
     highlighted={isFlagged}
     highlightVariant="none"
   >
-    <MaterialIcon color={isFlagged ? "fill-primary" : "fill-neutral-500"}>
+    <MaterialIcon color={isFlagged ? "fill-primary" : "fill-text"}>
       <Flag2 fill={isFlagged} />
     </MaterialIcon>
   </Button>

@@ -37,7 +37,9 @@
           {legend}
         </h2>
       </legend>
-      <div class="text-base leading-5 text-text-dark-50 md:text-lg md:leading-6">
+      <div
+        class="text-base leading-5 text-text-dark-50 md:text-lg md:leading-6"
+      >
         {#each items as item (item.value)}
           <div class="mb-2.5 flex items-start gap-3 last:mb-0">
             <input

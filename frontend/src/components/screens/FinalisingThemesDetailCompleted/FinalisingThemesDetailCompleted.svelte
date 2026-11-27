@@ -151,7 +151,9 @@
         <div>
           <h2 class="text-md">
             {#if !dataRequested || $questionStore.isLoading}
-              <div class="blink select-none bg-text-light-95 text-text-light-95">
+              <div
+                class="blink select-none bg-text-light-95 text-text-light-95"
+              >
                 SKELETON
               </div>
             {:else if $questionStore.error}

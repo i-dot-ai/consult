@@ -73,7 +73,12 @@
     <div class="flex gap-4">
       {#if items.length === 0}
         <p
-          class={clsx(["w-full", "text-text-dark-25", "text-sm", "text-center"])}
+          class={clsx([
+            "w-full",
+            "text-text-dark-25",
+            "text-sm",
+            "text-center",
+          ])}
         >
           No learnings available
         </p>

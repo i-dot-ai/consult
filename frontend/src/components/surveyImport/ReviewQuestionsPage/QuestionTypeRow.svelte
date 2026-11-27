@@ -261,7 +261,9 @@
             question
           </p>
           {#each answers as text, index (index)}
-            <p class="leading-relaxed text-text-dark-50 not-last:mb-2">{text}</p>
+            <p class="leading-relaxed text-text-dark-50 not-last:mb-2">
+              {text}
+            </p>
           {/each}
         {/if}
       </div>

@@ -237,12 +237,12 @@
   {:else}
     <div class="mt-16 mb-8">
       <div class="flex justify-center mb-4">
-        <MaterialIcon color="fill-neutral-300" size="3rem">
+        <MaterialIcon color="fill-text-light-50" size="3rem">
           <Search />
         </MaterialIcon>
       </div>
 
-      <p class="text-neutral-500 text-center">No demographic data found</p>
+      <p class="text-text text-center">No demographic data found</p>
     </div>
   {/if}
 </Panel>

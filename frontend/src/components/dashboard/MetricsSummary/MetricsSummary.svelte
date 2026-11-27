@@ -25,11 +25,11 @@
 {#snippet row(text: string, count: number, Icon: Component)}
   <div class="my-2 flex w-full items-center justify-between gap-4">
     <div class="flex items-center">
-      <MaterialIcon color="fill-neutral-500">
+      <MaterialIcon color="fill-text">
         <Icon />
       </MaterialIcon>
 
-      <span class="ml-2 text-sm text-neutral-700">
+      <span class="ml-2 text-sm text-text-dark-25">
         {text}
       </span>
     </div>

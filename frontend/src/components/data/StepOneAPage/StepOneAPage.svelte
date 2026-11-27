@@ -61,9 +61,7 @@
 
         {#snippet content()}
           <div class={clsx(["text-sm"])}>
-            <strong class={clsx(["text-warning"])}>
-              Why this matters:
-            </strong>
+            <strong class={clsx(["text-warning"])}> Why this matters: </strong>
 
             <ul class="list-disc pl-8 text-text-dark-25 marker:text-warning">
               <li>
@@ -180,7 +178,7 @@
 {#snippet reminder(text: string)}
   <div class={clsx(["flex", "gap-1", "items-center", "text-sm", "mt-4"])}>
     <div class={clsx(["shrink-0", "self-start"])}>
-      <MaterialIcon color="fill-red-500">
+      <MaterialIcon color="fill-error">
         <LightbulbTwo />
       </MaterialIcon>
     </div>
@@ -330,9 +328,7 @@
             <li><strong>No merged cells</strong></li>
           </ul>
         </Panel>
-        <p class="mb-4 text-text">
-          Not sure if your file is set up correctly?
-        </p>
+        <p class="mb-4 text-text">Not sure if your file is set up correctly?</p>
 
         <Button handleClick={() => {}} fullWidth={true}>
           <div

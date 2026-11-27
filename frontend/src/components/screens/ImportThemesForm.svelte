@@ -169,7 +169,9 @@
     </Text>
 
     {#if themesToImport.length > 0}
-      <div class="rounded-sm border border-success-light-80 bg-success-light-95 p-3">
+      <div
+        class="rounded-sm border border-success-light-80 bg-success-light-95 p-3"
+      >
         <p class="text-sm font-medium text-success-dark-50">
           {themesToImport.reduce(
             (sum, q) => sum + (q.source_themes?.length || 0),
@@ -178,7 +180,9 @@
         </p>
       </div>
     {:else}
-      <div class="rounded-sm border border-warning-light-80 bg-warning-light-25 p-3">
+      <div
+        class="rounded-sm border border-warning-light-80 bg-warning-light-25 p-3"
+      >
         <p class="text-sm font-medium text-warning-dark-50">
           No finalised themes will be imported.
         </p>
@@ -233,7 +237,9 @@
     </div>
 
     {#if preview.warnings.unmatched_source_questions.length > 0}
-      <div class="rounded-sm border border-warning-light-80 bg-warning-light-25 p-3">
+      <div
+        class="rounded-sm border border-warning-light-80 bg-warning-light-25 p-3"
+      >
         <p class="text-sm font-medium text-warning-dark-50">
           {preview.warnings.unmatched_source_questions.length} source question(s)
           have no match in target:
@@ -269,7 +275,9 @@
 
 {#if result}
   <div class="mt-6 flex flex-col gap-4">
-    <div class="rounded-sm border border-success-light-80 bg-success-light-95 p-3">
+    <div
+      class="rounded-sm border border-success-light-80 bg-success-light-95 p-3"
+    >
       <p class="text-sm font-medium text-success-dark-50">
         Successfully imported {result.total_themes_imported} finalised theme(s) from
         <strong>{result.source_consultation.title}</strong>.

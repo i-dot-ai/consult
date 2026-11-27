@@ -100,9 +100,7 @@
 {#snippet qualtricsExportOptions()}
   <div>
     Set these three export options:
-    <ul
-      class="mt-1.5 ml-4 flex list-disc flex-col gap-1 text-sm text-text"
-    >
+    <ul class="mt-1.5 ml-4 flex list-disc flex-col gap-1 text-sm text-text">
       <li>Use choice text, so answers export as words rather than numbers</li>
       <li>Include all response fields</li>
       <li>

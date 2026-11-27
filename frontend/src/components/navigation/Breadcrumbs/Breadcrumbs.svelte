@@ -108,7 +108,8 @@
                 // past stages
                 i < currStage && "bg-success ring-success-light-80",
                 // current stage
-                i === currStage && "animate-pulse bg-primary ring-primary-light-80",
+                i === currStage &&
+                  "animate-pulse bg-primary ring-primary-light-80",
               ])}
             >
               {#if i < currStage}

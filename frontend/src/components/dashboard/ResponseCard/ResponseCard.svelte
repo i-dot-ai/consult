@@ -73,8 +73,7 @@
       "leading-6",
       "transition-all",
       "duration-300",
-      editing &&
-        clsx(["outline-solid", "outline-4", "outline-success", "p-2"]),
+      editing && clsx(["outline-solid", "outline-4", "outline-success", "p-2"]),
     ])}
   >
     <header

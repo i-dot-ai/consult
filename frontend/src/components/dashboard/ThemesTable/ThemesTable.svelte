@@ -91,7 +91,9 @@
 
             <td class="pr-4">
               <div class="mt-8">
-                <span class="blink select-none bg-text-light-80 text-text-light-80">
+                <span
+                  class="blink select-none bg-text-light-80 text-text-light-80"
+                >
                   000 SKELETON
                 </span>
               </div>

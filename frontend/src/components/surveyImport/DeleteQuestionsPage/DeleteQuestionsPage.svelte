@@ -171,9 +171,7 @@
 
   {#if !questionsQuery.query.isPending && !questionsQuery.query.isError}
     <div class="border-t border-text-light-80">
-      <div
-        class="grid grid-cols-[3rem_4rem_1fr] px-7 py-2 text-sm text-text"
-      >
+      <div class="grid grid-cols-[3rem_4rem_1fr] px-7 py-2 text-sm text-text">
         <span></span>
         <span>No.</span>
         <span>Question</span>
@@ -245,7 +243,9 @@
                       answers to this question
                     </p>
                     {#each sample as answer (answer.id)}
-                      <p class="leading-relaxed text-text-dark-50 not-last:mb-2">
+                      <p
+                        class="leading-relaxed text-text-dark-50 not-last:mb-2"
+                      >
                         {answer.text}
                       </p>
                     {/each}

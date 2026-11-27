@@ -16,7 +16,12 @@
   {#if $$slots.icon}
     <div class="flex items-center justify-center">
       <div
-        class={clsx(["bg-primary-light-95", "p-2", "rounded-md", !subtitle && "mt-1.5"])}
+        class={clsx([
+          "bg-primary-light-95",
+          "p-2",
+          "rounded-md",
+          !subtitle && "mt-1.5",
+        ])}
       >
         <MaterialIcon
           size={level === 1 && context === "finalising-themes"
@@ -33,9 +38,7 @@
     <Title {context} {level} text={title} />
 
     {#if subtitle}
-      <p
-        class={clsx(["text-text", level === 1 ? "text-md" : "text-sm"])}
-      >
+      <p class={clsx(["text-text", level === 1 ? "text-md" : "text-sm"])}>
         {subtitle}
       </p>
     {/if}
