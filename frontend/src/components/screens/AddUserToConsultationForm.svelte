@@ -86,26 +86,26 @@
   <textarea
     id="emailsInput"
     rows="3"
-    class="rounded-sm border border-gray-300 px-3 py-2"
+    class="rounded-sm border border-text-light-50 px-3 py-2"
     placeholder="Enter one or more email addresses, separated by comma, space, or newline."
     bind:value={emailsInput}
     disabled={sending}></textarea>
 
   {#if error}
-    <p class="text-sm text-red-500">{`Error: ${error}`}</p>
+    <p class="text-sm text-error">{`Error: ${error}`}</p>
   {/if}
 
   {#if successMessage}
-    <p class="text-sm text-green-600">{successMessage}</p>
+    <p class="text-sm text-success">{successMessage}</p>
   {/if}
 
   {#if nonExistentEmails.length > 0}
-    <div class="mt-4 rounded-sm border border-yellow-300 bg-yellow-50 p-4">
-      <h3 class="mb-2 font-semibold text-yellow-800">Users not found</h3>
-      <p class="mb-3 text-sm text-yellow-700">
+    <div class="mt-4 rounded-sm border border-warning-light-50 bg-warning-light-95 p-4">
+      <h3 class="mb-2 font-semibold text-warning-dark-50">Users not found</h3>
+      <p class="mb-3 text-sm text-warning-dark-25">
         The following email addresses do not exist in the system:
       </p>
-      <ul class="mb-3 list-inside list-disc text-sm text-yellow-700">
+      <ul class="mb-3 list-inside list-disc text-sm text-warning-dark-25">
         {#each nonExistentEmails as email (email)}
           <li>{email}</li>
         {/each}
@@ -119,9 +119,9 @@
           {copySuccess ? "Copied!" : "Copy emails"}
         </Button>
         {#if copySuccess}
-          <p class="text-sm text-green-600">Emails copied to clipboard</p>
+          <p class="text-sm text-success">Emails copied to clipboard</p>
         {/if}
-        <a href="/support/users/new" class="text-gray-700 underline">
+        <a href="/support/users/new" class="text-text-dark-25 underline">
           Add these users →
         </a>
       </div>
