@@ -63,7 +63,7 @@
 <section>
   <StepTitle stepNo={3} title="Upload your file" Icon={Upload} />
 
-  <p class="text-neutral-500 mt-4 mb-6">
+  <p class="text-text mt-4 mb-6">
     Provided data is in the correct format, Consult uploads it into the app.
   </p>
 </section>
@@ -74,7 +74,7 @@
       {#if deepValidation.query.isPending}
         <div class="my-4">
           <LoadingIndicator size="3rem" />
-          <p class="text-center text-neutral-500 text-sm">
+          <p class="text-center text-text text-sm">
             Checking your file...
           </p>
         </div>
@@ -129,7 +129,7 @@
           </div>
 
           <div>
-            <p class="text-neutral-500 text-md my-4">
+            <p class="text-text text-md my-4">
               The file {(fileChosen! as File).name} does not meet the requirements.
             </p>
 
@@ -184,7 +184,7 @@
 
         <div class="p-2">
           <div class="flex items-center gap-2">
-            <MaterialIcon color="fill-secondary" size="1.5rem">
+            <MaterialIcon color="fill-success" size="1.5rem">
               <CheckCircle />
             </MaterialIcon>
             <Title level={2}>
@@ -192,12 +192,12 @@
             </Title>
           </div>
 
-          <p class="text-neutral-500 text-md my-4">
+          <p class="text-text text-md my-4">
             The file can be read and is laid out for Consult.
           </p>
 
           <div class="flex gap-2 items-center my-8">
-            <MaterialIcon color="fill-secondary" size="1.5rem">
+            <MaterialIcon color="fill-success" size="1.5rem">
               <Check />
             </MaterialIcon>
 
@@ -208,7 +208,7 @@
             {#snippet infoItem(number: number, text: string)}
               <p class="flex flex-col">
                 <span class="text-2xl font-[500]">{number || 0}</span>
-                <span class="text-sm text-neutral-500">{text}</span>
+                <span class="text-sm text-text">{text}</span>
               </p>
             {/snippet}
 
@@ -227,13 +227,13 @@
           </div>
 
           <div>
-            <p class="text-neutral-800 my-4">
+            <p class="text-text-dark-25 my-4">
               Uploading adds the responses to Consult. This can take a few
               hours. You can leave once the file is uploaded. The consultation
               page shows when the responses are added.
             </p>
 
-            <p class="text-neutral-500">
+            <p class="text-text">
               One file per consultation. It cannot be replaced after it is
               uploaded.
             </p>
@@ -250,7 +250,7 @@
           </div>
 
           <Panel bg={true} border={true}>
-            <p class="text-neutral-500">
+            <p class="text-text">
               The content of the responses has not been read. Whether personal
               information has been removed, and whether the wording is right, is
               still yours to confirm. You'll see every question once the
