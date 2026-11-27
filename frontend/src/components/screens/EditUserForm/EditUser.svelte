@@ -60,7 +60,7 @@
 
     {#if $userUpdateStore.error}
       <div
-        class="mb-6 rounded-sm border border-red-200 bg-red-50 px-4 py-3 text-red-800"
+        class="mb-6 rounded-sm border border-error-light-80 bg-error-light-95 px-4 py-3 text-error-dark-25"
       >
         {$userUpdateStore.data?.is_staff[0] || "failed to update user"}
       </div>
@@ -83,7 +83,7 @@
       </div>
 
       {#if $userUpdateStore.isLoading}
-        <div class="flex items-center gap-2 text-sm text-gray-600">
+        <div class="flex items-center gap-2 text-sm text-text">
           <div class="grow-0">
             <LoadingIndicator size="1rem" />
           </div>
