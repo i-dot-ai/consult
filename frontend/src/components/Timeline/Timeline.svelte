@@ -37,11 +37,11 @@
         "p-2",
         "rounded-full",
         "border",
-        "border-neutral-300",
+        "border-text-light-50",
         "bg-white",
       ])}
     >
-      <MaterialIcon size="2rem" color="fill-neutral-500">
+      <MaterialIcon size="2rem" color="fill-text">
         <Icon />
       </MaterialIcon>
     </div>
@@ -68,7 +68,7 @@
           <Tag border={true}>
             <span class="flex items-center gap-2">
               {#if TagIcon}
-                <MaterialIcon color="fill-neutral-500" size="0.8rem">
+                <MaterialIcon color="fill-text" size="0.8rem">
                   <TagIcon />
                 </MaterialIcon>
               {/if}
@@ -79,7 +79,7 @@
         </div>
       {/if}
 
-      <p class="text-neutral-500 text-sm">
+      <p class="text-text text-sm">
         {bodyText}
       </p>
     </div>
