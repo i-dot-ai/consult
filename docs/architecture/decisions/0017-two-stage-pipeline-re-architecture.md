@@ -6,6 +6,9 @@ Date: 2026-11-25
 
 In Review
 
+Partially supersedes [0003](0003-define-structure-for-consultation-data-to-be-imported.md): its S3 data contract
+no longer applies to pipeline inputs and outputs once stage 1 is complete (see negative consequence 5).
+
 ## Context
 
 From January 2027, up to six departments will run their own consultations on Consult without i.AI engineers
