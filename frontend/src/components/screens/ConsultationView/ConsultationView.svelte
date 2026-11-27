@@ -355,7 +355,7 @@
       {#if userCanDelete && !isRenaming}
         <Button variant="danger" handleClick={() => (isDeleting = true)}>
           <div class="flex gap-1 items-center text-xs delete-button">
-            <MaterialIcon color="fill-red-700">
+            <MaterialIcon color="fill-error-dark-25">
               <Delete />
             </MaterialIcon>
 
