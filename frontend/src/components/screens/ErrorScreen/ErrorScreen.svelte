@@ -32,7 +32,7 @@
 
 <div class="mt-16">
   <div class="my-8 flex items-center justify-center">
-    <MaterialIcon size="5rem" color="fill-neutral-500">
+    <MaterialIcon size="5rem" color="fill-text">
       {@render icon()}
     </MaterialIcon>
   </div>
