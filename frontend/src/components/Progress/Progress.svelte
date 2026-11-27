@@ -37,7 +37,7 @@
     "w-full",
     "overflow-hidden",
     "rounded-[99999px]",
-    "bg-neutral-300",
+    "bg-text-light-50",
   ])}
 >
   <div
@@ -51,7 +51,7 @@
       "h-full",
       "w-full",
       variant === "primary" && "bg-primary",
-      variant === "neutral" && "bg-neutral-500",
+      variant === "neutral" && "bg-text",
       "transition-transform",
       "ease-[cubic-bezier(0.65,0,0.35,1)]",
     ])}
