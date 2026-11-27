@@ -270,7 +270,7 @@
   Icon={Checklist}
 />
 
-<p class="mt-3.5 mb-6 text-md leading-relaxed text-neutral-500">
+<p class="mt-3.5 mb-6 text-md leading-relaxed text-text">
   There are {questions.length} questions and each has been categorised as either closed,
   open or hybrid. Open questions will have themes assigned and closed questions have
   fixed answers. Double check that the questions have been categorised correctly.
@@ -292,20 +292,20 @@
   </div>
 {/if}
 
-<div class="questions-panel rounded-xl border border-neutral-300 bg-white">
+<div class="questions-panel rounded-xl border border-text-light-50 bg-white">
   {#if questionsQuery.query.isPending}
-    <div class="px-7 py-4 text-md text-neutral-500">Loading questions...</div>
+    <div class="px-7 py-4 text-md text-text">Loading questions...</div>
   {:else if questionsQuery.query.isError}
-    <div class="px-7 py-4 text-md text-neutral-500">
+    <div class="px-7 py-4 text-md text-text">
       Failed to load questions.
     </div>
   {:else}
     <div
       class="flex flex-wrap items-baseline justify-between gap-3 px-7 pt-4 pb-3"
     >
-      <p class="text-md text-neutral-500">{summary}</p>
+      <p class="text-md text-text">{summary}</p>
       <div class="flex flex-wrap items-center gap-4">
-        <p class="text-sm text-neutral-500" aria-live="polite">
+        <p class="text-sm text-text" aria-live="polite">
           {changedSummary}
         </p>
         <div class="sort-select">
@@ -325,7 +325,7 @@
         </div>
       </div>
     </div>
-    <p class="px-7 pb-4 text-sm text-neutral-500">
+    <p class="px-7 pb-4 text-sm text-text">
       Every change made here is tracked, listed before the analysis starts, and
       saved to the consultation afterwards. There is no need to keep note of
       them.
@@ -333,8 +333,8 @@
   {/if}
 
   {#if !questionsQuery.query.isPending && !questionsQuery.query.isError}
-    <div class="border-t border-neutral-200">
-      <div class="hidden gap-4 px-7 py-2 text-sm text-neutral-500 sm:flex">
+    <div class="border-t border-text-light-80">
+      <div class="hidden gap-4 px-7 py-2 text-sm text-text sm:flex">
         <span class="w-16 shrink-0">No.</span>
         <span class="flex-1">Question</span>
         <span class="w-48 shrink-0">What kind of question it is</span>
@@ -397,7 +397,7 @@
   @reference "../../../styles/global.css";
 
   .sort-select :global(label) {
-    @apply text-sm text-neutral-500 md:text-sm;
+    @apply text-sm text-text md:text-sm;
   }
 
   .questions-panel :global(select) {
