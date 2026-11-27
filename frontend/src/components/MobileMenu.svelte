@@ -56,7 +56,7 @@
               "transition-colors",
               "duration-300",
               window.location.href.includes(navItem.url)
-                ? "bg-gray-800"
+                ? "bg-text-dark-50"
                 : "bg-black",
               "hover:bg-white",
               "hover:text-black",
