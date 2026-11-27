@@ -46,11 +46,11 @@
 {#snippet infoItem(content: Snippet, Icon: Component)}
   <div class="flex items-start gap-4 mb-6">
     <div class="shrink-0">
-      <MaterialIcon color="fill-secondary" size="1.5rem">
+      <MaterialIcon color="fill-success" size="1.5rem">
         <Icon />
       </MaterialIcon>
     </div>
-    <p class="text-md text-neutral-700">
+    <p class="text-md text-text-dark-25">
       {@render content()}
     </p>
   </div>
@@ -78,7 +78,7 @@
               {/if}
             </span>
           </Title>
-          <p class="text-md text-neutral-500">
+          <p class="text-md text-text">
             {#if user.query.isPending || consultation.query.isPending}
               <SkeletonText length={5} />
             {:else if user.query.isError || consultation.query.isError}
@@ -108,7 +108,7 @@
     </Panel>
   </div>
 
-  <p class="text-neutral-500 text-md my-6">
+  <p class="text-text text-md my-6">
     Consult analyses files of consultation responses. These six steps upload the
     file, check it and confirm the question type.
   </p>
@@ -118,7 +118,7 @@
       <span class="text-lg">Importance of getting this set up right</span>
     </Title>
 
-    <p class="text-neutral-500 text-md my-6">
+    <p class="text-text text-md my-6">
       Every question is either open, closed or hybrid and that impacts the
       format in the app
     </p>
@@ -147,7 +147,7 @@
   <Panel>
     <Title level={2}>The six steps</Title>
 
-    <p class="text-neutral-500 text-sm mt-4 mb-8">
+    <p class="text-text text-sm mt-4 mb-8">
       The first two happen in your survey tool and your spreadsheet. They are
       part of the job, so they are listed here with the rest.
     </p>
@@ -240,7 +240,7 @@
     <Panel variant="gray" bg={true}>
       <div class="flex gap-4 flex-wrap sm:flex-nowrap">
         <Title level={4}>Still collecting responses?</Title>
-        <p class="text-sm text-neutral-500">
+        <p class="text-sm text-text">
           Start anyway. Steps 1 and 2 tell you what a usable file looks like,
           which is far easier to act on before your consultation closes than
           after.
