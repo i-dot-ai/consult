@@ -684,11 +684,13 @@ class ComparisonRunner:
         Repeat means, stdevs, and consistency values are already calculated by
         the same evaluation path as a single-model run. Re-aggregating these
         rows here would calculate statistics over statistics.
+
+        The returned rows are also written to ``raw_results.csv`` for backwards
+        compatibility with the local-report loader. The legacy filename and
+        ``aggregated_results.csv`` therefore intentionally contain the same
+        already-aggregated data.
         """
-        summary = self.generate_summary_table()
-        if summary.empty:
-            return summary
-        return summary
+        return self.generate_summary_table()
 
     def print_results_table(self) -> None:
         """Print results as Rich tables, one per component."""
@@ -741,7 +743,13 @@ class ComparisonRunner:
             console.print()
 
     def save_results(self) -> None:
-        """Save final aggregated results."""
+        """Save final aggregate rows under current and legacy CSV filenames.
+
+        ``raw_results.csv`` remains the backwards-compatible input expected by
+        the local HTML-report loader. Results are already aggregated by the
+        evaluation framework, so it intentionally contains the same rows as
+        ``aggregated_results.csv``.
+        """
         output_path = self.get_output_path()
 
         raw_df = self.generate_summary_table()
