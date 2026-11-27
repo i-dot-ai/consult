@@ -73,8 +73,8 @@
         <div class={clsx(["self-start", "shrink-0", "my-2.5", "mx-1"])}>
           <MaterialIcon
             color={variant === "warning"
-              ? "fill-yellow-600"
-              : "fill-neutral-600"}
+              ? "fill-warning"
+              : "fill-text-dark-25"}
             size="1.2rem"
           >
             <Icon />
@@ -97,7 +97,7 @@
     >
       <div class={clsx(["transition-transform", expanded && "rotate-90"])}>
         <MaterialIcon
-          color={variant === "warning" ? "fill-yellow-500" : "fill-neutral-500"}
+          color={variant === "warning" ? "fill-warning" : "fill-text"}
         >
           <ChevronRight />
         </MaterialIcon>
@@ -114,8 +114,8 @@
         >
           <MaterialIcon
             color={variant === "warning"
-              ? "fill-yellow-500"
-              : "fill-neutral-500"}
+              ? "fill-warning"
+              : "fill-text"}
           >
             <Close />
           </MaterialIcon>
@@ -129,10 +129,10 @@
   <div
     transition:slide
     class={clsx([
-      variant === "light" && "bg-white border-neutral-300 p-4",
-      variant === "gray" && "bg-neutral-100 border-neutral-300 p-4",
-      variant === "gray-white" && "bg-neutral-100 border-neutral-300 p-4",
-      variant === "warning" && "bg-yellow-50 border-yellow-300 p-4",
+      variant === "light" && "bg-white border-text-light-50 p-4",
+      variant === "gray" && "bg-text-light-95 border-text-light-50 p-4",
+      variant === "gray-white" && "bg-text-light-95 border-text-light-50 p-4",
+      variant === "warning" && "bg-warning-light-95 border-warning-light-50 p-4",
       variant === "ghost" && "bg-transparent border-transparent p-0 pt-2",
       "rounded-b-lg border border-t-0",
     ])}
