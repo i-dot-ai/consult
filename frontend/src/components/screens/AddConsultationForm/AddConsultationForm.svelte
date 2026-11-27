@@ -120,7 +120,7 @@
 
 <Title level={1} text="Add a consultation" />
 
-<p class="mt-4 mb-6 text-neutral-500">
+<p class="mt-4 mb-6 text-text">
   Give it a name to start. You upload the responses next.
 </p>
 
@@ -135,7 +135,7 @@
     ariaDescribedby={HINT_ID}
   />
 
-  <p id={HINT_ID} class="text-neutral-500">
+  <p id={HINT_ID} class="text-text">
     Use the name it was published under, so your team can find it.
   </p>
 
@@ -146,7 +146,7 @@
     <Button href={Routes.Consultations} variant="default">Cancel</Button>
   </div>
 
-  <p class="text-neutral-500">
+  <p class="text-text">
     You can add people to the consultation once it is saved.
   </p>
 </form>
@@ -170,7 +170,7 @@
 >
   {#if duplicates[0]}
     <p>{duplicates[0].title} already exists.</p>
-    <p class="text-neutral-500">
+    <p class="text-text">
       Created by {describeCreator(duplicates[0])} on {formatDate(
         duplicates[0].created_at,
       )}. You can use the same name, but the two will be hard to tell apart on
