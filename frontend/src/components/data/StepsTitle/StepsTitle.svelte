@@ -27,7 +27,7 @@
     class={clsx([
       "rounded-full",
       "h-2 w-2",
-      active ? "bg-secondary" : "bg-neutral-200",
+      active ? "bg-success" : "bg-text-light-80",
       "transition-colors",
     ])}
     data-testid={active ? "dot-active" : "dot-inactive"}
@@ -37,7 +37,7 @@
 <div class="flex gap-4">
   <div
     class={clsx([
-      "bg-secondary",
+      "bg-success",
       "w-12",
       "h-12",
       "rounded-full",
