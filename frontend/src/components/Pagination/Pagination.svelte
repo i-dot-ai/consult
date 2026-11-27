@@ -54,10 +54,10 @@
 </script>
 
 <div
-  class="pagination flex flex-wrap items-center justify-between gap-4 border-t border-neutral-200 pt-4"
+  class="pagination flex flex-wrap items-center justify-between gap-4 border-t border-text-light-80 pt-4"
 >
   <p
-    class="text-sm text-neutral-500"
+    class="text-sm text-text"
     data-testid="visible-items-text"
     aria-live="polite"
   >
@@ -77,7 +77,7 @@
 
     {#each pageNumbers as pageNumber, index (index)}
       {#if pageNumber === "gap"}
-        <span class="px-1 text-sm text-neutral-400" aria-hidden="true">…</span>
+        <span class="px-1 text-sm text-text-light-25" aria-hidden="true">…</span>
       {:else}
         <Button
           variant={pageNumber === currentPage ? "gray" : "ghost"}
@@ -125,10 +125,10 @@
   }
 
   .page-size :global(label) {
-    @apply text-sm text-neutral-500;
+    @apply text-sm text-text;
   }
 
   .page-size :global(select) {
-    @apply h-8 w-auto rounded-md border-neutral-500 px-2 py-0 text-sm;
+    @apply h-8 w-auto rounded-md border-text px-2 py-0 text-sm;
   }
 </style>
