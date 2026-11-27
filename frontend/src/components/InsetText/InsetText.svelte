@@ -13,11 +13,11 @@
   const validVariant = $derived(variant as keyof typeof variantClasses);
 
   const variantClasses = {
-    default: "border-blue-500 bg-blue-50",
-    info: "border-blue-500 bg-blue-50",
-    warning: "border-yellow-500 bg-yellow-50",
-    success: "border-green-500 bg-green-50",
-    error: "border-red-500 bg-red-50",
+    default: "border-primary bg-primary-light-95",
+    info: "border-label bg-label-light-95",
+    warning: "border-warning bg-warning-light-95",
+    success: "border-success bg-success-light-95",
+    error: "border-error bg-error-light-95",
   };
 </script>
 
