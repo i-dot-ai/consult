@@ -169,7 +169,7 @@
   {/if}
 </div>
 
-<p class="mt-2 text-sm text-neutral-500">
+<p class="mt-2 text-sm text-text">
   {#if loading}
     <SkeletonText length={4} />
   {:else if consultationData}
@@ -178,7 +178,7 @@
 </p>
 
 {#if !loading && !failedToLoad && !canManage}
-  <p class="mt-2 text-sm text-neutral-500">
+  <p class="mt-2 text-sm text-text">
     The person who created this consultation adds and removes people.
   </p>
 {/if}
@@ -193,7 +193,7 @@
           ariaLabel="Dismiss this message"
           handleClick={() => (notice = "")}
         >
-          <MaterialIcon color="fill-neutral-500">
+          <MaterialIcon color="fill-text">
             <Close />
           </MaterialIcon>
         </Button>
@@ -231,7 +231,7 @@
     {#snippet cellContent(_content, row, column)}
       {@const person = row.user}
       {#if column.key === "email"}
-        <span class="flex flex-wrap items-center gap-2 text-neutral-900">
+        <span class="flex flex-wrap items-center gap-2 text-text-dark-50">
           <span>{person.email}{person.id === userData?.id ? " (you)" : ""}</span
           >
           {#if person.id === creatorId}
