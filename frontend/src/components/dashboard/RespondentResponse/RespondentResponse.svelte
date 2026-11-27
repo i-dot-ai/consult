@@ -49,9 +49,9 @@
                 "p-1",
                 "rounded-lg",
                 "border",
-                "border-neutral-200",
+                "border-text-light-80",
                 "text-xs",
-                "bg-neutral-100",
+                "bg-text-light-95",
                 "transition-colors",
               ])}
             >
@@ -61,7 +61,7 @@
             <h3
               class={clsx([
                 "text-xs",
-                "text-neutral-500",
+                "text-text",
                 "transition-colors",
                 "mt-0.5",
               ])}
@@ -74,7 +74,7 @@
         <div class="whitespace-nowrap">
           {#if evidenceRich}
             <Tag variant="warning">
-              <MaterialIcon size="0.9rem" color="fill-yellow-600">
+              <MaterialIcon size="0.9rem" color="fill-warning">
                 <Diamond />
               </MaterialIcon>
 
@@ -88,7 +88,7 @@
 
       {#if multiChoice?.length > 0}
         <div>
-          <h4 class="mb-1 mt-4 text-xs uppercase text-neutral-500">
+          <h4 class="mb-1 mt-4 text-xs uppercase text-text">
             Multiple Choice Response:
           </h4>
 
@@ -108,7 +108,7 @@
       {#if responseText && responseText.trim().length > 0}
         <div>
           {#if multiChoice?.length > 0}
-            <h4 class="mb-1 mt-4 text-xs uppercase text-neutral-500">
+            <h4 class="mb-1 mt-4 text-xs uppercase text-text">
               Additional Comments:
             </h4>
           {/if}
@@ -120,7 +120,7 @@
 
       {#if themes?.length > 0}
         <footer class="mt-4 flex flex-wrap items-center gap-2">
-          <small class="text-xs text-neutral-500"> Themes: </small>
+          <small class="text-xs text-text"> Themes: </small>
 
           {#each themes as theme (theme)}
             <Tag variant="dark">
