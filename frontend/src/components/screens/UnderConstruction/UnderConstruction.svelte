@@ -6,13 +6,13 @@
 
 <div class="flex flex-col gap-2 justify-center items-center mt-36">
   <div class="mb-4">
-    <MaterialIcon color="fill-neutral-500" size="3rem">
+    <MaterialIcon color="fill-text" size="3rem">
       <Warning />
     </MaterialIcon>
   </div>
 
   <Title level={2}>Under Construction</Title>
-  <p class="text-neutral-500">
+  <p class="text-text">
     This functionality is currently under construction
   </p>
 </div>
