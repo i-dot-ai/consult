@@ -5,7 +5,7 @@ exports[`ManageConsultationsArchive > should match snapshot initially 1`] = `
   <!---->
   <!---->
   <h1
-    class="text-neutral-700 text-xl"
+    class="text-text-dark-25 text-xl"
   >
     <!---->
     Consultations
@@ -39,7 +39,7 @@ exports[`ManageConsultationsArchive > should match snapshot initially 1`] = `
           id="data-table-visible-columns-select-label"
         >
           <span
-            class="text-sm font-medium text-neutral-900"
+            class="text-sm font-medium text-text-dark-50"
           >
             Visible columns
           </span>
@@ -53,7 +53,7 @@ exports[`ManageConsultationsArchive > should match snapshot initially 1`] = `
           >
             <svg
               aria-hidden="true"
-              class="fill-neutral-400"
+              class="fill-text-light-25"
               height="1rem"
               viewBox="0 -960 960 960"
               width="1rem"
@@ -75,7 +75,7 @@ exports[`ManageConsultationsArchive > should match snapshot initially 1`] = `
             aria-expanded="false"
             aria-labelledby="data-table-visible-columns-select-label"
             autocomplete="off"
-            class="w-full leading-8 flex items-center justify-between rounded-sm bg-white px-3 pr-12 text-black border border-neutral-300 pl-8 svelte-ekj0e2"
+            class="w-full leading-8 flex items-center justify-between rounded-sm bg-white px-3 pr-12 text-black border border-text-light-50 pl-8 svelte-ekj0e2"
             data-melt-combobox-input=""
             data-melt-combobox-trigger=""
             data-state="closed"
@@ -85,11 +85,11 @@ exports[`ManageConsultationsArchive > should match snapshot initially 1`] = `
           />
            
           <div
-            class="absolute right-2 top-1/2 z-10 -translate-y-1/2 text-neutral-900 transition-transform -rotate-90 pointer-events-none svelte-ekj0e2"
+            class="absolute right-2 top-1/2 z-10 -translate-y-1/2 text-text-dark-50 transition-transform -rotate-90 pointer-events-none svelte-ekj0e2"
           >
             <svg
               aria-hidden="true"
-              class="fill-neutral-700"
+              class="fill-text-dark-25"
               height="1rem"
               viewBox="0 -960 960 960"
               width="1rem"
@@ -124,7 +124,7 @@ exports[`ManageConsultationsArchive > should match snapshot initially 1`] = `
           </label>
            
           <input
-            class="h-9 w-full p-1 border border-gray-300 rounded-xs focus:outline-2 focus:outline-yellow-300 pl-8 pr-4 svelte-1auzwdn"
+            class="h-9 w-full p-1 border border-text-light-50 rounded-xs focus:outline-2 focus:outline-warning-light-50 pl-8 pr-4 svelte-1auzwdn"
             id="data-table-search-input"
             placeholder="Search consultations"
             type="text"
@@ -137,7 +137,7 @@ exports[`ManageConsultationsArchive > should match snapshot initially 1`] = `
           >
             <svg
               aria-hidden="true"
-              class="fill-neutral-400"
+              class="fill-text"
               height="1.2rem"
               viewBox="0 -960 960 960"
               width="1.2rem"
@@ -160,10 +160,10 @@ exports[`ManageConsultationsArchive > should match snapshot initially 1`] = `
     </div>
      
     <div
-      class="max-h-[50rem] overflow-x-auto rounded-lg border border-neutral-200 bg-white"
+      class="max-h-[50rem] overflow-x-auto rounded-lg border border-text-light-80 bg-white"
     >
       <table
-        class="min-w-full divide-y divide-neutral-200"
+        class="min-w-full divide-y divide-text-light-80"
       >
         <caption
           class="sr-only"
@@ -172,12 +172,12 @@ exports[`ManageConsultationsArchive > should match snapshot initially 1`] = `
         </caption>
         <!---->
         <thead
-          class="bg-neutral-50"
+          class="bg-text-light-95"
         >
           <tr>
             <th
               aria-sort="none"
-              class="px-4 py-3 text-left text-xs font-[500] tracking-wide text-neutral-600"
+              class="px-4 py-3 text-left text-xs font-[500] tracking-wide text-text"
               data-testid="header-name"
               scope="col"
             >
@@ -185,7 +185,7 @@ exports[`ManageConsultationsArchive > should match snapshot initially 1`] = `
               <button
                 aria-label="Sort by Name"
                 aria-pressed="false"
-                class="text-xs cursor-pointer rounded-md py-0.5 px-1 border text-start border-transparent transition-colors duration-300 self-start inline-flex gap-1 items-center hover:bg-gray-100 svelte-1d0mdzt"
+                class="text-xs cursor-pointer rounded-md py-0.5 px-1 border text-start border-transparent hover:bg-text-light-80 transition-colors duration-300 self-start inline-flex gap-1 items-center hover:bg-text-light-80 svelte-1d0mdzt"
                 data-variant="ghost"
                 role="button"
                 tabindex="0"
@@ -198,11 +198,11 @@ exports[`ManageConsultationsArchive > should match snapshot initially 1`] = `
                  
                 <span
                   aria-hidden="true"
-                  class="text-neutral-400"
+                  class="text-text"
                 >
                   <svg
                     aria-hidden="true"
-                    class="fill-neutral-500"
+                    class="fill-text-light-950"
                     height="1rem"
                     viewBox="0 -960 960 960"
                     width="1rem"
@@ -226,7 +226,7 @@ exports[`ManageConsultationsArchive > should match snapshot initially 1`] = `
             </th>
             <th
               aria-sort="descending"
-              class="px-4 py-3 text-left text-xs font-[500] tracking-wide text-neutral-600"
+              class="px-4 py-3 text-left text-xs font-[500] tracking-wide text-text"
               data-testid="header-createdAt"
               scope="col"
             >
@@ -234,7 +234,7 @@ exports[`ManageConsultationsArchive > should match snapshot initially 1`] = `
               <button
                 aria-label="Sorted descending by Date Created. Click to sort ascending."
                 aria-pressed="true"
-                class="text-xs cursor-pointer rounded-md py-0.5 px-1 border text-start border-transparent transition-colors duration-300 self-start inline-flex gap-1 items-center hover:bg-gray-100 svelte-1d0mdzt"
+                class="text-xs cursor-pointer rounded-md py-0.5 px-1 border text-start border-transparent hover:bg-text-light-80 transition-colors duration-300 self-start inline-flex gap-1 items-center hover:bg-text-light-80 svelte-1d0mdzt"
                 data-variant="ghost"
                 role="button"
                 tabindex="0"
@@ -247,14 +247,14 @@ exports[`ManageConsultationsArchive > should match snapshot initially 1`] = `
                  
                 <span
                   aria-hidden="true"
-                  class="text-neutral-400"
+                  class="text-text"
                 >
                   <div
                     class="-rotate-90"
                   >
                     <svg
                       aria-hidden="true"
-                      class="fill-neutral-500"
+                      class="fill-text-light-950"
                       height="1rem"
                       viewBox="0 -960 960 960"
                       width="1rem"
@@ -282,15 +282,15 @@ exports[`ManageConsultationsArchive > should match snapshot initially 1`] = `
           </tr>
         </thead>
         <tbody
-          class="divide-y divide-neutral-200"
+          class="divide-y divide-text-light-80"
         >
           <!---->
           <tr
-            class="transition-colors hover:bg-neutral-50"
+            class="transition-colors hover:bg-text-light-95"
             data-testid="datatable-row"
           >
             <td
-              class="whitespace-nowrap px-4 py-3 text-sm text-neutral-700"
+              class="whitespace-nowrap px-4 py-3 text-sm text-text-dark-25"
               data-testid="cell-name"
             >
               <!---->
@@ -316,17 +316,17 @@ exports[`ManageConsultationsArchive > should match snapshot initially 1`] = `
               <!---->
             </td>
             <td
-              class="whitespace-nowrap px-4 py-3 text-sm text-neutral-700"
+              class="whitespace-nowrap px-4 py-3 text-sm text-text-dark-25"
               data-testid="cell-createdAt"
             />
             
           </tr>
           <tr
-            class="transition-colors hover:bg-neutral-50"
+            class="transition-colors hover:bg-text-light-95"
             data-testid="datatable-row"
           >
             <td
-              class="whitespace-nowrap px-4 py-3 text-sm text-neutral-700"
+              class="whitespace-nowrap px-4 py-3 text-sm text-text-dark-25"
               data-testid="cell-name"
             >
               <!---->
@@ -352,17 +352,17 @@ exports[`ManageConsultationsArchive > should match snapshot initially 1`] = `
               <!---->
             </td>
             <td
-              class="whitespace-nowrap px-4 py-3 text-sm text-neutral-700"
+              class="whitespace-nowrap px-4 py-3 text-sm text-text-dark-25"
               data-testid="cell-createdAt"
             />
             
           </tr>
           <tr
-            class="transition-colors hover:bg-neutral-50"
+            class="transition-colors hover:bg-text-light-95"
             data-testid="datatable-row"
           >
             <td
-              class="whitespace-nowrap px-4 py-3 text-sm text-neutral-700"
+              class="whitespace-nowrap px-4 py-3 text-sm text-text-dark-25"
               data-testid="cell-name"
             >
               <!---->
@@ -388,17 +388,17 @@ exports[`ManageConsultationsArchive > should match snapshot initially 1`] = `
               <!---->
             </td>
             <td
-              class="whitespace-nowrap px-4 py-3 text-sm text-neutral-700"
+              class="whitespace-nowrap px-4 py-3 text-sm text-text-dark-25"
               data-testid="cell-createdAt"
             />
             
           </tr>
           <tr
-            class="transition-colors hover:bg-neutral-50"
+            class="transition-colors hover:bg-text-light-95"
             data-testid="datatable-row"
           >
             <td
-              class="whitespace-nowrap px-4 py-3 text-sm text-neutral-700"
+              class="whitespace-nowrap px-4 py-3 text-sm text-text-dark-25"
               data-testid="cell-name"
             >
               <!---->
@@ -424,7 +424,7 @@ exports[`ManageConsultationsArchive > should match snapshot initially 1`] = `
               <!---->
             </td>
             <td
-              class="whitespace-nowrap px-4 py-3 text-sm text-neutral-700"
+              class="whitespace-nowrap px-4 py-3 text-sm text-text-dark-25"
               data-testid="cell-createdAt"
             />
             
@@ -440,11 +440,11 @@ exports[`ManageConsultationsArchive > should match snapshot initially 1`] = `
     class="mt-4"
   >
     <div
-      class="pagination flex flex-wrap items-center justify-between gap-4 border-t border-neutral-200 pt-4 svelte-1iv1had"
+      class="pagination flex flex-wrap items-center justify-between gap-4 border-t border-text-light-80 pt-4 svelte-1iv1had"
     >
       <p
         aria-live="polite"
-        class="text-sm text-neutral-500"
+        class="text-sm text-text"
         data-testid="visible-items-text"
       >
         Showing 1 to 4 of 4
@@ -458,7 +458,7 @@ exports[`ManageConsultationsArchive > should match snapshot initially 1`] = `
         <button
           aria-label="Previous page"
           aria-pressed="false"
-          class="text-sm cursor-pointer rounded-md py-1 px-2 border border-transparent transition-colors duration-300 self-start inline-flex gap-1 items-center hover:bg-gray-100 disabled disabled:bg-gray-200 disabled:text-gray-400 disabled:cursor-not-allowed disabled:hover:bg-gray-200 disabled:hover:border-gray-300 disabled:hover:text-gray-400 svelte-1d0mdzt"
+          class="text-sm cursor-pointer rounded-md py-1 px-2 border border-text-light-50 hover:bg-text-light-80 transition-colors duration-300 self-start inline-flex gap-1 items-center hover:bg-text-light-80 disabled disabled:bg-text-light-80 disabled:text-text disabled:cursor-not-allowed disabled:hover:bg-text-light-80 disabled:hover:border-text-light-50 disabled:hover:text-text svelte-1d0mdzt"
           data-variant="ghost"
           disabled=""
           role="button"
@@ -480,7 +480,7 @@ exports[`ManageConsultationsArchive > should match snapshot initially 1`] = `
           aria-current="page"
           aria-label="Page 1"
           aria-pressed="false"
-          class="text-sm cursor-pointer rounded-md py-1 px-2 border border-gray-300 bg-neutral-100 transition-colors duration-300 self-start inline-flex gap-1 items-center hover:bg-gray-100 svelte-1d0mdzt"
+          class="text-sm cursor-pointer rounded-md py-1 px-2 border border-text-light-50 bg-text-light-95 transition-colors duration-300 self-start inline-flex gap-1 items-center hover:bg-text-light-80 svelte-1d0mdzt"
           data-testid="current-page"
           data-variant="gray"
           role="button"
@@ -501,7 +501,7 @@ exports[`ManageConsultationsArchive > should match snapshot initially 1`] = `
         <button
           aria-label="Next page"
           aria-pressed="false"
-          class="text-sm cursor-pointer rounded-md py-1 px-2 border border-transparent transition-colors duration-300 self-start inline-flex gap-1 items-center hover:bg-gray-100 disabled disabled:bg-gray-200 disabled:text-gray-400 disabled:cursor-not-allowed disabled:hover:bg-gray-200 disabled:hover:border-gray-300 disabled:hover:text-gray-400 svelte-1d0mdzt"
+          class="text-sm cursor-pointer rounded-md py-1 px-2 border border-text-light-50 hover:bg-text-light-80 transition-colors duration-300 self-start inline-flex gap-1 items-center hover:bg-text-light-80 disabled disabled:bg-text-light-80 disabled:text-text disabled:cursor-not-allowed disabled:hover:bg-text-light-80 disabled:hover:border-text-light-50 disabled:hover:text-text svelte-1d0mdzt"
           data-variant="ghost"
           disabled=""
           role="button"
@@ -525,7 +525,7 @@ exports[`ManageConsultationsArchive > should match snapshot initially 1`] = `
           class="flex items-center gap-4"
         >
           <label
-            class="mb-1 block text-base leading-5 text-neutral-900 md:text-lg md:leading-6 min-w-max"
+            class="mb-1 block text-base leading-5 text-text-dark-50 md:text-lg md:leading-6 min-w-max"
             for="data-table-page-size-select"
           >
             Per page
@@ -537,12 +537,12 @@ exports[`ManageConsultationsArchive > should match snapshot initially 1`] = `
           <!---->
            
           <select
-            class="h-9 w-full rounded-xs border border-gray-300 bg-white p-1 text-neutral-700 focus:outline-2 focus:outline-yellow-300 disabled:cursor-not-allowed disabled:bg-neutral-100 disabled:text-neutral-600 disabled:opacity-50"
+            class="h-9 w-full rounded-xs border border-text-light-50 bg-white p-1 text-text-dark-50 focus:outline-2 focus:outline-warning-light-50 disabled:cursor-not-allowed disabled:bg-text-light-95 disabled:text-text-dark-25 disabled:opacity-50"
             id="data-table-page-size-select"
             name="data-table-page-size-select"
           >
             <option
-              class="bg-white text-neutral-900"
+              class="bg-white text-text-dark-50"
               data-testid="data-table-page-size-select-option"
               selected=""
               value="10"
@@ -550,28 +550,28 @@ exports[`ManageConsultationsArchive > should match snapshot initially 1`] = `
               10
             </option>
             <option
-              class="bg-white text-neutral-900"
+              class="bg-white text-text-dark-50"
               data-testid="data-table-page-size-select-option"
               value="50"
             >
               50
             </option>
             <option
-              class="bg-white text-neutral-900"
+              class="bg-white text-text-dark-50"
               data-testid="data-table-page-size-select-option"
               value="100"
             >
               100
             </option>
             <option
-              class="bg-white text-neutral-900"
+              class="bg-white text-text-dark-50"
               data-testid="data-table-page-size-select-option"
               value="250"
             >
               250
             </option>
             <option
-              class="bg-white text-neutral-900"
+              class="bg-white text-text-dark-50"
               data-testid="data-table-page-size-select-option"
               value="500"
             >

@@ -11,7 +11,7 @@ exports[`MetricsSummary > should render data 1`] = `
     >
       <svg
         aria-hidden="true"
-        class="fill-neutral-500"
+        class="fill-text"
         height="1rem"
         viewBox="0 -960 960 960"
         width="1rem"
@@ -29,7 +29,7 @@ exports[`MetricsSummary > should render data 1`] = `
       <!---->
        
       <span
-        class="ml-2 text-sm text-neutral-700"
+        class="ml-2 text-sm text-text-dark-25"
       >
         Questions
       </span>
@@ -52,7 +52,7 @@ exports[`MetricsSummary > should render data 1`] = `
     >
       <svg
         aria-hidden="true"
-        class="fill-neutral-500"
+        class="fill-text"
         height="1rem"
         viewBox="0 -960 960 960"
         width="1rem"
@@ -69,7 +69,7 @@ exports[`MetricsSummary > should render data 1`] = `
       <!---->
        
       <span
-        class="ml-2 text-sm text-neutral-700"
+        class="ml-2 text-sm text-text-dark-25"
       >
         Respondents
       </span>
@@ -92,7 +92,7 @@ exports[`MetricsSummary > should render data 1`] = `
     >
       <svg
         aria-hidden="true"
-        class="fill-neutral-500"
+        class="fill-text"
         height="1rem"
         viewBox="0 -960 960 960"
         width="1rem"
@@ -110,7 +110,7 @@ exports[`MetricsSummary > should render data 1`] = `
       <!---->
        
       <span
-        class="ml-2 text-sm text-neutral-700"
+        class="ml-2 text-sm text-text-dark-25"
       >
         Answers
       </span>
@@ -133,7 +133,7 @@ exports[`MetricsSummary > should render data 1`] = `
     >
       <svg
         aria-hidden="true"
-        class="fill-neutral-500"
+        class="fill-text"
         height="1rem"
         viewBox="0 -960 960 960"
         width="1rem"
@@ -151,7 +151,7 @@ exports[`MetricsSummary > should render data 1`] = `
       <!---->
        
       <span
-        class="ml-2 text-sm text-neutral-700"
+        class="ml-2 text-sm text-text-dark-25"
       >
         Demographics
       </span>

@@ -9,7 +9,7 @@ exports[`StoriesDisplay > should match snapshot 1`] = `
       class="sticky top-4 col-span-1 h-[80vh]"
     >
       <div
-        class="h-full my-4 p-4 rounded-2xl border border-gray-200"
+        class="h-full my-4 p-4 rounded-2xl border border-text-light-80"
         data-testid="panel-component"
       >
         <div
@@ -25,7 +25,7 @@ exports[`StoriesDisplay > should match snapshot 1`] = `
             </label>
              
             <input
-              class="h-9 w-full p-1 border border-gray-300 rounded-xs focus:outline-2 focus:outline-yellow-300 pl-8 pr-4 svelte-1auzwdn"
+              class="h-9 w-full p-1 border border-text-light-50 rounded-xs focus:outline-2 focus:outline-warning-light-50 pl-8 pr-4 svelte-1auzwdn"
               id="story-search"
               placeholder="Search stories"
               type="text"
@@ -38,7 +38,7 @@ exports[`StoriesDisplay > should match snapshot 1`] = `
             >
               <svg
                 aria-hidden="true"
-                class="fill-neutral-400"
+                class="fill-text"
                 height="1.2rem"
                 viewBox="0 -960 960 960"
                 width="1.2rem"
@@ -68,7 +68,7 @@ exports[`StoriesDisplay > should match snapshot 1`] = `
             <!---->
             <button
               aria-pressed="false"
-              class="w-full text-md cursor-pointer rounded-md py-1 px-2 border border-gray-300 bg-neutral-100 transition-colors duration-300 self-start inline-flex gap-1 items-center hover:bg-gray-100 svelte-1d0mdzt"
+              class="w-full text-md cursor-pointer rounded-md py-1 px-2 border border-text-light-50 bg-text-light-95 transition-colors duration-300 self-start inline-flex gap-1 items-center hover:bg-text-light-80 svelte-1d0mdzt"
               data-variant="gray"
               role="button"
               tabindex="0"
@@ -99,7 +99,7 @@ exports[`StoriesDisplay > should match snapshot 1`] = `
                   >
                     <svg
                       aria-hidden="true"
-                      class="fill-neutral-500"
+                      class="fill-text"
                       height="1rem"
                       viewBox="0 -960 960 960"
                       width="1rem"
@@ -130,49 +130,49 @@ exports[`StoriesDisplay > should match snapshot 1`] = `
             >
               <!---->
               <a
-                class="block w-full h-full ml-2 px-2 py-1 rounded-lg transition-colors text-neutral-700 hover:text-pink-500 hover:bg-neutral-100"
+                class="block w-full h-full ml-2 px-2 py-1 rounded-lg transition-colors hover:bg-text-light-95 text-text hover:text-primary"
                 href="/stories?selected=Progress"
               >
                 Progress
               </a>
               <a
-                class="block w-full h-full ml-2 px-2 py-1 rounded-lg transition-colors text-neutral-700 hover:text-pink-500 hover:bg-neutral-100"
+                class="block w-full h-full ml-2 px-2 py-1 rounded-lg transition-colors hover:bg-text-light-95 text-text hover:text-primary"
                 href="/stories?selected=Header"
               >
                 Header
               </a>
               <a
-                class="block w-full h-full ml-2 px-2 py-1 rounded-lg transition-colors text-neutral-700 hover:text-pink-500 hover:bg-neutral-100"
+                class="block w-full h-full ml-2 px-2 py-1 rounded-lg transition-colors hover:bg-text-light-95 text-text hover:text-primary"
                 href="/stories?selected=Footer"
               >
                 Footer
               </a>
               <a
-                class="block w-full h-full ml-2 px-2 py-1 rounded-lg transition-colors text-neutral-700 hover:text-pink-500 hover:bg-neutral-100"
+                class="block w-full h-full ml-2 px-2 py-1 rounded-lg transition-colors hover:bg-text-light-95 text-text hover:text-primary"
                 href="/stories?selected=Accordion"
               >
                 Accordion
               </a>
               <a
-                class="block w-full h-full ml-2 px-2 py-1 rounded-lg transition-colors text-neutral-700 hover:text-pink-500 hover:bg-neutral-100"
+                class="block w-full h-full ml-2 px-2 py-1 rounded-lg transition-colors hover:bg-text-light-95 text-text hover:text-primary"
                 href="/stories?selected=Panel"
               >
                 Panel
               </a>
               <a
-                class="block w-full h-full ml-2 px-2 py-1 rounded-lg transition-colors text-neutral-700 hover:text-pink-500 hover:bg-neutral-100"
+                class="block w-full h-full ml-2 px-2 py-1 rounded-lg transition-colors hover:bg-text-light-95 text-text hover:text-primary"
                 href="/stories?selected=Chart"
               >
                 Chart
               </a>
               <a
-                class="block w-full h-full ml-2 px-2 py-1 rounded-lg transition-colors text-neutral-700 hover:text-pink-500 hover:bg-neutral-100"
+                class="block w-full h-full ml-2 px-2 py-1 rounded-lg transition-colors hover:bg-text-light-95 text-text hover:text-primary"
                 href="/stories?selected=DataTable"
               >
                 DataTable
               </a>
               <a
-                class="block w-full h-full ml-2 px-2 py-1 rounded-lg transition-colors text-neutral-700 hover:text-pink-500 hover:bg-neutral-100"
+                class="block w-full h-full ml-2 px-2 py-1 rounded-lg transition-colors hover:bg-text-light-95 text-text hover:text-primary"
                 href="/stories?selected=Alert"
               >
                 Alert
@@ -188,7 +188,7 @@ exports[`StoriesDisplay > should match snapshot 1`] = `
             <!---->
             <button
               aria-pressed="false"
-              class="w-full text-md cursor-pointer rounded-md py-1 px-2 border border-gray-300 bg-neutral-100 transition-colors duration-300 self-start inline-flex gap-1 items-center hover:bg-gray-100 svelte-1d0mdzt"
+              class="w-full text-md cursor-pointer rounded-md py-1 px-2 border border-text-light-50 bg-text-light-95 transition-colors duration-300 self-start inline-flex gap-1 items-center hover:bg-text-light-80 svelte-1d0mdzt"
               data-variant="gray"
               role="button"
               tabindex="0"
@@ -219,7 +219,7 @@ exports[`StoriesDisplay > should match snapshot 1`] = `
                   >
                     <svg
                       aria-hidden="true"
-                      class="fill-neutral-500"
+                      class="fill-text"
                       height="1rem"
                       viewBox="0 -960 960 960"
                       width="1rem"
@@ -250,7 +250,7 @@ exports[`StoriesDisplay > should match snapshot 1`] = `
             >
               <!---->
               <a
-                class="block w-full h-full ml-2 px-2 py-1 rounded-lg transition-colors text-neutral-700 hover:text-pink-500 hover:bg-neutral-100"
+                class="block w-full h-full ml-2 px-2 py-1 rounded-lg transition-colors hover:bg-text-light-95 text-text hover:text-primary"
                 href="/stories?selected=DemographicGroup"
               >
                 DemographicGroup
@@ -266,7 +266,7 @@ exports[`StoriesDisplay > should match snapshot 1`] = `
             <!---->
             <button
               aria-pressed="false"
-              class="w-full text-md cursor-pointer rounded-md py-1 px-2 border border-gray-300 bg-neutral-100 transition-colors duration-300 self-start inline-flex gap-1 items-center hover:bg-gray-100 svelte-1d0mdzt"
+              class="w-full text-md cursor-pointer rounded-md py-1 px-2 border border-text-light-50 bg-text-light-95 transition-colors duration-300 self-start inline-flex gap-1 items-center hover:bg-text-light-80 svelte-1d0mdzt"
               data-variant="gray"
               role="button"
               tabindex="0"
@@ -297,7 +297,7 @@ exports[`StoriesDisplay > should match snapshot 1`] = `
                   >
                     <svg
                       aria-hidden="true"
-                      class="fill-neutral-500"
+                      class="fill-text"
                       height="1rem"
                       viewBox="0 -960 960 960"
                       width="1rem"
@@ -328,7 +328,7 @@ exports[`StoriesDisplay > should match snapshot 1`] = `
             >
               <!---->
               <a
-                class="block w-full h-full ml-2 px-2 py-1 rounded-lg transition-colors text-neutral-700 hover:text-pink-500 hover:bg-neutral-100"
+                class="block w-full h-full ml-2 px-2 py-1 rounded-lg transition-colors hover:bg-text-light-95 text-text hover:text-primary"
                 href="/stories?selected=RespondentSidebarItem"
               >
                 RespondentSidebarItem
@@ -344,7 +344,7 @@ exports[`StoriesDisplay > should match snapshot 1`] = `
             <!---->
             <button
               aria-pressed="false"
-              class="w-full text-md cursor-pointer rounded-md py-1 px-2 border border-gray-300 bg-neutral-100 transition-colors duration-300 self-start inline-flex gap-1 items-center hover:bg-gray-100 svelte-1d0mdzt"
+              class="w-full text-md cursor-pointer rounded-md py-1 px-2 border border-text-light-50 bg-text-light-95 transition-colors duration-300 self-start inline-flex gap-1 items-center hover:bg-text-light-80 svelte-1d0mdzt"
               data-variant="gray"
               role="button"
               tabindex="0"
@@ -375,7 +375,7 @@ exports[`StoriesDisplay > should match snapshot 1`] = `
                   >
                     <svg
                       aria-hidden="true"
-                      class="fill-neutral-500"
+                      class="fill-text"
                       height="1rem"
                       viewBox="0 -960 960 960"
                       width="1rem"
@@ -406,25 +406,25 @@ exports[`StoriesDisplay > should match snapshot 1`] = `
             >
               <!---->
               <a
-                class="block w-full h-full ml-2 px-2 py-1 rounded-lg transition-colors text-neutral-700 hover:text-pink-500 hover:bg-neutral-100"
+                class="block w-full h-full ml-2 px-2 py-1 rounded-lg transition-colors hover:bg-text-light-95 text-text hover:text-primary"
                 href="/stories?selected=ThemeForm"
               >
                 ThemeForm
               </a>
               <a
-                class="block w-full h-full ml-2 px-2 py-1 rounded-lg transition-colors text-neutral-700 hover:text-pink-500 hover:bg-neutral-100"
+                class="block w-full h-full ml-2 px-2 py-1 rounded-lg transition-colors hover:bg-text-light-95 text-text hover:text-primary"
                 href="/stories?selected=SelectedThemeCard"
               >
                 SelectedThemeCard
               </a>
               <a
-                class="block w-full h-full ml-2 px-2 py-1 rounded-lg transition-colors text-neutral-700 hover:text-pink-500 hover:bg-neutral-100"
+                class="block w-full h-full ml-2 px-2 py-1 rounded-lg transition-colors hover:bg-text-light-95 text-text hover:text-primary"
                 href="/stories?selected=ResponsesList"
               >
                 ResponsesList
               </a>
               <a
-                class="block w-full h-full ml-2 px-2 py-1 rounded-lg transition-colors text-neutral-700 hover:text-pink-500 hover:bg-neutral-100"
+                class="block w-full h-full ml-2 px-2 py-1 rounded-lg transition-colors hover:bg-text-light-95 text-text hover:text-primary"
                 href="/stories?selected=GeneratedThemeCard"
               >
                 GeneratedThemeCard
@@ -440,7 +440,7 @@ exports[`StoriesDisplay > should match snapshot 1`] = `
             <!---->
             <button
               aria-pressed="false"
-              class="w-full text-md cursor-pointer rounded-md py-1 px-2 border border-gray-300 bg-neutral-100 transition-colors duration-300 self-start inline-flex gap-1 items-center hover:bg-gray-100 svelte-1d0mdzt"
+              class="w-full text-md cursor-pointer rounded-md py-1 px-2 border border-text-light-50 bg-text-light-95 transition-colors duration-300 self-start inline-flex gap-1 items-center hover:bg-text-light-80 svelte-1d0mdzt"
               data-variant="gray"
               role="button"
               tabindex="0"
@@ -471,7 +471,7 @@ exports[`StoriesDisplay > should match snapshot 1`] = `
                   >
                     <svg
                       aria-hidden="true"
-                      class="fill-neutral-500"
+                      class="fill-text"
                       height="1rem"
                       viewBox="0 -960 960 960"
                       width="1rem"
@@ -502,73 +502,73 @@ exports[`StoriesDisplay > should match snapshot 1`] = `
             >
               <!---->
               <a
-                class="block w-full h-full ml-2 px-2 py-1 rounded-lg transition-colors text-neutral-700 hover:text-pink-500 hover:bg-neutral-100"
+                class="block w-full h-full ml-2 px-2 py-1 rounded-lg transition-colors hover:bg-text-light-95 text-text hover:text-primary"
                 href="/stories?selected=FinalisingThemesDetail"
               >
                 FinalisingThemesDetail
               </a>
               <a
-                class="block w-full h-full ml-2 px-2 py-1 rounded-lg transition-colors text-neutral-700 hover:text-pink-500 hover:bg-neutral-100"
+                class="block w-full h-full ml-2 px-2 py-1 rounded-lg transition-colors hover:bg-text-light-95 text-text hover:text-primary"
                 href="/stories?selected=ConsultationList"
               >
                 ConsultationList
               </a>
               <a
-                class="block w-full h-full ml-2 px-2 py-1 rounded-lg transition-colors text-neutral-700 hover:text-pink-500 hover:bg-neutral-100"
+                class="block w-full h-full ml-2 px-2 py-1 rounded-lg transition-colors hover:bg-text-light-95 text-text hover:text-primary"
                 href="/stories?selected=ConsultationDetail"
               >
                 ConsultationDetail
               </a>
               <a
-                class="block w-full h-full ml-2 px-2 py-1 rounded-lg transition-colors text-neutral-700 hover:text-pink-500 hover:bg-neutral-100"
+                class="block w-full h-full ml-2 px-2 py-1 rounded-lg transition-colors hover:bg-text-light-95 text-text hover:text-primary"
                 href="/stories?selected=ConsultationAnalysis"
               >
                 ConsultationAnalysis
               </a>
               <a
-                class="block w-full h-full ml-2 px-2 py-1 rounded-lg transition-colors text-neutral-700 hover:text-pink-500 hover:bg-neutral-100"
+                class="block w-full h-full ml-2 px-2 py-1 rounded-lg transition-colors hover:bg-text-light-95 text-text hover:text-primary"
                 href="/stories?selected=FinalisingThemesDetailCompleted"
               >
                 FinalisingThemesDetailCompleted
               </a>
               <a
-                class="block w-full h-full ml-2 px-2 py-1 rounded-lg transition-colors text-neutral-700 hover:text-pink-500 hover:bg-neutral-100"
+                class="block w-full h-full ml-2 px-2 py-1 rounded-lg transition-colors hover:bg-text-light-95 text-text hover:text-primary"
                 href="/stories?selected=RespondentDetail"
               >
                 RespondentDetail
               </a>
               <a
-                class="block w-full h-full ml-2 px-2 py-1 rounded-lg transition-colors text-neutral-700 hover:text-pink-500 hover:bg-neutral-100"
+                class="block w-full h-full ml-2 px-2 py-1 rounded-lg transition-colors hover:bg-text-light-95 text-text hover:text-primary"
                 href="/stories?selected=QuestionDetail"
               >
                 QuestionDetail
               </a>
               <a
-                class="block w-full h-full ml-2 px-2 py-1 rounded-lg transition-colors text-neutral-700 hover:text-pink-500 hover:bg-neutral-100"
+                class="block w-full h-full ml-2 px-2 py-1 rounded-lg transition-colors hover:bg-text-light-95 text-text hover:text-primary"
                 href="/stories?selected=FinalisingThemesArchive"
               >
                 FinalisingThemesArchive
               </a>
               <a
-                class="block w-full h-full ml-2 px-2 py-1 rounded-lg transition-colors text-neutral-700 hover:text-pink-500 hover:bg-neutral-100"
+                class="block w-full h-full ml-2 px-2 py-1 rounded-lg transition-colors hover:bg-text-light-95 text-text hover:text-primary"
                 href="/stories?selected=ErrorScreen"
               >
                 ErrorScreen
               </a>
               <a
-                class="block w-full h-full ml-2 px-2 py-1 rounded-lg transition-colors text-neutral-700 hover:text-pink-500 hover:bg-neutral-100"
+                class="block w-full h-full ml-2 px-2 py-1 rounded-lg transition-colors hover:bg-text-light-95 text-text hover:text-primary"
                 href="/stories?selected=AddConsultationForm"
               >
                 AddConsultationForm
               </a>
               <a
-                class="block w-full h-full ml-2 px-2 py-1 rounded-lg transition-colors text-neutral-700 hover:text-pink-500 hover:bg-neutral-100"
+                class="block w-full h-full ml-2 px-2 py-1 rounded-lg transition-colors hover:bg-text-light-95 text-text hover:text-primary"
                 href="/stories?selected=ConsultationView"
               >
                 ConsultationView
               </a>
               <a
-                class="block w-full h-full ml-2 px-2 py-1 rounded-lg transition-colors text-neutral-700 hover:text-pink-500 hover:bg-neutral-100"
+                class="block w-full h-full ml-2 px-2 py-1 rounded-lg transition-colors hover:bg-text-light-95 text-text hover:text-primary"
                 href="/stories?selected=ConsultationPeople"
               >
                 ConsultationPeople
@@ -584,7 +584,7 @@ exports[`StoriesDisplay > should match snapshot 1`] = `
             <!---->
             <button
               aria-pressed="false"
-              class="w-full text-md cursor-pointer rounded-md py-1 px-2 border border-gray-300 bg-neutral-100 transition-colors duration-300 self-start inline-flex gap-1 items-center hover:bg-gray-100 svelte-1d0mdzt"
+              class="w-full text-md cursor-pointer rounded-md py-1 px-2 border border-text-light-50 bg-text-light-95 transition-colors duration-300 self-start inline-flex gap-1 items-center hover:bg-text-light-80 svelte-1d0mdzt"
               data-variant="gray"
               role="button"
               tabindex="0"
@@ -615,7 +615,7 @@ exports[`StoriesDisplay > should match snapshot 1`] = `
                   >
                     <svg
                       aria-hidden="true"
-                      class="fill-neutral-500"
+                      class="fill-text"
                       height="1rem"
                       viewBox="0 -960 960 960"
                       width="1rem"
@@ -646,37 +646,37 @@ exports[`StoriesDisplay > should match snapshot 1`] = `
             >
               <!---->
               <a
-                class="block w-full h-full ml-2 px-2 py-1 rounded-lg transition-colors text-neutral-700 hover:text-pink-500 hover:bg-neutral-100"
+                class="block w-full h-full ml-2 px-2 py-1 rounded-lg transition-colors hover:bg-text-light-95 text-text hover:text-primary"
                 href="/stories?selected=NavigationHeader"
               >
                 NavigationHeader
               </a>
               <a
-                class="block w-full h-full ml-2 px-2 py-1 rounded-lg transition-colors text-neutral-700 hover:text-pink-500 hover:bg-neutral-100"
+                class="block w-full h-full ml-2 px-2 py-1 rounded-lg transition-colors hover:bg-text-light-95 text-text hover:text-primary"
                 href="/stories?selected=HeaderConsult"
               >
                 HeaderConsult
               </a>
               <a
-                class="block w-full h-full ml-2 px-2 py-1 rounded-lg transition-colors text-neutral-700 hover:text-pink-500 hover:bg-neutral-100"
+                class="block w-full h-full ml-2 px-2 py-1 rounded-lg transition-colors hover:bg-text-light-95 text-text hover:text-primary"
                 href="/stories?selected=Breadcrumbs"
               >
                 Breadcrumbs
               </a>
               <a
-                class="block w-full h-full ml-2 px-2 py-1 rounded-lg transition-colors text-neutral-700 hover:text-pink-500 hover:bg-neutral-100"
+                class="block w-full h-full ml-2 px-2 py-1 rounded-lg transition-colors hover:bg-text-light-95 text-text hover:text-primary"
                 href="/stories?selected=ProfileButton"
               >
                 ProfileButton
               </a>
               <a
-                class="block w-full h-full ml-2 px-2 py-1 rounded-lg transition-colors text-neutral-700 hover:text-pink-500 hover:bg-neutral-100"
+                class="block w-full h-full ml-2 px-2 py-1 rounded-lg transition-colors hover:bg-text-light-95 text-text hover:text-primary"
                 href="/stories?selected=FloatingPanel"
               >
                 FloatingPanel
               </a>
               <a
-                class="block w-full h-full ml-2 px-2 py-1 rounded-lg transition-colors text-neutral-700 hover:text-pink-500 hover:bg-neutral-100"
+                class="block w-full h-full ml-2 px-2 py-1 rounded-lg transition-colors hover:bg-text-light-95 text-text hover:text-primary"
                 href="/stories?selected=Pagination"
               >
                 Pagination
@@ -692,7 +692,7 @@ exports[`StoriesDisplay > should match snapshot 1`] = `
             <!---->
             <button
               aria-pressed="false"
-              class="w-full text-md cursor-pointer rounded-md py-1 px-2 border border-gray-300 bg-neutral-100 transition-colors duration-300 self-start inline-flex gap-1 items-center hover:bg-gray-100 svelte-1d0mdzt"
+              class="w-full text-md cursor-pointer rounded-md py-1 px-2 border border-text-light-50 bg-text-light-95 transition-colors duration-300 self-start inline-flex gap-1 items-center hover:bg-text-light-80 svelte-1d0mdzt"
               data-variant="gray"
               role="button"
               tabindex="0"
@@ -723,7 +723,7 @@ exports[`StoriesDisplay > should match snapshot 1`] = `
                   >
                     <svg
                       aria-hidden="true"
-                      class="fill-neutral-500"
+                      class="fill-text"
                       height="1rem"
                       viewBox="0 -960 960 960"
                       width="1rem"
@@ -754,55 +754,55 @@ exports[`StoriesDisplay > should match snapshot 1`] = `
             >
               <!---->
               <a
-                class="block w-full h-full ml-2 px-2 py-1 rounded-lg transition-colors text-neutral-700 hover:text-pink-500 hover:bg-neutral-100"
+                class="block w-full h-full ml-2 px-2 py-1 rounded-lg transition-colors hover:bg-text-light-95 text-text hover:text-primary"
                 href="/stories?selected=Checklist"
               >
                 Checklist
               </a>
               <a
-                class="block w-full h-full ml-2 px-2 py-1 rounded-lg transition-colors text-neutral-700 hover:text-pink-500 hover:bg-neutral-100"
+                class="block w-full h-full ml-2 px-2 py-1 rounded-lg transition-colors hover:bg-text-light-95 text-text hover:text-primary"
                 href="/stories?selected=IntroCard"
               >
                 IntroCard
               </a>
               <a
-                class="block w-full h-full ml-2 px-2 py-1 rounded-lg transition-colors text-neutral-700 hover:text-pink-500 hover:bg-neutral-100"
+                class="block w-full h-full ml-2 px-2 py-1 rounded-lg transition-colors hover:bg-text-light-95 text-text hover:text-primary"
                 href="/stories?selected=Learnings"
               >
                 Learnings
               </a>
               <a
-                class="block w-full h-full ml-2 px-2 py-1 rounded-lg transition-colors text-neutral-700 hover:text-pink-500 hover:bg-neutral-100"
+                class="block w-full h-full ml-2 px-2 py-1 rounded-lg transition-colors hover:bg-text-light-95 text-text hover:text-primary"
                 href="/stories?selected=IntroPage"
               >
                 IntroPage
               </a>
               <a
-                class="block w-full h-full ml-2 px-2 py-1 rounded-lg transition-colors text-neutral-700 hover:text-pink-500 hover:bg-neutral-100"
+                class="block w-full h-full ml-2 px-2 py-1 rounded-lg transition-colors hover:bg-text-light-95 text-text hover:text-primary"
                 href="/stories?selected=StepOneAPage"
               >
                 StepOneAPage
               </a>
               <a
-                class="block w-full h-full ml-2 px-2 py-1 rounded-lg transition-colors text-neutral-700 hover:text-pink-500 hover:bg-neutral-100"
+                class="block w-full h-full ml-2 px-2 py-1 rounded-lg transition-colors hover:bg-text-light-95 text-text hover:text-primary"
                 href="/stories?selected=StepOneBPage"
               >
                 StepOneBPage
               </a>
               <a
-                class="block w-full h-full ml-2 px-2 py-1 rounded-lg transition-colors text-neutral-700 hover:text-pink-500 hover:bg-neutral-100"
+                class="block w-full h-full ml-2 px-2 py-1 rounded-lg transition-colors hover:bg-text-light-95 text-text hover:text-primary"
                 href="/stories?selected=FileVerified"
               >
                 FileVerified
               </a>
               <a
-                class="block w-full h-full ml-2 px-2 py-1 rounded-lg transition-colors text-neutral-700 hover:text-pink-500 hover:bg-neutral-100"
+                class="block w-full h-full ml-2 px-2 py-1 rounded-lg transition-colors hover:bg-text-light-95 text-text hover:text-primary"
                 href="/stories?selected=StepsTitle"
               >
                 StepsTitle
               </a>
               <a
-                class="block w-full h-full ml-2 px-2 py-1 rounded-lg transition-colors text-neutral-700 hover:text-pink-500 hover:bg-neutral-100"
+                class="block w-full h-full ml-2 px-2 py-1 rounded-lg transition-colors hover:bg-text-light-95 text-text hover:text-primary"
                 href="/stories?selected=ExportResponsesPage"
               >
                 ExportResponsesPage
@@ -818,7 +818,7 @@ exports[`StoriesDisplay > should match snapshot 1`] = `
             <!---->
             <button
               aria-pressed="false"
-              class="w-full text-md cursor-pointer rounded-md py-1 px-2 border border-gray-300 bg-neutral-100 transition-colors duration-300 self-start inline-flex gap-1 items-center hover:bg-gray-100 svelte-1d0mdzt"
+              class="w-full text-md cursor-pointer rounded-md py-1 px-2 border border-text-light-50 bg-text-light-95 transition-colors duration-300 self-start inline-flex gap-1 items-center hover:bg-text-light-80 svelte-1d0mdzt"
               data-variant="gray"
               role="button"
               tabindex="0"
@@ -849,7 +849,7 @@ exports[`StoriesDisplay > should match snapshot 1`] = `
                   >
                     <svg
                       aria-hidden="true"
-                      class="fill-neutral-500"
+                      class="fill-text"
                       height="1rem"
                       viewBox="0 -960 960 960"
                       width="1rem"
@@ -880,16 +880,22 @@ exports[`StoriesDisplay > should match snapshot 1`] = `
             >
               <!---->
               <a
-                class="block w-full h-full ml-2 px-2 py-1 rounded-lg transition-colors text-neutral-700 hover:text-pink-500 hover:bg-neutral-100"
+                class="block w-full h-full ml-2 px-2 py-1 rounded-lg transition-colors hover:bg-text-light-95 text-text hover:text-primary"
                 href="/stories?selected=FileInput"
               >
                 FileInput
               </a>
               <a
-                class="block w-full h-full ml-2 px-2 py-1 rounded-lg transition-colors text-neutral-700 hover:text-pink-500 hover:bg-neutral-100"
+                class="block w-full h-full ml-2 px-2 py-1 rounded-lg transition-colors hover:bg-text-light-95 text-text hover:text-primary"
                 href="/stories?selected=RadioCards"
               >
                 RadioCards
+              </a>
+              <a
+                class="block w-full h-full ml-2 px-2 py-1 rounded-lg transition-colors hover:bg-text-light-95 text-text hover:text-primary"
+                href="/stories?selected=Button"
+              >
+                Button
               </a>
               
               <!---->
@@ -902,7 +908,7 @@ exports[`StoriesDisplay > should match snapshot 1`] = `
             <!---->
             <button
               aria-pressed="false"
-              class="w-full text-md cursor-pointer rounded-md py-1 px-2 border border-gray-300 bg-neutral-100 transition-colors duration-300 self-start inline-flex gap-1 items-center hover:bg-gray-100 svelte-1d0mdzt"
+              class="w-full text-md cursor-pointer rounded-md py-1 px-2 border border-text-light-50 bg-text-light-95 transition-colors duration-300 self-start inline-flex gap-1 items-center hover:bg-text-light-80 svelte-1d0mdzt"
               data-variant="gray"
               role="button"
               tabindex="0"
@@ -933,7 +939,7 @@ exports[`StoriesDisplay > should match snapshot 1`] = `
                   >
                     <svg
                       aria-hidden="true"
-                      class="fill-neutral-500"
+                      class="fill-text"
                       height="1rem"
                       viewBox="0 -960 960 960"
                       width="1rem"
@@ -964,49 +970,49 @@ exports[`StoriesDisplay > should match snapshot 1`] = `
             >
               <!---->
               <a
-                class="block w-full h-full ml-2 px-2 py-1 rounded-lg transition-colors text-neutral-700 hover:text-pink-500 hover:bg-neutral-100"
+                class="block w-full h-full ml-2 px-2 py-1 rounded-lg transition-colors hover:bg-text-light-95 text-text hover:text-primary"
                 href="/stories?selected=CreateConsultationForm"
               >
                 CreateConsultationForm
               </a>
               <a
-                class="block w-full h-full ml-2 px-2 py-1 rounded-lg transition-colors text-neutral-700 hover:text-pink-500 hover:bg-neutral-100"
+                class="block w-full h-full ml-2 px-2 py-1 rounded-lg transition-colors hover:bg-text-light-95 text-text hover:text-primary"
                 href="/stories?selected=EditUser"
               >
                 EditUser
               </a>
               <a
-                class="block w-full h-full ml-2 px-2 py-1 rounded-lg transition-colors text-neutral-700 hover:text-pink-500 hover:bg-neutral-100"
+                class="block w-full h-full ml-2 px-2 py-1 rounded-lg transition-colors hover:bg-text-light-95 text-text hover:text-primary"
                 href="/stories?selected=AddUserForm"
               >
                 AddUserForm
               </a>
               <a
-                class="block w-full h-full ml-2 px-2 py-1 rounded-lg transition-colors text-neutral-700 hover:text-pink-500 hover:bg-neutral-100"
+                class="block w-full h-full ml-2 px-2 py-1 rounded-lg transition-colors hover:bg-text-light-95 text-text hover:text-primary"
                 href="/stories?selected=DeleteUserForm"
               >
                 DeleteUserForm
               </a>
               <a
-                class="block w-full h-full ml-2 px-2 py-1 rounded-lg transition-colors text-neutral-700 hover:text-pink-500 hover:bg-neutral-100"
+                class="block w-full h-full ml-2 px-2 py-1 rounded-lg transition-colors hover:bg-text-light-95 text-text hover:text-primary"
                 href="/stories?selected=FindThemesForm"
               >
                 FindThemesForm
               </a>
               <a
-                class="block w-full h-full ml-2 px-2 py-1 rounded-lg transition-colors text-neutral-700 hover:text-pink-500 hover:bg-neutral-100"
+                class="block w-full h-full ml-2 px-2 py-1 rounded-lg transition-colors hover:bg-text-light-95 text-text hover:text-primary"
                 href="/stories?selected=ThemeSelectionForm"
               >
                 ThemeSelectionForm
               </a>
               <a
-                class="block w-full h-full ml-2 px-2 py-1 rounded-lg transition-colors text-neutral-700 hover:text-pink-500 hover:bg-neutral-100"
+                class="block w-full h-full ml-2 px-2 py-1 rounded-lg transition-colors hover:bg-text-light-95 text-text hover:text-primary"
                 href="/stories?selected=QuestionsReviewList"
               >
                 QuestionsReviewList
               </a>
               <a
-                class="block w-full h-full ml-2 px-2 py-1 rounded-lg transition-colors text-neutral-700 hover:text-pink-500 hover:bg-neutral-100"
+                class="block w-full h-full ml-2 px-2 py-1 rounded-lg transition-colors hover:bg-text-light-95 text-text hover:text-primary"
                 href="/stories?selected=ManageConsultationsArchive"
               >
                 ManageConsultationsArchive
@@ -1022,7 +1028,7 @@ exports[`StoriesDisplay > should match snapshot 1`] = `
             <!---->
             <button
               aria-pressed="false"
-              class="w-full text-md cursor-pointer rounded-md py-1 px-2 border border-gray-300 bg-neutral-100 transition-colors duration-300 self-start inline-flex gap-1 items-center hover:bg-gray-100 svelte-1d0mdzt"
+              class="w-full text-md cursor-pointer rounded-md py-1 px-2 border border-text-light-50 bg-text-light-95 transition-colors duration-300 self-start inline-flex gap-1 items-center hover:bg-text-light-80 svelte-1d0mdzt"
               data-variant="gray"
               role="button"
               tabindex="0"
@@ -1053,7 +1059,7 @@ exports[`StoriesDisplay > should match snapshot 1`] = `
                   >
                     <svg
                       aria-hidden="true"
-                      class="fill-neutral-500"
+                      class="fill-text"
                       height="1rem"
                       viewBox="0 -960 960 960"
                       width="1rem"
@@ -1084,13 +1090,13 @@ exports[`StoriesDisplay > should match snapshot 1`] = `
             >
               <!---->
               <a
-                class="block w-full h-full ml-2 px-2 py-1 rounded-lg transition-colors text-neutral-700 hover:text-pink-500 hover:bg-neutral-100"
+                class="block w-full h-full ml-2 px-2 py-1 rounded-lg transition-colors hover:bg-text-light-95 text-text hover:text-primary"
                 href="/stories?selected=StepTitle"
               >
                 StepTitle
               </a>
               <a
-                class="block w-full h-full ml-2 px-2 py-1 rounded-lg transition-colors text-neutral-700 hover:text-pink-500 hover:bg-neutral-100"
+                class="block w-full h-full ml-2 px-2 py-1 rounded-lg transition-colors hover:bg-text-light-95 text-text hover:text-primary"
                 href="/stories?selected=OutsideConsultTag"
               >
                 OutsideConsultTag
@@ -1106,7 +1112,7 @@ exports[`StoriesDisplay > should match snapshot 1`] = `
             <!---->
             <button
               aria-pressed="false"
-              class="w-full text-md cursor-pointer rounded-md py-1 px-2 border border-gray-300 bg-neutral-100 transition-colors duration-300 self-start inline-flex gap-1 items-center hover:bg-gray-100 svelte-1d0mdzt"
+              class="w-full text-md cursor-pointer rounded-md py-1 px-2 border border-text-light-50 bg-text-light-95 transition-colors duration-300 self-start inline-flex gap-1 items-center hover:bg-text-light-80 svelte-1d0mdzt"
               data-variant="gray"
               role="button"
               tabindex="0"
@@ -1137,7 +1143,7 @@ exports[`StoriesDisplay > should match snapshot 1`] = `
                   >
                     <svg
                       aria-hidden="true"
-                      class="fill-neutral-500"
+                      class="fill-text"
                       height="1rem"
                       viewBox="0 -960 960 960"
                       width="1rem"
@@ -1168,31 +1174,31 @@ exports[`StoriesDisplay > should match snapshot 1`] = `
             >
               <!---->
               <a
-                class="block w-full h-full ml-2 px-2 py-1 rounded-lg transition-colors text-neutral-700 hover:text-pink-500 hover:bg-neutral-100"
+                class="block w-full h-full ml-2 px-2 py-1 rounded-lg transition-colors hover:bg-text-light-95 text-text hover:text-primary"
                 href="/stories?selected=Overview"
               >
                 Overview
               </a>
               <a
-                class="block w-full h-full ml-2 px-2 py-1 rounded-lg transition-colors text-neutral-700 hover:text-pink-500 hover:bg-neutral-100"
+                class="block w-full h-full ml-2 px-2 py-1 rounded-lg transition-colors hover:bg-text-light-95 text-text hover:text-primary"
                 href="/stories?selected=FileUpload"
               >
                 FileUpload
               </a>
               <a
-                class="block w-full h-full ml-2 px-2 py-1 rounded-lg transition-colors text-neutral-700 hover:text-pink-500 hover:bg-neutral-100"
+                class="block w-full h-full ml-2 px-2 py-1 rounded-lg transition-colors hover:bg-text-light-95 text-text hover:text-primary"
                 href="/stories?selected=ChecksPage"
               >
                 ChecksPage
               </a>
               <a
-                class="block w-full h-full ml-2 px-2 py-1 rounded-lg transition-colors text-neutral-700 hover:text-pink-500 hover:bg-neutral-100"
+                class="block w-full h-full ml-2 px-2 py-1 rounded-lg transition-colors hover:bg-text-light-95 text-text hover:text-primary"
                 href="/stories?selected=ReviewQuestionsPage"
               >
                 ReviewQuestionsPage
               </a>
               <a
-                class="block w-full h-full ml-2 px-2 py-1 rounded-lg transition-colors text-neutral-700 hover:text-pink-500 hover:bg-neutral-100"
+                class="block w-full h-full ml-2 px-2 py-1 rounded-lg transition-colors hover:bg-text-light-95 text-text hover:text-primary"
                 href="/stories?selected=ChartsAndFiltersPage"
               >
                 ChartsAndFiltersPage
@@ -1214,12 +1220,12 @@ exports[`StoriesDisplay > should match snapshot 1`] = `
       class="col-span-3 bg-white"
     >
       <div
-        class="h-full my-4 p-4 rounded-2xl border border-gray-200"
+        class="h-full my-4 p-4 rounded-2xl border border-text-light-80"
         data-testid="panel-component"
       >
         <!---->
         <p
-          class="my-8 text-center text-neutral-600"
+          class="my-8 text-center text-text"
         >
           Please select a component to view
         </p>

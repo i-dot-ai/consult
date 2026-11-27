@@ -3,14 +3,14 @@
 exports[`Learnings > should match snapshot 1`] = `
 <div>
   <div
-    class="border border-secondary p-4 rounded-lg"
+    class="border border-success p-4 rounded-lg"
   >
     <div
       class="flex gap-2 justify-between items-center"
     >
       <!---->
       <h3
-        class="text-neutral-700 text-md"
+        class="text-text-dark-25 text-md"
       >
         <!---->
         <!---->
@@ -33,7 +33,7 @@ exports[`Learnings > should match snapshot 1`] = `
         <button
           aria-label="close-learnings-panel"
           aria-pressed="false"
-          class="text-md cursor-pointer rounded-md py-1 px-2 border border-transparent transition-colors duration-300 self-start inline-flex gap-1 items-center hover:bg-gray-100 svelte-1d0mdzt"
+          class="text-md cursor-pointer rounded-md py-1 px-2 border border-transparent hover:bg-text-light-80 transition-colors duration-300 self-start inline-flex gap-1 items-center hover:bg-text-light-80 svelte-1d0mdzt"
           data-variant="ghost"
           role="button"
           tabindex="0"
@@ -42,7 +42,7 @@ exports[`Learnings > should match snapshot 1`] = `
           <!---->
           <svg
             aria-hidden="true"
-            class="fill-neutral-500"
+            class="fill-text"
             height="1rem"
             viewBox="0 -960 960 960"
             width="1rem"
@@ -64,19 +64,19 @@ exports[`Learnings > should match snapshot 1`] = `
     </div>
      
     <div
-      class="bg-neutral-100 px-4 pt-6 pb-8 rounded-lg"
+      class="bg-text-light-95 px-4 pt-6 pb-8 rounded-lg"
       id="learnings-component"
     >
       <div
         class="flex gap-4"
       >
         <div
-          class="flex items-center justify-center flex-col mb-auto py-2 px-4 font-bold text-xs text-neutral-700 bg-white border-2 border-neutral-500"
+          class="flex items-center justify-center flex-col mb-auto py-2 px-4 font-bold text-xs text-text-dark-50 bg-white border-2 border-text"
         >
           <!---->
           <svg
             aria-hidden="true"
-            class="fill-neutral-700"
+            class="fill-text-dark-50"
             height="1.5rem"
             viewBox="0 -960 960 960"
             width="1.5rem"
@@ -97,14 +97,14 @@ exports[`Learnings > should match snapshot 1`] = `
          
         <div>
           <p
-            class="text-sm text-neutral-600 mb-2"
+            class="text-sm text-text-dark-25 mb-2"
           >
             "Taking time to prepare our data correctly at the start saved us hours during the analysis phase. We were able to jump straight into insights rather than troubleshooting data issues."
           </p>
            
           <!---->
           <h4
-            class="text-neutral-700 text-sm"
+            class="text-text-dark-25 text-sm"
           >
             <!---->
             <!---->
@@ -121,7 +121,7 @@ exports[`Learnings > should match snapshot 1`] = `
           <!---->
            
           <p
-            class="text-xs text-neutral-600"
+            class="text-xs text-text-dark-25"
           >
             Department for Education
           </p>
@@ -148,7 +148,7 @@ exports[`Learnings > should match snapshot 1`] = `
             aria-controls="learnings-component"
             aria-label="Previous Learning"
             aria-pressed="false"
-            class="text-md cursor-pointer rounded-md py-1 px-2 border border-gray-300 bg-white transition-colors duration-300 self-start inline-flex gap-1 items-center hover:bg-gray-100 svelte-1d0mdzt"
+            class="text-md cursor-pointer rounded-md py-1 px-2 border border-text-light-50 bg-white transition-colors duration-300 self-start inline-flex gap-1 items-center hover:bg-text-light-80 svelte-1d0mdzt"
             data-variant="default"
             role="button"
             tabindex="0"
@@ -158,7 +158,7 @@ exports[`Learnings > should match snapshot 1`] = `
             <!---->
             <svg
               aria-hidden="true"
-              class="fill-neutral-500"
+              class="fill-text"
               height="1rem"
               viewBox="0 -960 960 960"
               width="1rem"
@@ -184,7 +184,7 @@ exports[`Learnings > should match snapshot 1`] = `
           aria-controls="learnings-component"
           aria-label="Learning 1"
           aria-pressed="true"
-          class="text-md cursor-pointer rounded-md border border-transparent text-neutral-400 transition-colors duration-300 self-start inline-flex gap-1 items-center hover:text-secondary text-secondary svelte-1d0mdzt"
+          class="text-md cursor-pointer rounded-md border border-transparent text-text transition-colors duration-300 self-start inline-flex gap-1 items-center hover:text-success text-success svelte-1d0mdzt"
           data-testid="Learnings Button"
           data-variant="dot"
           role="button"
@@ -202,7 +202,7 @@ exports[`Learnings > should match snapshot 1`] = `
           aria-controls="learnings-component"
           aria-label="Learning 2"
           aria-pressed="false"
-          class="text-md cursor-pointer rounded-md border border-transparent text-neutral-400 transition-colors duration-300 self-start inline-flex gap-1 items-center hover:text-secondary svelte-1d0mdzt"
+          class="text-md cursor-pointer rounded-md border border-transparent text-text transition-colors duration-300 self-start inline-flex gap-1 items-center hover:text-success svelte-1d0mdzt"
           data-testid="Learnings Button"
           data-variant="dot"
           role="button"
@@ -220,7 +220,7 @@ exports[`Learnings > should match snapshot 1`] = `
           aria-controls="learnings-component"
           aria-label="Learning 3"
           aria-pressed="false"
-          class="text-md cursor-pointer rounded-md border border-transparent text-neutral-400 transition-colors duration-300 self-start inline-flex gap-1 items-center hover:text-secondary svelte-1d0mdzt"
+          class="text-md cursor-pointer rounded-md border border-transparent text-text transition-colors duration-300 self-start inline-flex gap-1 items-center hover:text-success svelte-1d0mdzt"
           data-testid="Learnings Button"
           data-variant="dot"
           role="button"
@@ -243,7 +243,7 @@ exports[`Learnings > should match snapshot 1`] = `
             aria-controls="learnings-component"
             aria-label="Next Learning"
             aria-pressed="false"
-            class="text-md cursor-pointer rounded-md py-1 px-2 border border-gray-300 bg-white transition-colors duration-300 self-start inline-flex gap-1 items-center hover:bg-gray-100 svelte-1d0mdzt"
+            class="text-md cursor-pointer rounded-md py-1 px-2 border border-text-light-50 bg-white transition-colors duration-300 self-start inline-flex gap-1 items-center hover:bg-text-light-80 svelte-1d0mdzt"
             data-variant="default"
             role="button"
             tabindex="0"
@@ -253,7 +253,7 @@ exports[`Learnings > should match snapshot 1`] = `
             <!---->
             <svg
               aria-hidden="true"
-              class="fill-neutral-500"
+              class="fill-text"
               height="1rem"
               viewBox="0 -960 960 960"
               width="1rem"
@@ -281,7 +281,7 @@ exports[`Learnings > should match snapshot 1`] = `
         <!---->
         <button
           aria-pressed="false"
-          class="text-md cursor-pointer rounded-md py-1 px-2 border border-transparent transition-colors duration-300 self-start inline-flex gap-1 items-center hover:bg-gray-100 svelte-1d0mdzt"
+          class="text-md cursor-pointer rounded-md py-1 px-2 border border-transparent hover:bg-text-light-80 transition-colors duration-300 self-start inline-flex gap-1 items-center hover:bg-text-light-80 svelte-1d0mdzt"
           data-variant="ghost"
           role="button"
           tabindex="0"
@@ -289,7 +289,7 @@ exports[`Learnings > should match snapshot 1`] = `
           <!---->
           <!---->
           <div
-            class="underline text-xs text-neutral-500"
+            class="underline text-xs text-text"
           >
             Don't show me this again
           </div>

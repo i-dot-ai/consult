@@ -8,7 +8,7 @@ exports[`IntroCard > should match snapshot 1`] = `
     data-testid="intro-card"
   >
     <div
-      class="bg-secondary p-2 rounded-full w-12 h-12 shadow-lg"
+      class="bg-success p-2 rounded-full w-12 h-12 shadow-lg"
     >
       <div
         class="growshrink"
@@ -34,7 +34,7 @@ exports[`IntroCard > should match snapshot 1`] = `
     </div>
      
     <small
-      class="text-secondary text-xs text-center mt-1"
+      class="text-success text-xs text-center mt-1"
     >
       Step 1
     </small>
@@ -46,7 +46,7 @@ exports[`IntroCard > should match snapshot 1`] = `
     </h3>
      
     <p
-      class="text-neutral-500 text-xs text-center"
+      class="text-text text-xs text-center"
     >
       Export from your collection tool and structure your files
     </p>
@@ -57,7 +57,7 @@ exports[`IntroCard > should match snapshot 1`] = `
     >
       <svg
         aria-hidden="true"
-        class="fill-secondary"
+        class="fill-success"
         height="1.5rem"
         viewBox="0 -960 960 960"
         width="1.5rem"

@@ -6,14 +6,14 @@ exports[`StepTitle > should match snapshot 1`] = `
     class="flex gap-4 items-center flex-wrap"
   >
     <div
-      class="rounded-full border border-neutral-300 bg-neutral-100 w-12 h-12 flex justify-center items-center"
+      class="rounded-full border border-text-light-50 bg-text-light-95 w-12 h-12 flex justify-center items-center"
     >
       <div
         class="shrink-0"
       >
         <svg
           aria-hidden="true"
-          class="fill-neutral-500"
+          class="fill-text"
           height="1.6rem"
           viewBox="0 -960 960 960"
           width="1.6rem"
@@ -34,7 +34,7 @@ exports[`StepTitle > should match snapshot 1`] = `
      
     <div>
       <small
-        class="text-neutral-500"
+        class="text-text"
       >
         Step 1 of 6
       </small>
@@ -44,7 +44,7 @@ exports[`StepTitle > should match snapshot 1`] = `
       >
         <!---->
         <h1
-          class="text-neutral-700 text-xl"
+          class="text-text-dark-25 text-xl"
         >
           <!---->
           <!---->
@@ -57,14 +57,14 @@ exports[`StepTitle > should match snapshot 1`] = `
         <!---->
          
         <div
-          class="flex justify-between items-center gap-2 rounded-md w-max py-0.5 px-2 text-xs bg-neutral-100 text-neutral-800 border border-neutral-300"
+          class="flex justify-between items-center gap-2 rounded-md w-max py-0.5 px-2 text-xs bg-text-light-95 text-text-dark-25 border border-text-light-50"
         >
           <span
             class="flex items-center gap-1"
           >
             <svg
               aria-hidden="true"
-              class="fill-neutral-500"
+              class="fill-text"
               height="0.8rem"
               viewBox="0 -960 960 960"
               width="0.8rem"

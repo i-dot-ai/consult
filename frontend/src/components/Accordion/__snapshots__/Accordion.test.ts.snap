@@ -6,7 +6,7 @@ exports[`Accordion > should render correctly 1`] = `
   <!---->
   <button
     aria-pressed="false"
-    class="w-full text-md cursor-pointer rounded-md py-1 px-2 border border-gray-300 bg-white transition-colors duration-300 self-start inline-flex gap-1 items-center hover:bg-gray-100 svelte-1d0mdzt"
+    class="w-full text-md cursor-pointer rounded-md py-1 px-2 border border-text-light-50 bg-white transition-colors duration-300 self-start inline-flex gap-1 items-center hover:bg-text-light-80 svelte-1d0mdzt"
     data-variant="default"
     role="button"
     tabindex="0"
@@ -35,7 +35,7 @@ exports[`Accordion > should render correctly 1`] = `
         >
           <svg
             aria-hidden="true"
-            class="fill-neutral-500"
+            class="fill-text"
             height="1rem"
             viewBox="0 -960 960 960"
             width="1rem"
@@ -72,7 +72,7 @@ exports[`Accordion > should render correctly 2`] = `
   <!---->
   <button
     aria-pressed="false"
-    class="w-full text-md cursor-pointer rounded-md py-1 px-2 border border-gray-300 bg-neutral-100 transition-colors duration-300 self-start inline-flex gap-1 items-center hover:bg-gray-100 svelte-1d0mdzt"
+    class="w-full text-md cursor-pointer rounded-md py-1 px-2 border border-text-light-50 bg-text-light-95 transition-colors duration-300 self-start inline-flex gap-1 items-center hover:bg-text-light-80 svelte-1d0mdzt"
     data-variant="gray"
     role="button"
     tabindex="0"
@@ -101,7 +101,7 @@ exports[`Accordion > should render correctly 2`] = `
         >
           <svg
             aria-hidden="true"
-            class="fill-neutral-500"
+            class="fill-text"
             height="1rem"
             viewBox="0 -960 960 960"
             width="1rem"
@@ -138,7 +138,7 @@ exports[`Accordion > should render correctly 3`] = `
   <!---->
   <button
     aria-pressed="false"
-    class="w-full text-md cursor-pointer rounded-md py-1 px-2 border border-yellow-300 bg-yellow-50 transition-colors duration-300 self-start inline-flex gap-1 items-center hover:bg-yellow-100 svelte-1d0mdzt"
+    class="w-full text-md cursor-pointer rounded-md py-1 px-2 border border-warning-light-50 bg-warning-light-95 transition-colors duration-300 self-start inline-flex gap-1 items-center hover:bg-warning-light-80 svelte-1d0mdzt"
     data-variant="warning"
     role="button"
     tabindex="0"
@@ -167,7 +167,7 @@ exports[`Accordion > should render correctly 3`] = `
         >
           <svg
             aria-hidden="true"
-            class="fill-yellow-500"
+            class="fill-warning"
             height="1rem"
             viewBox="0 -960 960 960"
             width="1rem"

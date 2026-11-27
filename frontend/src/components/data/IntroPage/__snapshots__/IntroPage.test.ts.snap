@@ -5,7 +5,7 @@ exports[`IntroPage > should match snapshot 1`] = `
   <section>
     <!---->
     <h2
-      class="text-neutral-700 text-lg"
+      class="text-text-dark-25 text-lg"
     >
       <!---->
       <!---->
@@ -22,7 +22,7 @@ exports[`IntroPage > should match snapshot 1`] = `
     <!---->
      
     <p
-      class="text-neutral-500 text-md"
+      class="text-text text-md"
     >
       Prepare and structure your data ready for AI analysis. 
       <br />
@@ -36,7 +36,7 @@ exports[`IntroPage > should match snapshot 1`] = `
   >
     <!---->
     <h3
-      class="text-neutral-700 text-md"
+      class="text-text-dark-25 text-md"
     >
       <!---->
       <!---->
@@ -53,7 +53,7 @@ exports[`IntroPage > should match snapshot 1`] = `
     <!---->
      
     <p
-      class="text-neutral-500 text-xs my-4"
+      class="text-text text-xs my-4"
     >
       You'll complete 5 individual steps, organised into 3 phases:
     </p>
@@ -67,7 +67,7 @@ exports[`IntroPage > should match snapshot 1`] = `
         data-testid="intro-card"
       >
         <div
-          class="bg-secondary p-2 rounded-full w-12 h-12 shadow-lg"
+          class="bg-success p-2 rounded-full w-12 h-12 shadow-lg"
         >
           <div
             class="growshrink"
@@ -94,7 +94,7 @@ exports[`IntroPage > should match snapshot 1`] = `
         </div>
          
         <small
-          class="text-secondary text-xs text-center mt-1"
+          class="text-success text-xs text-center mt-1"
         >
           Steps 1 & 2
         </small>
@@ -106,7 +106,7 @@ exports[`IntroPage > should match snapshot 1`] = `
         </h3>
          
         <p
-          class="text-neutral-500 text-xs text-center"
+          class="text-text text-xs text-center"
         >
           Export from your collection tool and get to know your data
         </p>
@@ -117,7 +117,7 @@ exports[`IntroPage > should match snapshot 1`] = `
         >
           <svg
             aria-hidden="true"
-            class="fill-secondary"
+            class="fill-success"
             height="1.5rem"
             viewBox="0 -960 960 960"
             width="1.5rem"
@@ -139,12 +139,12 @@ exports[`IntroPage > should match snapshot 1`] = `
         data-testid="intro-card"
       >
         <div
-          class="bg-teal-100 p-2 rounded-full w-12 h-12 shadow-lg"
+          class="bg-success-light-80 p-2 rounded-full w-12 h-12 shadow-lg"
         >
           <div>
             <svg
               aria-hidden="true"
-              class="fill-secondary"
+              class="fill-success"
               height="2rem"
               viewBox="0 -960 960 960"
               width="2rem"
@@ -164,7 +164,7 @@ exports[`IntroPage > should match snapshot 1`] = `
         </div>
          
         <small
-          class="text-secondary text-xs text-center mt-1"
+          class="text-success text-xs text-center mt-1"
         >
           Step 3
         </small>
@@ -176,7 +176,7 @@ exports[`IntroPage > should match snapshot 1`] = `
         </h3>
          
         <p
-          class="text-neutral-500 text-xs text-center"
+          class="text-text text-xs text-center"
         >
           Upload your file and review validation results
         </p>
@@ -187,7 +187,7 @@ exports[`IntroPage > should match snapshot 1`] = `
         >
           <svg
             aria-hidden="true"
-            class="fill-neutral-400"
+            class="fill-text"
             height="1.5rem"
             viewBox="0 -960 960 960"
             width="1.5rem"
@@ -209,12 +209,12 @@ exports[`IntroPage > should match snapshot 1`] = `
         data-testid="intro-card"
       >
         <div
-          class="bg-teal-100 p-2 rounded-full w-12 h-12 shadow-lg"
+          class="bg-success-light-80 p-2 rounded-full w-12 h-12 shadow-lg"
         >
           <div>
             <svg
               aria-hidden="true"
-              class="fill-secondary"
+              class="fill-success"
               height="2rem"
               viewBox="0 -960 960 960"
               width="2rem"
@@ -234,7 +234,7 @@ exports[`IntroPage > should match snapshot 1`] = `
         </div>
          
         <small
-          class="text-secondary text-xs text-center mt-1"
+          class="text-success text-xs text-center mt-1"
         >
           Steps 4 & 5
         </small>
@@ -246,7 +246,7 @@ exports[`IntroPage > should match snapshot 1`] = `
         </h3>
          
         <p
-          class="text-neutral-500 text-xs text-center"
+          class="text-text text-xs text-center"
         >
           Confirm question types and configure closed questions
         </p>
@@ -263,7 +263,7 @@ exports[`IntroPage > should match snapshot 1`] = `
     <!---->
     <button
       aria-pressed="false"
-      class="text-xs cursor-pointer rounded-md py-0.5 px-1 border border-gray-300 bg-secondary text-white transition-colors duration-300 self-start inline-flex gap-1 items-center hover:bg-gray-100 hover:border-secondary hover:text-secondary svelte-1d0mdzt"
+      class="text-xs cursor-pointer rounded-md py-0.5 px-1 border border-text-light-50 bg-success text-white transition-colors duration-300 self-start inline-flex gap-1 items-center hover:bg-text-light-80 hover:border-success hover:text-success svelte-1d0mdzt"
       data-variant="approve"
       role="button"
       tabindex="0"

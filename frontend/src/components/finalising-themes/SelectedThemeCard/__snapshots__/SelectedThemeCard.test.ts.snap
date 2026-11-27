@@ -9,7 +9,7 @@ exports[`SelectedThemeCard > should render 1`] = `
   >
     <div>
       <div
-        class="h-full my-4 p-4 rounded-2xl border border-gray-200"
+        class="h-full my-4 p-4 rounded-2xl border border-text-light-80"
         data-testid="panel-component"
       >
         <div
@@ -29,7 +29,7 @@ exports[`SelectedThemeCard > should render 1`] = `
             </header>
              
             <p
-              class="my-4 text-sm text-neutral-700"
+              class="my-4 text-sm text-text-dark-25"
             >
               This is the theme description
             </p>
@@ -39,7 +39,7 @@ exports[`SelectedThemeCard > should render 1`] = `
             />
              
             <small
-              class="mb-4 block text-xs text-neutral-500"
+              class="mb-4 block text-xs text-text"
             >
               Added
               &lt;FORMATTED_TIME_DELTA_TEXT&gt; ago by testuser
@@ -51,7 +51,7 @@ exports[`SelectedThemeCard > should render 1`] = `
               <!---->
               <button
                 aria-pressed="false"
-                class="text-sm cursor-pointer rounded-md py-1 px-2 border border-gray-300 bg-white transition-colors duration-300 self-start inline-flex gap-1 items-center hover:bg-gray-100 svelte-1d0mdzt"
+                class="text-sm cursor-pointer rounded-md py-1 px-2 border border-text-light-50 bg-white transition-colors duration-300 self-start inline-flex gap-1 items-center hover:bg-text-light-80 svelte-1d0mdzt"
                 data-testid="selected-theme-edit-button"
                 data-variant="default"
                 role="button"
@@ -62,7 +62,7 @@ exports[`SelectedThemeCard > should render 1`] = `
                 <!---->
                 <svg
                   aria-hidden="true"
-                  class="fill-neutral-500"
+                  class="fill-text"
                   height="1rem"
                   viewBox="0 -960 960 960"
                   width="1rem"
@@ -86,7 +86,7 @@ exports[`SelectedThemeCard > should render 1`] = `
               <!---->
               <button
                 aria-pressed="false"
-                class="text-sm cursor-pointer rounded-md py-1 px-2 border border-gray-300 bg-white transition-colors duration-300 self-start inline-flex gap-1 items-center hover:bg-gray-100 svelte-1d0mdzt"
+                class="text-sm cursor-pointer rounded-md py-1 px-2 border border-text-light-50 bg-white transition-colors duration-300 self-start inline-flex gap-1 items-center hover:bg-text-light-80 svelte-1d0mdzt"
                 data-variant="default"
                 role="button"
                 tabindex="0"
@@ -96,7 +96,7 @@ exports[`SelectedThemeCard > should render 1`] = `
                 <!---->
                 <svg
                   aria-hidden="true"
-                  class="fill-neutral-500"
+                  class="fill-text"
                   height="1rem"
                   viewBox="0 -960 960 960"
                   width="1rem"

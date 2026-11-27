@@ -15,7 +15,7 @@ exports[`ConsultationAnalysis > should match snapshot after loading 1`] = `
         <!---->
         <button
           aria-pressed="false"
-          class="text-xs cursor-pointer rounded-md py-0.5 px-1 border border-transparent transition-colors duration-300 self-start inline-flex gap-1 items-center hover:bg-gray-100 svelte-1d0mdzt"
+          class="text-xs cursor-pointer rounded-md py-0.5 px-1 border border-transparent hover:bg-text-light-80 transition-colors duration-300 self-start inline-flex gap-1 items-center hover:bg-text-light-80 svelte-1d0mdzt"
           data-testid="back-button"
           data-variant="ghost"
           role="button"
@@ -28,7 +28,7 @@ exports[`ConsultationAnalysis > should match snapshot after loading 1`] = `
           >
             <svg
               aria-hidden="true"
-              class="fill-neutral-700"
+              class="fill-text-dark-25"
               height="1rem"
               viewBox="0 -960 960 960"
               width="1rem"
@@ -72,7 +72,7 @@ exports[`ConsultationAnalysis > should match snapshot after loading 1`] = `
    
   <section>
     <div
-      class="h-full my-4 p-4 rounded-2xl border border-gray-200"
+      class="h-full my-4 p-4 rounded-2xl border border-text-light-80"
       data-testid="panel-component"
     >
       <!---->
@@ -83,11 +83,11 @@ exports[`ConsultationAnalysis > should match snapshot after loading 1`] = `
           class="flex items-center justify-center"
         >
           <div
-            class="bg-pink-50 p-2 rounded-md"
+            class="bg-primary-light-95 p-2 rounded-md"
           >
             <svg
               aria-hidden="true"
-              class="fill-pink-700"
+              class="fill-primary"
               height="1.3rem"
               viewBox="0 -960 960 960"
               width="1.3rem"
@@ -112,7 +112,7 @@ exports[`ConsultationAnalysis > should match snapshot after loading 1`] = `
         >
           <!---->
           <h2
-            class="text-neutral-700 text-lg"
+            class="text-text-dark-25 text-lg"
           >
             <!---->
             Demographics Breakdown
@@ -123,7 +123,7 @@ exports[`ConsultationAnalysis > should match snapshot after loading 1`] = `
           <!---->
            
           <p
-            class="text-neutral-600 text-sm"
+            class="text-text text-sm"
           >
             Comprehensive view of all demographic categories
           </p>
@@ -140,7 +140,7 @@ exports[`ConsultationAnalysis > should match snapshot after loading 1`] = `
         >
           <svg
             aria-hidden="true"
-            class="fill-neutral-300"
+            class="fill-text-light-50"
             height="3rem"
             viewBox="0 -960 960 960"
             width="3rem"
@@ -157,7 +157,7 @@ exports[`ConsultationAnalysis > should match snapshot after loading 1`] = `
         </div>
          
         <p
-          class="text-neutral-500 text-center mb-12"
+          class="text-text text-center mb-12"
         >
           No demographics found
         </p>
@@ -170,7 +170,7 @@ exports[`ConsultationAnalysis > should match snapshot after loading 1`] = `
    
   <section>
     <div
-      class="h-full my-4 p-4 rounded-2xl border border-gray-200"
+      class="h-full my-4 p-4 rounded-2xl border border-text-light-80"
       data-testid="panel-component"
     >
       <!---->
@@ -181,11 +181,11 @@ exports[`ConsultationAnalysis > should match snapshot after loading 1`] = `
           class="flex items-center justify-center"
         >
           <div
-            class="bg-pink-50 p-2 rounded-md"
+            class="bg-primary-light-95 p-2 rounded-md"
           >
             <svg
               aria-hidden="true"
-              class="fill-pink-700"
+              class="fill-primary"
               height="1.3rem"
               viewBox="0 -960 960 960"
               width="1.3rem"
@@ -210,7 +210,7 @@ exports[`ConsultationAnalysis > should match snapshot after loading 1`] = `
         >
           <!---->
           <h2
-            class="text-neutral-700 text-lg"
+            class="text-text-dark-25 text-lg"
           >
             <!---->
             Multiple Choice Questions
@@ -221,7 +221,7 @@ exports[`ConsultationAnalysis > should match snapshot after loading 1`] = `
           <!---->
            
           <p
-            class="text-neutral-600 text-sm"
+            class="text-text text-sm"
           >
             Detailed breakdown of all multiple choice question responses
           </p>
@@ -242,7 +242,7 @@ exports[`ConsultationAnalysis > should match snapshot after loading 1`] = `
             class="h-full w-full"
           >
             <div
-              class="h-full my-4 p-4 rounded-2xl border border-gray-200 bg-neutral-50"
+              class="h-full my-4 p-4 rounded-2xl border border-text-light-80 bg-text-light-95"
               data-testid="panel-component"
             >
               <div
@@ -298,7 +298,7 @@ exports[`ConsultationAnalysis > should match snapshot after loading 1`] = `
             class="h-full w-full"
           >
             <div
-              class="h-full my-4 p-4 rounded-2xl border border-gray-200 bg-neutral-50"
+              class="h-full my-4 p-4 rounded-2xl border border-text-light-80 bg-text-light-95"
               data-testid="panel-component"
             >
               <div
@@ -354,7 +354,7 @@ exports[`ConsultationAnalysis > should match snapshot after loading 1`] = `
             class="h-full w-full"
           >
             <div
-              class="h-full my-4 p-4 rounded-2xl border border-gray-200 bg-neutral-50"
+              class="h-full my-4 p-4 rounded-2xl border border-text-light-80 bg-text-light-95"
               data-testid="panel-component"
             >
               <div
@@ -429,7 +429,7 @@ exports[`ConsultationAnalysis > should match snapshot initially 1`] = `
         <!---->
         <button
           aria-pressed="false"
-          class="text-xs cursor-pointer rounded-md py-0.5 px-1 border border-transparent transition-colors duration-300 self-start inline-flex gap-1 items-center hover:bg-gray-100 svelte-1d0mdzt"
+          class="text-xs cursor-pointer rounded-md py-0.5 px-1 border border-transparent hover:bg-text-light-80 transition-colors duration-300 self-start inline-flex gap-1 items-center hover:bg-text-light-80 svelte-1d0mdzt"
           data-testid="back-button"
           data-variant="ghost"
           role="button"
@@ -442,7 +442,7 @@ exports[`ConsultationAnalysis > should match snapshot initially 1`] = `
           >
             <svg
               aria-hidden="true"
-              class="fill-neutral-700"
+              class="fill-text-dark-25"
               height="1rem"
               viewBox="0 -960 960 960"
               width="1rem"
@@ -486,7 +486,7 @@ exports[`ConsultationAnalysis > should match snapshot initially 1`] = `
    
   <section>
     <div
-      class="h-full my-4 p-4 rounded-2xl border border-gray-200"
+      class="h-full my-4 p-4 rounded-2xl border border-text-light-80"
       data-testid="panel-component"
     >
       <!---->
@@ -497,11 +497,11 @@ exports[`ConsultationAnalysis > should match snapshot initially 1`] = `
           class="flex items-center justify-center"
         >
           <div
-            class="bg-pink-50 p-2 rounded-md"
+            class="bg-primary-light-95 p-2 rounded-md"
           >
             <svg
               aria-hidden="true"
-              class="fill-pink-700"
+              class="fill-primary"
               height="1.3rem"
               viewBox="0 -960 960 960"
               width="1.3rem"
@@ -526,7 +526,7 @@ exports[`ConsultationAnalysis > should match snapshot initially 1`] = `
         >
           <!---->
           <h2
-            class="text-neutral-700 text-lg"
+            class="text-text-dark-25 text-lg"
           >
             <!---->
             Demographics Breakdown
@@ -537,7 +537,7 @@ exports[`ConsultationAnalysis > should match snapshot initially 1`] = `
           <!---->
            
           <p
-            class="text-neutral-600 text-sm"
+            class="text-text text-sm"
           >
             Comprehensive view of all demographic categories
           </p>
@@ -557,7 +557,7 @@ exports[`ConsultationAnalysis > should match snapshot initially 1`] = `
         >
           <svg
             aria-hidden="true"
-            class="fill-neutral-300"
+            class="fill-text-light-50"
             height="5rem"
             viewBox="0 -960 960 960"
             width="5rem"
@@ -575,7 +575,7 @@ exports[`ConsultationAnalysis > should match snapshot initially 1`] = `
         <!---->
          
         <p
-          class="text-center text-neutral-500"
+          class="text-center text-text"
         >
           Loading Demographics...
         </p>
@@ -595,7 +595,7 @@ exports[`ConsultationAnalysis > should match snapshot initially 1`] = `
     >
       <svg
         aria-hidden="true"
-        class="fill-neutral-300"
+        class="fill-text-light-50"
         height="5rem"
         viewBox="0 -960 960 960"
         width="5rem"
@@ -613,7 +613,7 @@ exports[`ConsultationAnalysis > should match snapshot initially 1`] = `
     <!---->
      
     <p
-      class="text-center text-neutral-500"
+      class="text-center text-text"
     >
       Loading Questions...
     </p>

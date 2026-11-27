@@ -10,7 +10,7 @@ exports[`ProfileButton > matches snapshot 1`] = `
         aria-controls="profile-panel"
         aria-expanded="false"
         aria-label="View profile links"
-        class="flex justify-center items-center w-8 h-8 ml-2 p-1 border-2 border-transparent rounded-full bg-neutral-700 text-xs transition-colors hover:border-primary hover:bg-neutral-600"
+        class="flex justify-center items-center w-8 h-8 ml-2 p-1 border-2 border-transparent rounded-full bg-text-dark-25 text-xs transition-colors cursor-pointer hover:border-primary hover:bg-text-dark-50"
         title="Profile links"
       >
         <svg

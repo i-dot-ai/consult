@@ -29,7 +29,7 @@ exports[`ConsultationPeople > matches snapshot 1`] = `
   >
     <!---->
     <h2
-      class="text-neutral-700 text-lg"
+      class="text-text-dark-25 text-lg"
     >
       <!---->
       <!---->
@@ -44,7 +44,7 @@ exports[`ConsultationPeople > matches snapshot 1`] = `
     <!---->
     <button
       aria-pressed="false"
-      class="text-sm cursor-pointer rounded-md py-1 px-2 border border-gray-300 bg-primary text-white transition-colors duration-300 self-start inline-flex gap-1 items-center hover:bg-gray-100 hover:border-primary hover:text-primary svelte-1d0mdzt"
+      class="text-sm cursor-pointer rounded-md py-1 px-2 border border-text-light-50 bg-primary text-white transition-colors duration-300 self-start inline-flex gap-1 items-center hover:bg-text-light-80 hover:border-primary hover:text-primary svelte-1d0mdzt"
       data-variant="primary"
       role="button"
       tabindex="0"
@@ -61,7 +61,7 @@ exports[`ConsultationPeople > matches snapshot 1`] = `
   </div>
    
   <p
-    class="mt-2 text-sm text-neutral-500"
+    class="mt-2 text-sm text-text"
   >
     Future homes standard · 3 people
     <!---->
@@ -96,10 +96,10 @@ exports[`ConsultationPeople > matches snapshot 1`] = `
       </div>
        
       <div
-        class="max-h-[50rem] overflow-x-auto rounded-lg border border-neutral-200 bg-white"
+        class="max-h-[50rem] overflow-x-auto rounded-lg border border-text-light-80 bg-white"
       >
         <table
-          class="min-w-full divide-y divide-neutral-200"
+          class="min-w-full divide-y divide-text-light-80"
         >
           <caption
             class="sr-only"
@@ -108,12 +108,12 @@ exports[`ConsultationPeople > matches snapshot 1`] = `
           </caption>
           <!---->
           <thead
-            class="bg-neutral-50"
+            class="bg-text-light-95"
           >
             <tr>
               <th
                 aria-sort="none"
-                class="px-4 py-3 text-left text-xs font-[500] tracking-wide text-neutral-600"
+                class="px-4 py-3 text-left text-xs font-[500] tracking-wide text-text"
                 data-testid="header-email"
                 scope="col"
               >
@@ -124,7 +124,7 @@ exports[`ConsultationPeople > matches snapshot 1`] = `
               </th>
               <th
                 aria-sort="none"
-                class="px-4 py-3 text-left text-xs font-[500] tracking-wide text-neutral-600 text-right"
+                class="px-4 py-3 text-left text-xs font-[500] tracking-wide text-text text-right"
                 data-testid="header-user"
                 scope="col"
               >
@@ -137,28 +137,28 @@ exports[`ConsultationPeople > matches snapshot 1`] = `
             </tr>
           </thead>
           <tbody
-            class="divide-y divide-neutral-200"
+            class="divide-y divide-text-light-80"
           >
             <!---->
             <tr
-              class="transition-colors even:bg-neutral-50 hover:bg-neutral-100"
+              class="transition-colors even:bg-text-light-95 hover:bg-text-light-95"
               data-testid="datatable-row"
             >
               <td
-                class="whitespace-nowrap px-4 py-3 text-sm text-neutral-700"
+                class="whitespace-nowrap px-4 py-3 text-sm text-text-dark-25"
                 data-testid="cell-email"
               >
                 <!---->
                 <!---->
                 <span
-                  class="flex flex-wrap items-center gap-2 text-neutral-900"
+                  class="flex flex-wrap items-center gap-2 text-text-dark-50"
                 >
                   <span>
                     f.fisher@example.gov.uk (you)
                   </span>
                    
                   <div
-                    class="flex justify-between items-center gap-2 rounded-md w-max py-0.5 px-2 text-xs bg-neutral-100 text-neutral-800"
+                    class="flex justify-between items-center gap-2 rounded-md w-max py-0.5 px-2 text-xs bg-text-light-95 text-text-dark-25"
                   >
                     Creator
                     <!---->
@@ -170,7 +170,7 @@ exports[`ConsultationPeople > matches snapshot 1`] = `
                 <!---->
               </td>
               <td
-                class="whitespace-nowrap px-4 py-3 text-sm text-neutral-700 text-right"
+                class="whitespace-nowrap px-4 py-3 text-sm text-text-dark-25 text-right"
                 data-testid="cell-user"
               >
                 <!---->
@@ -182,17 +182,17 @@ exports[`ConsultationPeople > matches snapshot 1`] = `
               
             </tr>
             <tr
-              class="transition-colors even:bg-neutral-50 hover:bg-neutral-100"
+              class="transition-colors even:bg-text-light-95 hover:bg-text-light-95"
               data-testid="datatable-row"
             >
               <td
-                class="whitespace-nowrap px-4 py-3 text-sm text-neutral-700"
+                class="whitespace-nowrap px-4 py-3 text-sm text-text-dark-25"
                 data-testid="cell-email"
               >
                 <!---->
                 <!---->
                 <span
-                  class="flex flex-wrap items-center gap-2 text-neutral-900"
+                  class="flex flex-wrap items-center gap-2 text-text-dark-50"
                 >
                   <span>
                     sam.kaur@example.gov.uk
@@ -205,7 +205,7 @@ exports[`ConsultationPeople > matches snapshot 1`] = `
                 <!---->
               </td>
               <td
-                class="whitespace-nowrap px-4 py-3 text-sm text-neutral-700 text-right"
+                class="whitespace-nowrap px-4 py-3 text-sm text-text-dark-25 text-right"
                 data-testid="cell-user"
               >
                 <!---->
@@ -214,7 +214,7 @@ exports[`ConsultationPeople > matches snapshot 1`] = `
                 <button
                   aria-label="Remove sam.kaur@example.gov.uk"
                   aria-pressed="false"
-                  class="text-sm cursor-pointer rounded-md py-1 px-2 border border-red-700 bg-transparent text-red-700 transition-colors duration-300 self-start inline-flex gap-1 items-center hover:bg-red-800 hover:text-white svelte-1d0mdzt"
+                  class="text-sm cursor-pointer rounded-md py-1 px-2 border border-error bg-transparent text-error transition-colors duration-300 self-start inline-flex gap-1 items-center hover:bg-error hover:text-white svelte-1d0mdzt"
                   data-variant="danger"
                   role="button"
                   tabindex="0"
@@ -234,17 +234,17 @@ exports[`ConsultationPeople > matches snapshot 1`] = `
               
             </tr>
             <tr
-              class="transition-colors even:bg-neutral-50 hover:bg-neutral-100"
+              class="transition-colors even:bg-text-light-95 hover:bg-text-light-95"
               data-testid="datatable-row"
             >
               <td
-                class="whitespace-nowrap px-4 py-3 text-sm text-neutral-700"
+                class="whitespace-nowrap px-4 py-3 text-sm text-text-dark-25"
                 data-testid="cell-email"
               >
                 <!---->
                 <!---->
                 <span
-                  class="flex flex-wrap items-center gap-2 text-neutral-900"
+                  class="flex flex-wrap items-center gap-2 text-text-dark-50"
                 >
                   <span>
                     priya.raghunathan@example.gov.uk
@@ -257,7 +257,7 @@ exports[`ConsultationPeople > matches snapshot 1`] = `
                 <!---->
               </td>
               <td
-                class="whitespace-nowrap px-4 py-3 text-sm text-neutral-700 text-right"
+                class="whitespace-nowrap px-4 py-3 text-sm text-text-dark-25 text-right"
                 data-testid="cell-user"
               >
                 <!---->
@@ -266,7 +266,7 @@ exports[`ConsultationPeople > matches snapshot 1`] = `
                 <button
                   aria-label="Remove priya.raghunathan@example.gov.uk"
                   aria-pressed="false"
-                  class="text-sm cursor-pointer rounded-md py-1 px-2 border border-red-700 bg-transparent text-red-700 transition-colors duration-300 self-start inline-flex gap-1 items-center hover:bg-red-800 hover:text-white svelte-1d0mdzt"
+                  class="text-sm cursor-pointer rounded-md py-1 px-2 border border-error bg-transparent text-error transition-colors duration-300 self-start inline-flex gap-1 items-center hover:bg-error hover:text-white svelte-1d0mdzt"
                   data-variant="danger"
                   role="button"
                   tabindex="0"

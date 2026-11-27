@@ -5,7 +5,7 @@ exports[`StepOneAPage > should match snapshot 1`] = `
   <!---->
   <!---->
   <h1
-    class="text-neutral-700 text-xl"
+    class="text-text-dark-25 text-xl"
   >
     <!---->
     <!---->
@@ -26,7 +26,7 @@ exports[`StepOneAPage > should match snapshot 1`] = `
       <button
         aria-label="hint-accordion"
         aria-pressed="false"
-        class="w-full text-md cursor-pointer rounded-md py-1 px-2 border border-yellow-300 bg-yellow-50 transition-colors duration-300 self-start inline-flex gap-1 items-center hover:bg-yellow-100 svelte-1d0mdzt"
+        class="w-full text-md cursor-pointer rounded-md py-1 px-2 border border-warning-light-50 bg-warning-light-95 transition-colors duration-300 self-start inline-flex gap-1 items-center hover:bg-warning-light-80 svelte-1d0mdzt"
         data-variant="warning"
         role="button"
         tabindex="0"
@@ -44,7 +44,7 @@ exports[`StepOneAPage > should match snapshot 1`] = `
             >
               <svg
                 aria-hidden="true"
-                class="fill-yellow-600"
+                class="fill-warning"
                 height="1.2rem"
                 viewBox="0 -960 960 960"
                 width="1.2rem"
@@ -67,13 +67,13 @@ exports[`StepOneAPage > should match snapshot 1`] = `
               class="text-sm text-start py-2"
             >
               <strong
-                class="text-yellow-600"
+                class="text-warning"
               >
                 Hint:
               </strong>
                
               <span
-                class="text-neutral-600"
+                class="text-text-dark-25"
               >
                 Following these export settings will make it quicker to integrate
               your data into Consult and reduce the work you'll need to do when
@@ -91,7 +91,7 @@ exports[`StepOneAPage > should match snapshot 1`] = `
             >
               <svg
                 aria-hidden="true"
-                class="fill-yellow-500"
+                class="fill-warning"
                 height="1rem"
                 viewBox="0 -960 960 960"
                 width="1rem"
@@ -111,7 +111,7 @@ exports[`StepOneAPage > should match snapshot 1`] = `
             <button
               aria-label="close hint-accordion"
               aria-pressed="false"
-              class="text-md cursor-pointer rounded-md py-1 px-2 border border-transparent transition-colors duration-300 self-start inline-flex gap-1 items-center hover:bg-gray-100 svelte-1d0mdzt"
+              class="text-md cursor-pointer rounded-md py-1 px-2 border border-transparent hover:bg-text-light-80 transition-colors duration-300 self-start inline-flex gap-1 items-center hover:bg-text-light-80 svelte-1d0mdzt"
               data-variant="ghost"
               role="button"
               tabindex="0"
@@ -120,7 +120,7 @@ exports[`StepOneAPage > should match snapshot 1`] = `
               <!---->
               <svg
                 aria-hidden="true"
-                class="fill-yellow-500"
+                class="fill-warning"
                 height="1rem"
                 viewBox="0 -960 960 960"
                 width="1rem"
@@ -154,7 +154,7 @@ exports[`StepOneAPage > should match snapshot 1`] = `
      
     <!---->
     <h2
-      class="text-neutral-700 text-lg"
+      class="text-text-dark-25 text-lg"
     >
       <!---->
       <!---->
@@ -171,7 +171,7 @@ exports[`StepOneAPage > should match snapshot 1`] = `
     <!---->
      
     <p
-      class="text-sm text-neutral-500"
+      class="text-sm text-text"
     >
       Select your consultation platform to see tailored export instructions
     </p>
@@ -183,7 +183,7 @@ exports[`StepOneAPage > should match snapshot 1`] = `
       <button
         aria-label="Qualtrics tab"
         aria-pressed="true"
-        class="text-md cursor-pointer rounded-md py-1 px-2 border border-gray-300 bg-white transition-colors duration-300 self-start inline-flex gap-1 items-center hover:bg-gray-100 border-secondary text-secondary hover:bg-teal-500 svelte-1d0mdzt"
+        class="text-md cursor-pointer rounded-md py-1 px-2 border border-text-light-50 bg-white transition-colors duration-300 self-start inline-flex gap-1 items-center hover:bg-text-light-80 border-success text-success hover:bg-success svelte-1d0mdzt"
         data-variant="default"
         role="button"
         tabindex="0"
@@ -210,7 +210,7 @@ exports[`StepOneAPage > should match snapshot 1`] = `
       <button
         aria-label="Smart Survey tab"
         aria-pressed="false"
-        class="text-md cursor-pointer rounded-md py-1 px-2 border border-gray-300 bg-white transition-colors duration-300 self-start inline-flex gap-1 items-center hover:bg-gray-100 svelte-1d0mdzt"
+        class="text-md cursor-pointer rounded-md py-1 px-2 border border-text-light-50 bg-white transition-colors duration-300 self-start inline-flex gap-1 items-center hover:bg-text-light-80 svelte-1d0mdzt"
         data-variant="default"
         role="button"
         tabindex="0"
@@ -237,7 +237,7 @@ exports[`StepOneAPage > should match snapshot 1`] = `
       <button
         aria-label="Citizen Space tab"
         aria-pressed="false"
-        class="text-md cursor-pointer rounded-md py-1 px-2 border border-gray-300 bg-white transition-colors duration-300 self-start inline-flex gap-1 items-center hover:bg-gray-100 svelte-1d0mdzt"
+        class="text-md cursor-pointer rounded-md py-1 px-2 border border-text-light-50 bg-white transition-colors duration-300 self-start inline-flex gap-1 items-center hover:bg-text-light-80 svelte-1d0mdzt"
         data-variant="default"
         role="button"
         tabindex="0"
@@ -263,14 +263,14 @@ exports[`StepOneAPage > should match snapshot 1`] = `
   </section>
     
   <div
-    class="h-full my-4 p-4 rounded-2xl border border-gray-200"
+    class="h-full my-4 p-4 rounded-2xl border border-text-light-80"
     data-testid="panel-component"
   >
     <!---->
     <div>
       <!---->
       <h1
-        class="text-neutral-700 text-xl"
+        class="text-text-dark-25 text-xl"
       >
         <!---->
         <!---->
@@ -303,7 +303,7 @@ exports[`StepOneAPage > should match snapshot 1`] = `
           </div>
            
           <div
-            class="absolute top-0 -left-4 border-2 border-neutral-300 rounded-full w-6 h-6 flex justify-center items-center group-hover:border-secondary transition-colors text-xs"
+            class="absolute top-0 -left-4 border-2 border-text-light-50 rounded-full w-6 h-6 flex justify-center items-center group-hover:border-success transition-colors text-xs"
           >
             1
           </div>
@@ -328,7 +328,7 @@ exports[`StepOneAPage > should match snapshot 1`] = `
           </div>
            
           <div
-            class="absolute top-0 -left-4 border-2 border-neutral-300 rounded-full w-6 h-6 flex justify-center items-center group-hover:border-secondary transition-colors text-xs"
+            class="absolute top-0 -left-4 border-2 border-text-light-50 rounded-full w-6 h-6 flex justify-center items-center group-hover:border-success transition-colors text-xs"
           >
             2
           </div>
@@ -350,7 +350,7 @@ exports[`StepOneAPage > should match snapshot 1`] = `
           </div>
            
           <div
-            class="absolute top-0 -left-4 border-2 border-neutral-300 rounded-full w-6 h-6 flex justify-center items-center group-hover:border-secondary transition-colors text-xs"
+            class="absolute top-0 -left-4 border-2 border-text-light-50 rounded-full w-6 h-6 flex justify-center items-center group-hover:border-success transition-colors text-xs"
           >
             3
           </div>
@@ -370,7 +370,7 @@ exports[`StepOneAPage > should match snapshot 1`] = `
               
             
               <ul
-                class="list-disc ml-8 marker:text-neutral-400 flex flex-col gap-2 mt-2"
+                class="list-disc ml-8 marker:text-text-light-50 flex flex-col gap-2 mt-2"
               >
                 
               
@@ -400,7 +400,7 @@ exports[`StepOneAPage > should match snapshot 1`] = `
           </div>
            
           <div
-            class="absolute top-0 -left-4 border-2 border-neutral-300 rounded-full w-6 h-6 flex justify-center items-center group-hover:border-secondary transition-colors text-xs"
+            class="absolute top-0 -left-4 border-2 border-text-light-50 rounded-full w-6 h-6 flex justify-center items-center group-hover:border-success transition-colors text-xs"
           >
             4
           </div>
@@ -421,7 +421,7 @@ exports[`StepOneAPage > should match snapshot 1`] = `
           </div>
            
           <div
-            class="absolute top-0 -left-4 border-2 border-neutral-300 rounded-full w-6 h-6 flex justify-center items-center group-hover:border-secondary transition-colors text-xs"
+            class="absolute top-0 -left-4 border-2 border-text-light-50 rounded-full w-6 h-6 flex justify-center items-center group-hover:border-success transition-colors text-xs"
           >
             5
           </div>
@@ -440,7 +440,7 @@ exports[`StepOneAPage > should match snapshot 1`] = `
         >
           <svg
             aria-hidden="true"
-            class="fill-red-500"
+            class="fill-error"
             height="1rem"
             viewBox="0 -960 960 960"
             width="1rem"
@@ -484,7 +484,7 @@ exports[`StepOneAPage > should match snapshot 1`] = `
     <!---->
     <button
       aria-pressed="false"
-      class="w-full text-md cursor-pointer rounded-md py-1 px-2 border border-gray-300 bg-white transition-colors duration-300 self-start inline-flex gap-1 items-center hover:bg-gray-100 svelte-1d0mdzt"
+      class="w-full text-md cursor-pointer rounded-md py-1 px-2 border border-text-light-50 bg-white transition-colors duration-300 self-start inline-flex gap-1 items-center hover:bg-text-light-80 svelte-1d0mdzt"
       data-variant="default"
       role="button"
       tabindex="0"
@@ -518,7 +518,7 @@ exports[`StepOneAPage > should match snapshot 1`] = `
           >
             <svg
               aria-hidden="true"
-              class="fill-neutral-500"
+              class="fill-text"
               height="1rem"
               viewBox="0 -960 960 960"
               width="1rem"
@@ -555,7 +555,7 @@ exports[`StepOneAPage > should match snapshot 1`] = `
       <!---->
       <button
         aria-pressed="false"
-        class="text-md cursor-pointer rounded-md py-1 px-2 border border-gray-300 bg-white transition-colors duration-300 self-start inline-flex gap-1 items-center hover:bg-gray-100 svelte-1d0mdzt"
+        class="text-md cursor-pointer rounded-md py-1 px-2 border border-text-light-50 bg-white transition-colors duration-300 self-start inline-flex gap-1 items-center hover:bg-text-light-80 svelte-1d0mdzt"
         data-variant="default"
         role="button"
         tabindex="0"
@@ -567,7 +567,7 @@ exports[`StepOneAPage > should match snapshot 1`] = `
         >
           <svg
             aria-hidden="true"
-            class="fill-neutral-500"
+            class="fill-text"
             height="0.9rem"
             viewBox="0 -960 960 960"
             width="0.9rem"
@@ -598,7 +598,7 @@ exports[`StepOneAPage > should match snapshot 1`] = `
       <!---->
       <button
         aria-pressed="false"
-        class="text-md cursor-pointer rounded-md py-1 px-2 border border-gray-300 bg-secondary text-white transition-colors duration-300 self-start inline-flex gap-1 items-center hover:bg-gray-100 hover:border-secondary hover:text-secondary svelte-1d0mdzt"
+        class="text-md cursor-pointer rounded-md py-1 px-2 border border-text-light-50 bg-success text-white transition-colors duration-300 self-start inline-flex gap-1 items-center hover:bg-text-light-80 hover:border-success hover:text-success svelte-1d0mdzt"
         data-variant="approve"
         role="button"
         tabindex="0"

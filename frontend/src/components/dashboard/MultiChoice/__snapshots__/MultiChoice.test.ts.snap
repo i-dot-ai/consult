@@ -6,7 +6,7 @@ exports[`MultiChoice > should render data 1`] = `
     class="my-4"
   >
     <div
-      class="h-full my-4 p-4 rounded-2xl border border-gray-200"
+      class="h-full my-4 p-4 rounded-2xl border border-text-light-80"
       data-testid="panel-component"
     >
       <!---->
@@ -17,11 +17,11 @@ exports[`MultiChoice > should render data 1`] = `
           class="flex items-center justify-center"
         >
           <div
-            class="bg-pink-50 p-2 rounded-md"
+            class="bg-primary-light-95 p-2 rounded-md"
           >
             <svg
               aria-hidden="true"
-              class="fill-pink-700"
+              class="fill-primary"
               height="1.3rem"
               viewBox="0 -960 960 960"
               width="1.3rem"
@@ -46,7 +46,7 @@ exports[`MultiChoice > should render data 1`] = `
         >
           <!---->
           <h2
-            class="text-neutral-700 text-lg"
+            class="text-text-dark-25 text-lg"
           >
             <!---->
             Multiple Choice Answers
@@ -57,7 +57,7 @@ exports[`MultiChoice > should render data 1`] = `
           <!---->
            
           <p
-            class="text-neutral-600 text-sm"
+            class="text-text text-sm"
           >
             30 responses
           </p>
@@ -69,7 +69,7 @@ exports[`MultiChoice > should render data 1`] = `
       <!---->
        
       <div
-        class="h-full my-4 p-4 rounded-2xl border border-gray-200 bg-neutral-50"
+        class="h-full my-4 p-4 rounded-2xl border border-text-light-80 bg-text-light-95"
         data-testid="panel-component"
       >
         <!---->
@@ -79,7 +79,7 @@ exports[`MultiChoice > should render data 1`] = `
           <!---->
           <button
             aria-pressed="false"
-            class="w-full text-xs cursor-pointer rounded-md py-0.5 px-1 border border-transparent transition-colors duration-300 self-start inline-flex gap-1 items-center hover:bg-gray-100 svelte-1d0mdzt"
+            class="w-full text-xs cursor-pointer rounded-md py-0.5 px-1 border border-transparent hover:bg-text-light-80 transition-colors duration-300 self-start inline-flex gap-1 items-center hover:bg-text-light-80 svelte-1d0mdzt"
             data-variant="ghost"
             role="button"
             tabindex="0"
@@ -120,7 +120,7 @@ exports[`MultiChoice > should render data 1`] = `
                     aria-valuemax="100"
                     aria-valuemin="0"
                     aria-valuenow="33.3"
-                    class="relative h-2 w-full overflow-hidden rounded-[99999px] bg-neutral-300 svelte-vitbtr"
+                    class="relative h-2 w-full overflow-hidden rounded-[99999px] bg-text-light-50 svelte-vitbtr"
                     data-max="100"
                     data-melt-progress=""
                     data-state="loading"
@@ -157,7 +157,7 @@ exports[`MultiChoice > should render data 1`] = `
           <!---->
           <button
             aria-pressed="false"
-            class="w-full text-xs cursor-pointer rounded-md py-0.5 px-1 border border-transparent transition-colors duration-300 self-start inline-flex gap-1 items-center hover:bg-gray-100 svelte-1d0mdzt"
+            class="w-full text-xs cursor-pointer rounded-md py-0.5 px-1 border border-transparent hover:bg-text-light-80 transition-colors duration-300 self-start inline-flex gap-1 items-center hover:bg-text-light-80 svelte-1d0mdzt"
             data-variant="ghost"
             role="button"
             tabindex="0"
@@ -198,7 +198,7 @@ exports[`MultiChoice > should render data 1`] = `
                     aria-valuemax="100"
                     aria-valuemin="0"
                     aria-valuenow="66.7"
-                    class="relative h-2 w-full overflow-hidden rounded-[99999px] bg-neutral-300 svelte-vitbtr"
+                    class="relative h-2 w-full overflow-hidden rounded-[99999px] bg-text-light-50 svelte-vitbtr"
                     data-max="100"
                     data-melt-progress=""
                     data-state="loading"

@@ -20,7 +20,7 @@ exports[`EditPanel > should match snapshot 1`] = `
       >
         <svg
           aria-hidden="true"
-          class="fill-neutral-500"
+          class="fill-text"
           height="1rem"
           viewBox="0 -960 960 960"
           width="1rem"

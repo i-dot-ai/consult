@@ -77,7 +77,8 @@
 
     {#each pageNumbers as pageNumber, index (index)}
       {#if pageNumber === "gap"}
-        <span class="px-1 text-sm text-text-light-25" aria-hidden="true">…</span>
+        <span class="px-1 text-sm text-text-light-25" aria-hidden="true">…</span
+        >
       {:else}
         <Button
           variant={pageNumber === currentPage ? "gray" : "ghost"}

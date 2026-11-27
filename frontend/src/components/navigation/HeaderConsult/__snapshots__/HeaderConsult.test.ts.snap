@@ -9,7 +9,7 @@ exports[`HeaderConsult > matches snapshot 1`] = `
     class="w-full"
   >
     <div
-      class="flex border-b border-primary p-2 flex-wrap justify-around gap-y-4 md:justify-between"
+      class="flex border-b border-text-light-80 p-2 flex-wrap justify-around gap-y-4 md:justify-between"
     >
       <div
         class="flex items-center gap-2"
@@ -93,7 +93,7 @@ exports[`HeaderConsult > matches snapshot 1`] = `
         </a>
          
         <div
-          class="inline-block min-h-4 mx-2 border-l border-neutral-300 self-stretch"
+          class="inline-block min-h-4 mx-2 border-l border-text-light-50 self-stretch"
         />
         <!---->
          
@@ -101,7 +101,7 @@ exports[`HeaderConsult > matches snapshot 1`] = `
           class="flex flex-wrap"
         >
           <span
-            class="text-sm text-neutral-800"
+            class="text-sm text-text-dark-25"
           >
             AI safety and governance framework 2024
           </span>
@@ -114,12 +114,12 @@ exports[`HeaderConsult > matches snapshot 1`] = `
         class="ml-4 flex items-center md:ml-auto"
       >
         <button
-          class="block md:hidden p-1 rounded-sm border border-neutral-200 transition-colors hover:bg-neutral-100"
+          class="block md:hidden p-1 rounded-sm border border-text-light-80 transition-colors hover:bg-text-light-95"
           data-testid="mobile-menu-button"
         >
           <svg
             aria-hidden="true"
-            class="fill-neutral-500"
+            class="fill-text"
             height="1.5rem"
             viewBox="0 -960 960 960"
             width="1.5rem"
@@ -151,7 +151,7 @@ exports[`HeaderConsult > matches snapshot 1`] = `
                 <!---->
                 <a
                   aria-pressed="false"
-                  class="w-full text-sm cursor-pointer rounded-md py-1 px-2 border border-transparent transition-colors duration-300 self-start inline-flex gap-1 items-center hover:bg-gray-100 svelte-1d0mdzt"
+                  class="w-full text-sm cursor-pointer rounded-md py-1 px-2 border border-transparent hover:bg-text-light-80 transition-colors duration-300 self-start inline-flex gap-1 items-center hover:bg-text-light-80 svelte-1d0mdzt"
                   data-variant="ghost"
                   disabled="false"
                   href="/consultations"
@@ -188,7 +188,7 @@ exports[`HeaderConsult > matches snapshot 1`] = `
                   class="nav-button flex items-center justify-center gap-0.5"
                 >
                   <span
-                    class="block text-sm text-neutral-800 hover:text-primary transition-colors whitespace-nowrap"
+                    class="block text-sm text-text-dark-25 hover:text-primary transition-colors whitespace-nowrap"
                   >
                     Support
                   </span>
@@ -198,7 +198,7 @@ exports[`HeaderConsult > matches snapshot 1`] = `
                   >
                     <svg
                       aria-hidden="true"
-                      class="fill-neutral-500"
+                      class="fill-text"
                       height="0.9rem"
                       viewBox="0 -960 960 960"
                       width="0.9rem"
@@ -220,7 +220,7 @@ exports[`HeaderConsult > matches snapshot 1`] = `
               <!---->
                
               <ol
-                class="absolute top-6 right-0 z-10 border border-neutral-100 rounded-sm bg-white shadow-lg transition-opacity pointer-events-none opacity-0"
+                class="absolute top-6 right-0 z-10 border border-text-light-95 rounded-sm bg-white shadow-lg transition-opacity pointer-events-none opacity-0"
                 id="link-support"
               >
                 <li>
@@ -230,7 +230,7 @@ exports[`HeaderConsult > matches snapshot 1`] = `
                     <!---->
                     <a
                       aria-pressed="false"
-                      class="w-full text-sm cursor-pointer rounded-md py-1 px-2 border border-transparent transition-colors duration-300 self-start inline-flex gap-1 items-center hover:bg-gray-100 svelte-1d0mdzt"
+                      class="w-full text-sm cursor-pointer rounded-md py-1 px-2 border border-transparent hover:bg-text-light-80 transition-colors duration-300 self-start inline-flex gap-1 items-center hover:bg-text-light-80 svelte-1d0mdzt"
                       data-variant="ghost"
                       disabled="false"
                       href="/privacy"
@@ -272,7 +272,7 @@ exports[`HeaderConsult > matches snapshot 1`] = `
                   class="nav-button flex items-center justify-center gap-0.5"
                 >
                   <span
-                    class="block text-sm text-neutral-800 hover:text-primary transition-colors whitespace-nowrap"
+                    class="block text-sm text-text-dark-25 hover:text-primary transition-colors whitespace-nowrap"
                   >
                     Manage
                   </span>
@@ -282,7 +282,7 @@ exports[`HeaderConsult > matches snapshot 1`] = `
                   >
                     <svg
                       aria-hidden="true"
-                      class="fill-neutral-500"
+                      class="fill-text"
                       height="0.9rem"
                       viewBox="0 -960 960 960"
                       width="0.9rem"
@@ -304,7 +304,7 @@ exports[`HeaderConsult > matches snapshot 1`] = `
               <!---->
                
               <ol
-                class="absolute top-6 right-0 z-10 border border-neutral-100 rounded-sm bg-white shadow-lg transition-opacity pointer-events-none opacity-0"
+                class="absolute top-6 right-0 z-10 border border-text-light-95 rounded-sm bg-white shadow-lg transition-opacity pointer-events-none opacity-0"
                 id="link-manage"
               >
                 <li>
@@ -314,7 +314,7 @@ exports[`HeaderConsult > matches snapshot 1`] = `
                     <!---->
                     <a
                       aria-pressed="false"
-                      class="w-full text-sm cursor-pointer rounded-md py-1 px-2 border border-transparent transition-colors duration-300 self-start inline-flex gap-1 items-center hover:bg-gray-100 svelte-1d0mdzt"
+                      class="w-full text-sm cursor-pointer rounded-md py-1 px-2 border border-transparent hover:bg-text-light-80 transition-colors duration-300 self-start inline-flex gap-1 items-center hover:bg-text-light-80 svelte-1d0mdzt"
                       data-variant="ghost"
                       disabled="false"
                       href="/support/consultations"
@@ -345,7 +345,7 @@ exports[`HeaderConsult > matches snapshot 1`] = `
                     <!---->
                     <a
                       aria-pressed="false"
-                      class="w-full text-sm cursor-pointer rounded-md py-1 px-2 border border-transparent transition-colors duration-300 self-start inline-flex gap-1 items-center hover:bg-gray-100 svelte-1d0mdzt"
+                      class="w-full text-sm cursor-pointer rounded-md py-1 px-2 border border-transparent hover:bg-text-light-80 transition-colors duration-300 self-start inline-flex gap-1 items-center hover:bg-text-light-80 svelte-1d0mdzt"
                       data-variant="ghost"
                       disabled="false"
                       href="/support/users"
@@ -376,7 +376,7 @@ exports[`HeaderConsult > matches snapshot 1`] = `
                     <!---->
                     <a
                       aria-pressed="false"
-                      class="w-full text-sm cursor-pointer rounded-md py-1 px-2 border border-transparent transition-colors duration-300 self-start inline-flex gap-1 items-center hover:bg-gray-100 svelte-1d0mdzt"
+                      class="w-full text-sm cursor-pointer rounded-md py-1 px-2 border border-transparent hover:bg-text-light-80 transition-colors duration-300 self-start inline-flex gap-1 items-center hover:bg-text-light-80 svelte-1d0mdzt"
                       data-variant="ghost"
                       disabled="false"
                       href="/support/data-pipeline"
@@ -407,7 +407,7 @@ exports[`HeaderConsult > matches snapshot 1`] = `
                     <!---->
                     <a
                       aria-pressed="false"
-                      class="w-full text-sm cursor-pointer rounded-md py-1 px-2 border border-transparent transition-colors duration-300 self-start inline-flex gap-1 items-center hover:bg-gray-100 svelte-1d0mdzt"
+                      class="w-full text-sm cursor-pointer rounded-md py-1 px-2 border border-transparent hover:bg-text-light-80 transition-colors duration-300 self-start inline-flex gap-1 items-center hover:bg-text-light-80 svelte-1d0mdzt"
                       data-variant="ghost"
                       disabled="false"
                       href="/"
@@ -473,7 +473,7 @@ exports[`HeaderConsult > matches snapshot 1`] = `
               <button
                 aria-controls="breadcrumbs-panel"
                 aria-pressed="false"
-                class="text-sm cursor-pointer rounded-md py-1 px-2 border border-transparent transition-colors duration-300 self-start inline-flex gap-1 items-center hover:bg-gray-100 svelte-1d0mdzt"
+                class="text-sm cursor-pointer rounded-md py-1 px-2 border border-transparent hover:bg-text-light-80 transition-colors duration-300 self-start inline-flex gap-1 items-center hover:bg-text-light-80 svelte-1d0mdzt"
                 data-variant="ghost"
                 role="button"
                 tabindex="0"
@@ -498,7 +498,7 @@ exports[`HeaderConsult > matches snapshot 1`] = `
                   aria-controls="profile-panel"
                   aria-expanded="false"
                   aria-label="View profile links"
-                  class="flex justify-center items-center w-8 h-8 ml-2 p-1 border-2 border-transparent rounded-full bg-neutral-700 text-xs transition-colors hover:border-primary hover:bg-neutral-600"
+                  class="flex justify-center items-center w-8 h-8 ml-2 p-1 border-2 border-transparent rounded-full bg-text-dark-25 text-xs transition-colors cursor-pointer hover:border-primary hover:bg-text-dark-50"
                   title="Profile links"
                 >
                   <svg

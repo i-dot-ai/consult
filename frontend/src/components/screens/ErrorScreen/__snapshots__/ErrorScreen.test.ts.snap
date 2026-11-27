@@ -10,7 +10,7 @@ exports[`ErrorScreen > matches snapshot 404 1`] = `
     >
       <svg
         aria-hidden="true"
-        class="fill-neutral-500"
+        class="fill-text"
         height="5rem"
         viewBox="0 -960 960 960"
         width="5rem"
@@ -30,7 +30,7 @@ exports[`ErrorScreen > matches snapshot 404 1`] = `
      
     <!---->
     <h1
-      class="text-neutral-700 text-3xl mb-5 font-bold"
+      class="text-text-dark-25 text-3xl mb-5 font-bold"
     >
       <!---->
       <!---->
@@ -47,7 +47,7 @@ exports[`ErrorScreen > matches snapshot 404 1`] = `
     <!---->
      
     <p
-      class="mb-4 text-lg text-neutral-700"
+      class="mb-4 text-lg text-text-dark-25"
     >
       <span
         class="block text-center"
@@ -72,7 +72,7 @@ exports[`ErrorScreen > matches snapshot 500 1`] = `
     >
       <svg
         aria-hidden="true"
-        class="fill-neutral-500"
+        class="fill-text"
         height="5rem"
         viewBox="0 -960 960 960"
         width="5rem"
@@ -92,7 +92,7 @@ exports[`ErrorScreen > matches snapshot 500 1`] = `
      
     <!---->
     <h1
-      class="text-neutral-700 text-3xl mb-5 font-bold"
+      class="text-text-dark-25 text-3xl mb-5 font-bold"
     >
       <!---->
       <!---->
@@ -109,7 +109,7 @@ exports[`ErrorScreen > matches snapshot 500 1`] = `
     <!---->
      
     <p
-      class="mb-4 text-lg text-neutral-700"
+      class="mb-4 text-lg text-text-dark-25"
     >
       <span
         class="block text-center"

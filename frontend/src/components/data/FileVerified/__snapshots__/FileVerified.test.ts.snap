@@ -3,18 +3,18 @@
 exports[`FileVerified > should match snapshot 1`] = `
 <div>
   <div
-    class="h-full my-4 p-4 rounded-2xl border border-gray-200"
+    class="h-full my-4 p-4 rounded-2xl border border-text-light-80"
     data-testid="panel-component"
   >
     <div
       class="flex flex-col justify-center items-center p-4 pt-8"
     >
       <div
-        class="bg-neutral-100 w-24 h-24 rounded-full flex items-center justify-center"
+        class="bg-text-light-95 w-24 h-24 rounded-full flex items-center justify-center"
       >
         <svg
           aria-hidden="true"
-          class="fill-neutral-600"
+          class="fill-text"
           height="4rem"
           viewBox="0 -960 960 960"
           width="4rem"
@@ -32,7 +32,7 @@ exports[`FileVerified > should match snapshot 1`] = `
        
       <!---->
       <h2
-        class="text-neutral-700 text-lg"
+        class="text-text-dark-25 text-lg"
       >
         <!---->
         <!---->
@@ -49,7 +49,7 @@ exports[`FileVerified > should match snapshot 1`] = `
       <!---->
        
       <p
-        class="text-md text-center text-neutral-600"
+        class="text-md text-center text-text"
       >
         We've successfully validated your data file and there are 
         <br />

@@ -3,7 +3,7 @@
 exports[`Alert > should match snapshot 1`] = `
 <div>
   <div
-    class="flex items-center justify-start gap-2 rounded-lg bg-sky-50 p-2"
+    class="flex items-center justify-start gap-2 rounded-lg bg-primary-light-95 p-2"
     data-testid="alert-info"
   >
     <div
@@ -11,7 +11,7 @@ exports[`Alert > should match snapshot 1`] = `
     >
       <svg
         aria-hidden="true"
-        class="fill-sky-800"
+        class="fill-primary"
         height="1rem"
         viewBox="0 -960 960 960"
         width="1rem"
@@ -30,7 +30,7 @@ exports[`Alert > should match snapshot 1`] = `
     <!---->
      
     <div
-      class="w-full text-sky-800"
+      class="w-full text-primary"
     >
       <p>
         Child content

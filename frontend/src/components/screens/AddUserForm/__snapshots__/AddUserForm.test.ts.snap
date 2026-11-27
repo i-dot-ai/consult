@@ -5,7 +5,7 @@ exports[`AddUserForm > should match snapshot initially 1`] = `
   <!---->
   <!---->
   <h1
-    class="text-neutral-700 text-xl"
+    class="text-text-dark-25 text-xl"
   >
     <!---->
     Add a user
@@ -25,7 +25,7 @@ exports[`AddUserForm > should match snapshot initially 1`] = `
     </label>
      
     <textarea
-      class="rounded-sm border border-gray-300 px-3 py-2"
+      class="rounded-sm border border-text-light-50 px-3 py-2"
       id="emailsInput"
       placeholder="Enter one or more email addresses, separated by comma, space, or newline."
       rows="3"
@@ -39,7 +39,7 @@ exports[`AddUserForm > should match snapshot initially 1`] = `
       <!---->
       <button
         aria-pressed="false"
-        class="text-md cursor-pointer rounded-md py-1 px-2 border border-gray-300 bg-primary text-white transition-colors duration-300 self-start inline-flex gap-1 items-center hover:bg-gray-100 hover:border-primary hover:text-primary svelte-1d0mdzt"
+        class="text-md cursor-pointer rounded-md py-1 px-2 border border-text-light-50 bg-primary text-white transition-colors duration-300 self-start inline-flex gap-1 items-center hover:bg-text-light-80 hover:border-primary hover:text-primary svelte-1d0mdzt"
         data-variant="primary"
         role="button"
         tabindex="0"
@@ -59,7 +59,7 @@ exports[`AddUserForm > should match snapshot initially 1`] = `
       class="mt-4"
     >
       <a
-        class="text-gray-700 underline"
+        class="text-text-dark-25 underline"
         href="/support/users"
       >
         ← Back to users

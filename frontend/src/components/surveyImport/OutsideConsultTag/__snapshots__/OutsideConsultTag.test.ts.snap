@@ -3,14 +3,14 @@
 exports[`OutsideConsultTag > matches snapshot 1`] = `
 <div>
   <div
-    class="flex justify-between items-center gap-2 rounded-md w-max py-0.5 px-2 text-xs bg-neutral-100 text-neutral-800 border border-neutral-300"
+    class="flex justify-between items-center gap-2 rounded-md w-max py-0.5 px-2 text-xs bg-text-light-95 text-text-dark-25 border border-text-light-50"
   >
     <span
       class="flex items-center gap-1"
     >
       <svg
         aria-hidden="true"
-        class="fill-neutral-500"
+        class="fill-text"
         height="0.8rem"
         viewBox="0 -960 960 960"
         width="0.8rem"

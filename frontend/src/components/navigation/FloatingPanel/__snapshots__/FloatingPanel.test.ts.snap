@@ -18,7 +18,7 @@ exports[`FloatingPanel > renders correct direction 1`] = `
       <!---->
       <button
         aria-pressed="false"
-        class="text-md cursor-pointer rounded-md border border-transparent transition-colors duration-300 self-start block gap-1 items-center hover:bg-gray-100 fixed-hover-color svelte-1d0mdzt"
+        class="text-md cursor-pointer rounded-md border border-transparent hover:bg-text-light-80 transition-colors duration-300 self-start block gap-1 items-center hover:bg-text-light-80 fixed-hover-color svelte-1d0mdzt"
         data-variant="ghost"
         role="button"
         tabindex="0"
@@ -26,7 +26,7 @@ exports[`FloatingPanel > renders correct direction 1`] = `
         <!---->
         <!---->
         <div
-          class="rounded-full bg-secondary p-2 transition-all hover:bg-teal-500 hover:p-2.5"
+          class="rounded-full bg-success p-2 transition-all hover:bg-success hover:p-2.5"
         >
           <svg
             aria-hidden="true"
@@ -76,7 +76,7 @@ exports[`FloatingPanel > renders correct direction 1`] = `
         <!---->
         <button
           aria-pressed="false"
-          class="text-md cursor-pointer rounded-md py-1 px-2 border border-transparent transition-colors duration-300 self-start inline-flex gap-1 items-center hover:bg-gray-100 svelte-1d0mdzt"
+          class="text-md cursor-pointer rounded-md py-1 px-2 border border-transparent hover:bg-text-light-80 transition-colors duration-300 self-start inline-flex gap-1 items-center hover:bg-text-light-80 svelte-1d0mdzt"
           data-variant="ghost"
           role="button"
           tabindex="0"
@@ -85,7 +85,7 @@ exports[`FloatingPanel > renders correct direction 1`] = `
           <!---->
           <svg
             aria-hidden="true"
-            class="fill-neutral-500"
+            class="fill-text"
             height="1rem"
             viewBox="0 -960 960 960"
             width="1rem"
@@ -128,7 +128,7 @@ exports[`FloatingPanel > renders correct direction 2`] = `
       <!---->
       <button
         aria-pressed="false"
-        class="text-md cursor-pointer rounded-md border border-transparent transition-colors duration-300 self-start block gap-1 items-center hover:bg-gray-100 fixed-hover-color svelte-1d0mdzt"
+        class="text-md cursor-pointer rounded-md border border-transparent hover:bg-text-light-80 transition-colors duration-300 self-start block gap-1 items-center hover:bg-text-light-80 fixed-hover-color svelte-1d0mdzt"
         data-variant="ghost"
         role="button"
         tabindex="0"
@@ -136,7 +136,7 @@ exports[`FloatingPanel > renders correct direction 2`] = `
         <!---->
         <!---->
         <div
-          class="rounded-full bg-secondary p-2 transition-all hover:bg-teal-500 hover:p-2.5"
+          class="rounded-full bg-success p-2 transition-all hover:bg-success hover:p-2.5"
         >
           <svg
             aria-hidden="true"
@@ -186,7 +186,7 @@ exports[`FloatingPanel > renders correct direction 2`] = `
         <!---->
         <button
           aria-pressed="false"
-          class="text-md cursor-pointer rounded-md py-1 px-2 border border-transparent transition-colors duration-300 self-start inline-flex gap-1 items-center hover:bg-gray-100 svelte-1d0mdzt"
+          class="text-md cursor-pointer rounded-md py-1 px-2 border border-transparent hover:bg-text-light-80 transition-colors duration-300 self-start inline-flex gap-1 items-center hover:bg-text-light-80 svelte-1d0mdzt"
           data-variant="ghost"
           role="button"
           tabindex="0"
@@ -195,7 +195,7 @@ exports[`FloatingPanel > renders correct direction 2`] = `
           <!---->
           <svg
             aria-hidden="true"
-            class="fill-neutral-500"
+            class="fill-text"
             height="1rem"
             viewBox="0 -960 960 960"
             width="1rem"

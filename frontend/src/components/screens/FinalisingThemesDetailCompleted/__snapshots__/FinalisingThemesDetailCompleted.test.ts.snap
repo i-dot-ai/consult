@@ -9,7 +9,7 @@ exports[`FinalisingThemesDetailCompleted > should match snapshot after loading 1
     <!---->
     <button
       aria-pressed="false"
-      class="text-sm cursor-pointer rounded-md py-1 px-2 border border-transparent transition-colors duration-300 self-start inline-flex gap-1 items-center hover:bg-gray-100 svelte-1d0mdzt"
+      class="text-sm cursor-pointer rounded-md py-1 px-2 border border-transparent hover:bg-text-light-80 transition-colors duration-300 self-start inline-flex gap-1 items-center hover:bg-text-light-80 svelte-1d0mdzt"
       data-testid="back-button"
       data-variant="ghost"
       role="button"
@@ -18,14 +18,14 @@ exports[`FinalisingThemesDetailCompleted > should match snapshot after loading 1
       <!---->
       <!---->
       <div
-        class="flex items-center gap-2 text-neutral-700"
+        class="flex items-center gap-2 text-text-dark-25"
       >
         <div
           class="rotate-180"
         >
           <svg
             aria-hidden="true"
-            class="fill-neutral-500"
+            class="fill-text"
             height="1rem"
             viewBox="0 -960 960 960"
             width="1rem"
@@ -58,11 +58,11 @@ exports[`FinalisingThemesDetailCompleted > should match snapshot after loading 1
       class="flex items-center justify-center"
     >
       <div
-        class="bg-pink-50 p-2 rounded-md"
+        class="bg-primary-light-95 p-2 rounded-md"
       >
         <svg
           aria-hidden="true"
-          class="fill-pink-700"
+          class="fill-primary"
           height="1.3rem"
           viewBox="0 -960 960 960"
           width="1.3rem"
@@ -87,7 +87,7 @@ exports[`FinalisingThemesDetailCompleted > should match snapshot after loading 1
     >
       <!---->
       <h1
-        class="text-neutral-700 text-xl"
+        class="text-text-dark-25 text-xl"
       >
         <!---->
         Finalise Themes
@@ -98,7 +98,7 @@ exports[`FinalisingThemesDetailCompleted > should match snapshot after loading 1
       <!---->
        
       <p
-        class="text-neutral-600 text-md"
+        class="text-text text-md"
       >
         Finalise themes to use for AI to assign responses to
       </p>
@@ -113,7 +113,7 @@ exports[`FinalisingThemesDetailCompleted > should match snapshot after loading 1
     class="mb-8"
   >
     <div
-      class="h-full my-4 p-4 rounded-2xl border border-gray-200"
+      class="h-full my-4 p-4 rounded-2xl border border-text-light-80"
       data-testid="panel-component"
     >
       <div
@@ -124,7 +124,7 @@ exports[`FinalisingThemesDetailCompleted > should match snapshot after loading 1
         >
           <svg
             aria-hidden="true"
-            class="fill-secondary"
+            class="fill-success"
             height="1.2rem"
             viewBox="0 -960 960 960"
             width="1.2rem"
@@ -144,7 +144,7 @@ exports[`FinalisingThemesDetailCompleted > should match snapshot after loading 1
             class="text-md"
           >
             <div
-              class="blink select-none bg-neutral-100 text-neutral-100"
+              class="blink select-none bg-text-light-95 text-text-light-95"
             >
               SKELETON
             </div>
@@ -156,7 +156,7 @@ exports[`FinalisingThemesDetailCompleted > should match snapshot after loading 1
             data-testid="themes-finalised-pill"
           >
             <div
-              class="flex justify-between items-center gap-2 rounded-md w-max py-0.5 px-2 text-xs bg-pink-100 text-primary border border-pink-300"
+              class="flex justify-between items-center gap-2 rounded-md w-max py-0.5 px-2 text-xs bg-primary-light-95 text-primary border border-primary-light-80"
             >
               <!---->
               <svg
@@ -187,7 +187,7 @@ exports[`FinalisingThemesDetailCompleted > should match snapshot after loading 1
           </div>
            
           <p
-            class="text-sm text-neutral-500"
+            class="text-sm text-text"
           >
             Themes for this question have been finalised. The selected themes
             are approved and ready for AI to assign to consultation responses.
@@ -198,7 +198,7 @@ exports[`FinalisingThemesDetailCompleted > should match snapshot after loading 1
           <!---->
           <button
             aria-pressed="false"
-            class="text-sm cursor-pointer rounded-md py-1 px-2 border border-gray-300 bg-white transition-colors duration-300 self-start inline-flex gap-1 items-center hover:bg-gray-100 svelte-1d0mdzt"
+            class="text-sm cursor-pointer rounded-md py-1 px-2 border border-text-light-50 bg-white transition-colors duration-300 self-start inline-flex gap-1 items-center hover:bg-text-light-80 svelte-1d0mdzt"
             data-variant="default"
             role="button"
             tabindex="0"
@@ -245,7 +245,7 @@ exports[`FinalisingThemesDetailCompleted > should match snapshot after loading 1
    
   <section>
     <div
-      class="h-full my-4 p-4 rounded-2xl border border-gray-200"
+      class="h-full my-4 p-4 rounded-2xl border border-text-light-80"
       data-testid="panel-component"
     >
       <h2
@@ -258,7 +258,7 @@ exports[`FinalisingThemesDetailCompleted > should match snapshot after loading 1
         <!---->
         <li>
           <div
-            class="h-full my-4 p-4 rounded-2xl border border-gray-200 bg-neutral-50"
+            class="h-full my-4 p-4 rounded-2xl border border-text-light-80 bg-text-light-95"
             data-testid="panel-component"
           >
             <div
@@ -269,7 +269,7 @@ exports[`FinalisingThemesDetailCompleted > should match snapshot after loading 1
               </h3>
                
               <div
-                class="flex justify-between items-center gap-2 rounded-md w-max py-0.5 px-2 text-xs text-secondary bg-teal-50 border border-teal-400"
+                class="flex justify-between items-center gap-2 rounded-md w-max py-0.5 px-2 text-xs text-success bg-success-light-95 border border-success-light-80"
               >
                 Signed Off
                 <!---->
@@ -283,7 +283,7 @@ exports[`FinalisingThemesDetailCompleted > should match snapshot after loading 1
         </li>
         <li>
           <div
-            class="h-full my-4 p-4 rounded-2xl border border-gray-200 bg-neutral-50"
+            class="h-full my-4 p-4 rounded-2xl border border-text-light-80 bg-text-light-95"
             data-testid="panel-component"
           >
             <div
@@ -294,7 +294,7 @@ exports[`FinalisingThemesDetailCompleted > should match snapshot after loading 1
               </h3>
                
               <div
-                class="flex justify-between items-center gap-2 rounded-md w-max py-0.5 px-2 text-xs text-secondary bg-teal-50 border border-teal-400"
+                class="flex justify-between items-center gap-2 rounded-md w-max py-0.5 px-2 text-xs text-success bg-success-light-95 border border-success-light-80"
               >
                 Signed Off
                 <!---->
@@ -327,7 +327,7 @@ exports[`FinalisingThemesDetailCompleted > should match snapshot after loading 1
         <!---->
         <button
           aria-pressed="false"
-          class="text-sm cursor-pointer rounded-md py-1 px-2 border border-gray-300 bg-white transition-colors duration-300 self-start inline-flex gap-1 items-center hover:bg-gray-100 svelte-1d0mdzt"
+          class="text-sm cursor-pointer rounded-md py-1 px-2 border border-text-light-50 bg-white transition-colors duration-300 self-start inline-flex gap-1 items-center hover:bg-text-light-80 svelte-1d0mdzt"
           data-variant="default"
           role="button"
           tabindex="0"
@@ -358,7 +358,7 @@ exports[`FinalisingThemesDetailCompleted > should match snapshot initially 1`] =
     <!---->
     <button
       aria-pressed="false"
-      class="text-sm cursor-pointer rounded-md py-1 px-2 border border-transparent transition-colors duration-300 self-start inline-flex gap-1 items-center hover:bg-gray-100 svelte-1d0mdzt"
+      class="text-sm cursor-pointer rounded-md py-1 px-2 border border-transparent hover:bg-text-light-80 transition-colors duration-300 self-start inline-flex gap-1 items-center hover:bg-text-light-80 svelte-1d0mdzt"
       data-testid="back-button"
       data-variant="ghost"
       role="button"
@@ -367,14 +367,14 @@ exports[`FinalisingThemesDetailCompleted > should match snapshot initially 1`] =
       <!---->
       <!---->
       <div
-        class="flex items-center gap-2 text-neutral-700"
+        class="flex items-center gap-2 text-text-dark-25"
       >
         <div
           class="rotate-180"
         >
           <svg
             aria-hidden="true"
-            class="fill-neutral-500"
+            class="fill-text"
             height="1rem"
             viewBox="0 -960 960 960"
             width="1rem"
@@ -407,11 +407,11 @@ exports[`FinalisingThemesDetailCompleted > should match snapshot initially 1`] =
       class="flex items-center justify-center"
     >
       <div
-        class="bg-pink-50 p-2 rounded-md"
+        class="bg-primary-light-95 p-2 rounded-md"
       >
         <svg
           aria-hidden="true"
-          class="fill-pink-700"
+          class="fill-primary"
           height="1.3rem"
           viewBox="0 -960 960 960"
           width="1.3rem"
@@ -436,7 +436,7 @@ exports[`FinalisingThemesDetailCompleted > should match snapshot initially 1`] =
     >
       <!---->
       <h1
-        class="text-neutral-700 text-xl"
+        class="text-text-dark-25 text-xl"
       >
         <!---->
         Finalise Themes
@@ -447,7 +447,7 @@ exports[`FinalisingThemesDetailCompleted > should match snapshot initially 1`] =
       <!---->
        
       <p
-        class="text-neutral-600 text-md"
+        class="text-text text-md"
       >
         Finalise themes to use for AI to assign responses to
       </p>
@@ -462,7 +462,7 @@ exports[`FinalisingThemesDetailCompleted > should match snapshot initially 1`] =
     class="mb-8"
   >
     <div
-      class="h-full my-4 p-4 rounded-2xl border border-gray-200"
+      class="h-full my-4 p-4 rounded-2xl border border-text-light-80"
       data-testid="panel-component"
     >
       <div
@@ -473,7 +473,7 @@ exports[`FinalisingThemesDetailCompleted > should match snapshot initially 1`] =
         >
           <svg
             aria-hidden="true"
-            class="fill-secondary"
+            class="fill-success"
             height="1.2rem"
             viewBox="0 -960 960 960"
             width="1.2rem"
@@ -493,7 +493,7 @@ exports[`FinalisingThemesDetailCompleted > should match snapshot initially 1`] =
             class="text-md"
           >
             <div
-              class="blink select-none bg-neutral-100 text-neutral-100"
+              class="blink select-none bg-text-light-95 text-text-light-95"
             >
               SKELETON
             </div>
@@ -505,7 +505,7 @@ exports[`FinalisingThemesDetailCompleted > should match snapshot initially 1`] =
             data-testid="themes-finalised-pill"
           >
             <div
-              class="flex justify-between items-center gap-2 rounded-md w-max py-0.5 px-2 text-xs bg-pink-100 text-primary border border-pink-300"
+              class="flex justify-between items-center gap-2 rounded-md w-max py-0.5 px-2 text-xs bg-primary-light-95 text-primary border border-primary-light-80"
             >
               <!---->
               <svg
@@ -536,7 +536,7 @@ exports[`FinalisingThemesDetailCompleted > should match snapshot initially 1`] =
           </div>
            
           <p
-            class="text-sm text-neutral-500"
+            class="text-sm text-text"
           >
             Themes for this question have been finalised. The selected themes
             are approved and ready for AI to assign to consultation responses.
@@ -547,7 +547,7 @@ exports[`FinalisingThemesDetailCompleted > should match snapshot initially 1`] =
           <!---->
           <button
             aria-pressed="false"
-            class="text-sm cursor-pointer rounded-md py-1 px-2 border border-gray-300 bg-white transition-colors duration-300 self-start inline-flex gap-1 items-center hover:bg-gray-100 svelte-1d0mdzt"
+            class="text-sm cursor-pointer rounded-md py-1 px-2 border border-text-light-50 bg-white transition-colors duration-300 self-start inline-flex gap-1 items-center hover:bg-text-light-80 svelte-1d0mdzt"
             data-variant="default"
             role="button"
             tabindex="0"
@@ -594,7 +594,7 @@ exports[`FinalisingThemesDetailCompleted > should match snapshot initially 1`] =
    
   <section>
     <div
-      class="h-full my-4 p-4 rounded-2xl border border-gray-200"
+      class="h-full my-4 p-4 rounded-2xl border border-text-light-80"
       data-testid="panel-component"
     >
       <h2
@@ -607,14 +607,14 @@ exports[`FinalisingThemesDetailCompleted > should match snapshot initially 1`] =
         <!---->
         <li>
           <div
-            class="h-full my-4 p-4 rounded-2xl border border-gray-200 bg-neutral-50"
+            class="h-full my-4 p-4 rounded-2xl border border-text-light-80 bg-text-light-95"
             data-testid="panel-component"
           >
             <div
               class="flex justify-between relative pl-4 text-sm svelte-l2s5md"
             >
               <p
-                class="blink w-full select-none bg-neutral-200 text-xs text-neutral-100"
+                class="blink w-full select-none bg-text-light-80 text-xs text-text-light-95"
               >
                 SKELETON
               </p>
@@ -626,14 +626,14 @@ exports[`FinalisingThemesDetailCompleted > should match snapshot initially 1`] =
         </li>
         <li>
           <div
-            class="h-full my-4 p-4 rounded-2xl border border-gray-200 bg-neutral-50"
+            class="h-full my-4 p-4 rounded-2xl border border-text-light-80 bg-text-light-95"
             data-testid="panel-component"
           >
             <div
               class="flex justify-between relative pl-4 text-sm svelte-l2s5md"
             >
               <p
-                class="blink w-full select-none bg-neutral-200 text-xs text-neutral-100"
+                class="blink w-full select-none bg-text-light-80 text-xs text-text-light-95"
               >
                 SKELETON
               </p>
@@ -664,7 +664,7 @@ exports[`FinalisingThemesDetailCompleted > should match snapshot initially 1`] =
         <!---->
         <button
           aria-pressed="false"
-          class="text-sm cursor-pointer rounded-md py-1 px-2 border border-gray-300 bg-white transition-colors duration-300 self-start inline-flex gap-1 items-center hover:bg-gray-100 svelte-1d0mdzt"
+          class="text-sm cursor-pointer rounded-md py-1 px-2 border border-text-light-50 bg-white transition-colors duration-300 self-start inline-flex gap-1 items-center hover:bg-text-light-80 svelte-1d0mdzt"
           data-variant="default"
           role="button"
           tabindex="0"

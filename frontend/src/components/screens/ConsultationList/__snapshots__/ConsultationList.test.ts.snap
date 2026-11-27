@@ -8,7 +8,7 @@ exports[`ConsultationList > should match snapshot after loading 1`] = `
     <div>
       <!---->
       <h2
-        class="text-neutral-700 text-lg"
+        class="text-text-dark-25 text-lg"
       >
         <!---->
         Consultations
@@ -19,7 +19,7 @@ exports[`ConsultationList > should match snapshot after loading 1`] = `
       <!---->
        
       <p
-        class="text-neutral-500 text-sm"
+        class="text-text text-sm"
       >
         2 consultations
         <!---->
@@ -29,7 +29,7 @@ exports[`ConsultationList > should match snapshot after loading 1`] = `
     <!---->
     <a
       aria-pressed="false"
-      class="text-md cursor-pointer rounded-md py-1 px-2 border border-gray-300 bg-primary text-white transition-colors duration-300 self-start inline-flex gap-1 items-center hover:bg-gray-100 hover:border-primary hover:text-primary svelte-1d0mdzt"
+      class="text-md cursor-pointer rounded-md py-1 px-2 border border-text-light-50 bg-primary text-white transition-colors duration-300 self-start inline-flex gap-1 items-center hover:bg-text-light-80 hover:border-primary hover:text-primary svelte-1d0mdzt"
       data-variant="primary"
       disabled="false"
       href="/consultations/new"
@@ -91,7 +91,7 @@ exports[`ConsultationList > should match snapshot after loading 1`] = `
             </label>
              
             <input
-              class="h-9 w-full p-1 border border-gray-300 rounded-xs focus:outline-2 focus:outline-yellow-300 pl-8 pr-4 svelte-1auzwdn"
+              class="h-9 w-full p-1 border border-text-light-50 rounded-xs focus:outline-2 focus:outline-warning-light-50 pl-8 pr-4 svelte-1auzwdn"
               id="data-table-search-input"
               placeholder="Search..."
               type="text"
@@ -104,7 +104,7 @@ exports[`ConsultationList > should match snapshot after loading 1`] = `
             >
               <svg
                 aria-hidden="true"
-                class="fill-neutral-400"
+                class="fill-text"
                 height="1.2rem"
                 viewBox="0 -960 960 960"
                 width="1.2rem"
@@ -127,10 +127,10 @@ exports[`ConsultationList > should match snapshot after loading 1`] = `
       </div>
        
       <div
-        class="max-h-[50rem] overflow-x-auto rounded-lg border border-neutral-200 bg-white"
+        class="max-h-[50rem] overflow-x-auto rounded-lg border border-text-light-80 bg-white"
       >
         <table
-          class="min-w-full divide-y divide-neutral-200"
+          class="min-w-full divide-y divide-text-light-80"
         >
           <caption
             class="sr-only"
@@ -139,12 +139,12 @@ exports[`ConsultationList > should match snapshot after loading 1`] = `
           </caption>
           <!---->
           <thead
-            class="bg-neutral-50"
+            class="bg-text-light-95"
           >
             <tr>
               <th
                 aria-sort="none"
-                class="px-4 py-3 text-left text-xs font-[500] tracking-wide text-neutral-600"
+                class="px-4 py-3 text-left text-xs font-[500] tracking-wide text-text"
                 data-testid="header-name"
                 scope="col"
               >
@@ -152,7 +152,7 @@ exports[`ConsultationList > should match snapshot after loading 1`] = `
                 <button
                   aria-label="Sort by Name"
                   aria-pressed="false"
-                  class="text-xs cursor-pointer rounded-md py-0.5 px-1 border text-start border-transparent transition-colors duration-300 self-start inline-flex gap-1 items-center hover:bg-gray-100 svelte-1d0mdzt"
+                  class="text-xs cursor-pointer rounded-md py-0.5 px-1 border text-start border-transparent hover:bg-text-light-80 transition-colors duration-300 self-start inline-flex gap-1 items-center hover:bg-text-light-80 svelte-1d0mdzt"
                   data-variant="ghost"
                   role="button"
                   tabindex="0"
@@ -165,11 +165,11 @@ exports[`ConsultationList > should match snapshot after loading 1`] = `
                    
                   <span
                     aria-hidden="true"
-                    class="text-neutral-400"
+                    class="text-text"
                   >
                     <svg
                       aria-hidden="true"
-                      class="fill-neutral-500"
+                      class="fill-text-light-950"
                       height="1rem"
                       viewBox="0 -960 960 960"
                       width="1rem"
@@ -193,7 +193,7 @@ exports[`ConsultationList > should match snapshot after loading 1`] = `
               </th>
               <th
                 aria-sort="none"
-                class="px-4 py-3 text-left text-xs font-[500] tracking-wide text-neutral-600"
+                class="px-4 py-3 text-left text-xs font-[500] tracking-wide text-text"
                 data-testid="header-status"
                 scope="col"
               >
@@ -201,7 +201,7 @@ exports[`ConsultationList > should match snapshot after loading 1`] = `
                 <button
                   aria-label="Sort by Status"
                   aria-pressed="false"
-                  class="text-xs cursor-pointer rounded-md py-0.5 px-1 border text-start border-transparent transition-colors duration-300 self-start inline-flex gap-1 items-center hover:bg-gray-100 svelte-1d0mdzt"
+                  class="text-xs cursor-pointer rounded-md py-0.5 px-1 border text-start border-transparent hover:bg-text-light-80 transition-colors duration-300 self-start inline-flex gap-1 items-center hover:bg-text-light-80 svelte-1d0mdzt"
                   data-variant="ghost"
                   role="button"
                   tabindex="0"
@@ -214,11 +214,11 @@ exports[`ConsultationList > should match snapshot after loading 1`] = `
                    
                   <span
                     aria-hidden="true"
-                    class="text-neutral-400"
+                    class="text-text"
                   >
                     <svg
                       aria-hidden="true"
-                      class="fill-neutral-500"
+                      class="fill-text-light-950"
                       height="1rem"
                       viewBox="0 -960 960 960"
                       width="1rem"
@@ -242,7 +242,7 @@ exports[`ConsultationList > should match snapshot after loading 1`] = `
               </th>
               <th
                 aria-sort="none"
-                class="px-4 py-3 text-left text-xs font-[500] tracking-wide text-neutral-600"
+                class="px-4 py-3 text-left text-xs font-[500] tracking-wide text-text"
                 data-testid="header-links"
                 scope="col"
               >
@@ -253,7 +253,7 @@ exports[`ConsultationList > should match snapshot after loading 1`] = `
               </th>
               <th
                 aria-sort="none"
-                class="px-4 py-3 text-left text-xs font-[500] tracking-wide text-neutral-600"
+                class="px-4 py-3 text-left text-xs font-[500] tracking-wide text-text"
                 data-testid="header-createdAt"
                 scope="col"
               >
@@ -261,7 +261,7 @@ exports[`ConsultationList > should match snapshot after loading 1`] = `
                 <button
                   aria-label="Sort by Date Created"
                   aria-pressed="false"
-                  class="text-xs cursor-pointer rounded-md py-0.5 px-1 border text-start border-transparent transition-colors duration-300 self-start inline-flex gap-1 items-center hover:bg-gray-100 svelte-1d0mdzt"
+                  class="text-xs cursor-pointer rounded-md py-0.5 px-1 border text-start border-transparent hover:bg-text-light-80 transition-colors duration-300 self-start inline-flex gap-1 items-center hover:bg-text-light-80 svelte-1d0mdzt"
                   data-variant="ghost"
                   role="button"
                   tabindex="0"
@@ -274,11 +274,11 @@ exports[`ConsultationList > should match snapshot after loading 1`] = `
                    
                   <span
                     aria-hidden="true"
-                    class="text-neutral-400"
+                    class="text-text"
                   >
                     <svg
                       aria-hidden="true"
-                      class="fill-neutral-500"
+                      class="fill-text-light-950"
                       height="1rem"
                       viewBox="0 -960 960 960"
                       width="1rem"
@@ -302,7 +302,7 @@ exports[`ConsultationList > should match snapshot after loading 1`] = `
               </th>
               <th
                 aria-sort="none"
-                class="px-4 py-3 text-left text-xs font-[500] tracking-wide text-neutral-600"
+                class="px-4 py-3 text-left text-xs font-[500] tracking-wide text-text"
                 data-testid="header-createdBy"
                 scope="col"
               >
@@ -310,7 +310,7 @@ exports[`ConsultationList > should match snapshot after loading 1`] = `
                 <button
                   aria-label="Sort by Created by"
                   aria-pressed="false"
-                  class="text-xs cursor-pointer rounded-md py-0.5 px-1 border text-start border-transparent transition-colors duration-300 self-start inline-flex gap-1 items-center hover:bg-gray-100 svelte-1d0mdzt"
+                  class="text-xs cursor-pointer rounded-md py-0.5 px-1 border text-start border-transparent hover:bg-text-light-80 transition-colors duration-300 self-start inline-flex gap-1 items-center hover:bg-text-light-80 svelte-1d0mdzt"
                   data-variant="ghost"
                   role="button"
                   tabindex="0"
@@ -323,11 +323,11 @@ exports[`ConsultationList > should match snapshot after loading 1`] = `
                    
                   <span
                     aria-hidden="true"
-                    class="text-neutral-400"
+                    class="text-text"
                   >
                     <svg
                       aria-hidden="true"
-                      class="fill-neutral-500"
+                      class="fill-text-light-950"
                       height="1rem"
                       viewBox="0 -960 960 960"
                       width="1rem"
@@ -351,7 +351,7 @@ exports[`ConsultationList > should match snapshot after loading 1`] = `
               </th>
               <th
                 aria-sort="none"
-                class="px-4 py-3 text-left text-xs font-[500] tracking-wide text-neutral-600"
+                class="px-4 py-3 text-left text-xs font-[500] tracking-wide text-text"
                 data-testid="header-team"
                 scope="col"
               >
@@ -362,7 +362,7 @@ exports[`ConsultationList > should match snapshot after loading 1`] = `
               </th>
               <th
                 aria-sort="none"
-                class="px-4 py-3 text-left text-xs font-[500] tracking-wide text-neutral-600"
+                class="px-4 py-3 text-left text-xs font-[500] tracking-wide text-text"
                 data-testid="header-actions"
                 scope="col"
               >
@@ -375,15 +375,15 @@ exports[`ConsultationList > should match snapshot after loading 1`] = `
             </tr>
           </thead>
           <tbody
-            class="divide-y divide-neutral-200"
+            class="divide-y divide-text-light-80"
           >
             <!---->
             <tr
-              class="transition-colors hover:bg-neutral-50"
+              class="transition-colors hover:bg-text-light-95"
               data-testid="datatable-row"
             >
               <td
-                class="whitespace-nowrap px-4 py-3 text-sm text-neutral-700"
+                class="whitespace-nowrap px-4 py-3 text-sm text-text-dark-25"
                 data-testid="cell-name"
               >
                 <!---->
@@ -399,13 +399,13 @@ exports[`ConsultationList > should match snapshot after loading 1`] = `
                 <!---->
               </td>
               <td
-                class="whitespace-nowrap px-4 py-3 text-sm text-neutral-700"
+                class="whitespace-nowrap px-4 py-3 text-sm text-text-dark-25"
                 data-testid="cell-status"
               >
                 <!---->
                 <!---->
                 <div
-                  class="flex justify-between items-center gap-2 rounded-md w-max py-0.5 px-2 text-xs text-secondary bg-teal-50 border border-teal-400"
+                  class="flex justify-between items-center gap-2 rounded-md w-max py-0.5 px-2 text-xs text-success bg-success-light-95 border border-success-light-80"
                 >
                   Analysis
                   <!---->
@@ -415,7 +415,7 @@ exports[`ConsultationList > should match snapshot after loading 1`] = `
                 <!---->
               </td>
               <td
-                class="whitespace-nowrap px-4 py-3 text-sm text-neutral-700"
+                class="whitespace-nowrap px-4 py-3 text-sm text-text-dark-25"
                 data-testid="cell-links"
               >
                 <!---->
@@ -469,7 +469,7 @@ exports[`ConsultationList > should match snapshot after loading 1`] = `
                 <!---->
               </td>
               <td
-                class="whitespace-nowrap px-4 py-3 text-sm text-neutral-700"
+                class="whitespace-nowrap px-4 py-3 text-sm text-text-dark-25"
                 data-testid="cell-createdAt"
               >
                 <!---->
@@ -482,7 +482,7 @@ exports[`ConsultationList > should match snapshot after loading 1`] = `
                 <!---->
               </td>
               <td
-                class="whitespace-nowrap px-4 py-3 text-sm text-neutral-700"
+                class="whitespace-nowrap px-4 py-3 text-sm text-text-dark-25"
                 data-testid="cell-createdBy"
               >
                 <!---->
@@ -497,7 +497,7 @@ exports[`ConsultationList > should match snapshot after loading 1`] = `
                 <!---->
               </td>
               <td
-                class="whitespace-nowrap px-4 py-3 text-sm text-neutral-700"
+                class="whitespace-nowrap px-4 py-3 text-sm text-text-dark-25"
                 data-testid="cell-team"
               >
                 <!---->
@@ -511,7 +511,7 @@ exports[`ConsultationList > should match snapshot after loading 1`] = `
                     title="admin@example.com"
                   >
                     <div
-                      class="flex justify-center items-center w-6 h-6 p-1 text-white text-xs rounded-full transition-colors bg-neutral-400"
+                      class="flex justify-center items-center w-6 h-6 p-1 text-white text-xs rounded-full transition-colors bg-text-dark-25"
                     >
                       A
                     </div>
@@ -526,7 +526,7 @@ exports[`ConsultationList > should match snapshot after loading 1`] = `
                 <!---->
               </td>
               <td
-                class="whitespace-nowrap px-4 py-3 text-sm text-neutral-700"
+                class="whitespace-nowrap px-4 py-3 text-sm text-text-dark-25"
                 data-testid="cell-actions"
               >
                 <!---->
@@ -537,7 +537,7 @@ exports[`ConsultationList > should match snapshot after loading 1`] = `
                   <button
                     aria-label="Delete Dummy Consultation at Analysis Stage"
                     aria-pressed="false"
-                    class="text-md cursor-pointer rounded-md py-1 px-2 border border-gray-300 bg-white transition-colors duration-300 self-start inline-flex gap-1 items-center hover:bg-gray-100 svelte-1d0mdzt"
+                    class="text-md cursor-pointer rounded-md py-1 px-2 border border-text-light-50 bg-white transition-colors duration-300 self-start inline-flex gap-1 items-center hover:bg-text-light-80 svelte-1d0mdzt"
                     data-variant="default"
                     role="button"
                     tabindex="0"
@@ -547,7 +547,7 @@ exports[`ConsultationList > should match snapshot after loading 1`] = `
                     <!---->
                     <svg
                       aria-hidden="true"
-                      class="fill-neutral-500"
+                      class="fill-text"
                       height="1rem"
                       viewBox="0 -960 960 960"
                       width="1rem"
@@ -577,11 +577,11 @@ exports[`ConsultationList > should match snapshot after loading 1`] = `
               
             </tr>
             <tr
-              class="transition-colors hover:bg-neutral-50"
+              class="transition-colors hover:bg-text-light-95"
               data-testid="datatable-row"
             >
               <td
-                class="whitespace-nowrap px-4 py-3 text-sm text-neutral-700"
+                class="whitespace-nowrap px-4 py-3 text-sm text-text-dark-25"
                 data-testid="cell-name"
               >
                 <!---->
@@ -597,13 +597,13 @@ exports[`ConsultationList > should match snapshot after loading 1`] = `
                 <!---->
               </td>
               <td
-                class="whitespace-nowrap px-4 py-3 text-sm text-neutral-700"
+                class="whitespace-nowrap px-4 py-3 text-sm text-text-dark-25"
                 data-testid="cell-status"
               >
                 <!---->
                 <!---->
                 <div
-                  class="flex justify-between items-center gap-2 rounded-md w-max py-0.5 px-2 text-xs text-yellow-700 bg-yellow-100 border border-yellow-400"
+                  class="flex justify-between items-center gap-2 rounded-md w-max py-0.5 px-2 text-xs text-warning bg-warning-light-95 border border-warning-light-80"
                 >
                   Finalising themes
                   <!---->
@@ -613,7 +613,7 @@ exports[`ConsultationList > should match snapshot after loading 1`] = `
                 <!---->
               </td>
               <td
-                class="whitespace-nowrap px-4 py-3 text-sm text-neutral-700"
+                class="whitespace-nowrap px-4 py-3 text-sm text-text-dark-25"
                 data-testid="cell-links"
               >
                 <!---->
@@ -667,7 +667,7 @@ exports[`ConsultationList > should match snapshot after loading 1`] = `
                 <!---->
               </td>
               <td
-                class="whitespace-nowrap px-4 py-3 text-sm text-neutral-700"
+                class="whitespace-nowrap px-4 py-3 text-sm text-text-dark-25"
                 data-testid="cell-createdAt"
               >
                 <!---->
@@ -680,7 +680,7 @@ exports[`ConsultationList > should match snapshot after loading 1`] = `
                 <!---->
               </td>
               <td
-                class="whitespace-nowrap px-4 py-3 text-sm text-neutral-700"
+                class="whitespace-nowrap px-4 py-3 text-sm text-text-dark-25"
                 data-testid="cell-createdBy"
               >
                 <!---->
@@ -695,7 +695,7 @@ exports[`ConsultationList > should match snapshot after loading 1`] = `
                 <!---->
               </td>
               <td
-                class="whitespace-nowrap px-4 py-3 text-sm text-neutral-700"
+                class="whitespace-nowrap px-4 py-3 text-sm text-text-dark-25"
                 data-testid="cell-team"
               >
                 <!---->
@@ -709,7 +709,7 @@ exports[`ConsultationList > should match snapshot after loading 1`] = `
                     title="admin@example.com"
                   >
                     <div
-                      class="flex justify-center items-center w-6 h-6 p-1 text-white text-xs rounded-full transition-colors bg-neutral-400"
+                      class="flex justify-center items-center w-6 h-6 p-1 text-white text-xs rounded-full transition-colors bg-text-dark-25"
                     >
                       A
                     </div>
@@ -724,7 +724,7 @@ exports[`ConsultationList > should match snapshot after loading 1`] = `
                 <!---->
               </td>
               <td
-                class="whitespace-nowrap px-4 py-3 text-sm text-neutral-700"
+                class="whitespace-nowrap px-4 py-3 text-sm text-text-dark-25"
                 data-testid="cell-actions"
               >
                 <!---->
@@ -735,7 +735,7 @@ exports[`ConsultationList > should match snapshot after loading 1`] = `
                   <button
                     aria-label="Delete Dummy Consultation at Finalising Themes Stage"
                     aria-pressed="false"
-                    class="text-md cursor-pointer rounded-md py-1 px-2 border border-gray-300 bg-white transition-colors duration-300 self-start inline-flex gap-1 items-center hover:bg-gray-100 svelte-1d0mdzt"
+                    class="text-md cursor-pointer rounded-md py-1 px-2 border border-text-light-50 bg-white transition-colors duration-300 self-start inline-flex gap-1 items-center hover:bg-text-light-80 svelte-1d0mdzt"
                     data-variant="default"
                     role="button"
                     tabindex="0"
@@ -745,7 +745,7 @@ exports[`ConsultationList > should match snapshot after loading 1`] = `
                     <!---->
                     <svg
                       aria-hidden="true"
-                      class="fill-neutral-500"
+                      class="fill-text"
                       height="1rem"
                       viewBox="0 -960 960 960"
                       width="1rem"
@@ -785,11 +785,11 @@ exports[`ConsultationList > should match snapshot after loading 1`] = `
       class="mt-4"
     >
       <div
-        class="pagination flex flex-wrap items-center justify-between gap-4 border-t border-neutral-200 pt-4 svelte-1iv1had"
+        class="pagination flex flex-wrap items-center justify-between gap-4 border-t border-text-light-80 pt-4 svelte-1iv1had"
       >
         <p
           aria-live="polite"
-          class="text-sm text-neutral-500"
+          class="text-sm text-text"
           data-testid="visible-items-text"
         >
           Showing 1 to 2 of 2
@@ -803,7 +803,7 @@ exports[`ConsultationList > should match snapshot after loading 1`] = `
           <button
             aria-label="Previous page"
             aria-pressed="false"
-            class="text-sm cursor-pointer rounded-md py-1 px-2 border border-transparent transition-colors duration-300 self-start inline-flex gap-1 items-center hover:bg-gray-100 disabled disabled:bg-gray-200 disabled:text-gray-400 disabled:cursor-not-allowed disabled:hover:bg-gray-200 disabled:hover:border-gray-300 disabled:hover:text-gray-400 svelte-1d0mdzt"
+            class="text-sm cursor-pointer rounded-md py-1 px-2 border border-text-light-50 hover:bg-text-light-80 transition-colors duration-300 self-start inline-flex gap-1 items-center hover:bg-text-light-80 disabled disabled:bg-text-light-80 disabled:text-text disabled:cursor-not-allowed disabled:hover:bg-text-light-80 disabled:hover:border-text-light-50 disabled:hover:text-text svelte-1d0mdzt"
             data-variant="ghost"
             disabled=""
             role="button"
@@ -825,7 +825,7 @@ exports[`ConsultationList > should match snapshot after loading 1`] = `
             aria-current="page"
             aria-label="Page 1"
             aria-pressed="false"
-            class="text-sm cursor-pointer rounded-md py-1 px-2 border border-gray-300 bg-neutral-100 transition-colors duration-300 self-start inline-flex gap-1 items-center hover:bg-gray-100 svelte-1d0mdzt"
+            class="text-sm cursor-pointer rounded-md py-1 px-2 border border-text-light-50 bg-text-light-95 transition-colors duration-300 self-start inline-flex gap-1 items-center hover:bg-text-light-80 svelte-1d0mdzt"
             data-testid="current-page"
             data-variant="gray"
             role="button"
@@ -846,7 +846,7 @@ exports[`ConsultationList > should match snapshot after loading 1`] = `
           <button
             aria-label="Next page"
             aria-pressed="false"
-            class="text-sm cursor-pointer rounded-md py-1 px-2 border border-transparent transition-colors duration-300 self-start inline-flex gap-1 items-center hover:bg-gray-100 disabled disabled:bg-gray-200 disabled:text-gray-400 disabled:cursor-not-allowed disabled:hover:bg-gray-200 disabled:hover:border-gray-300 disabled:hover:text-gray-400 svelte-1d0mdzt"
+            class="text-sm cursor-pointer rounded-md py-1 px-2 border border-text-light-50 hover:bg-text-light-80 transition-colors duration-300 self-start inline-flex gap-1 items-center hover:bg-text-light-80 disabled disabled:bg-text-light-80 disabled:text-text disabled:cursor-not-allowed disabled:hover:bg-text-light-80 disabled:hover:border-text-light-50 disabled:hover:text-text svelte-1d0mdzt"
             data-variant="ghost"
             disabled=""
             role="button"
@@ -870,7 +870,7 @@ exports[`ConsultationList > should match snapshot after loading 1`] = `
             class="flex items-center gap-4"
           >
             <label
-              class="mb-1 block text-base leading-5 text-neutral-900 md:text-lg md:leading-6 min-w-max"
+              class="mb-1 block text-base leading-5 text-text-dark-50 md:text-lg md:leading-6 min-w-max"
               for="data-table-page-size-select"
             >
               Per page
@@ -882,12 +882,12 @@ exports[`ConsultationList > should match snapshot after loading 1`] = `
             <!---->
              
             <select
-              class="h-9 w-full rounded-xs border border-gray-300 bg-white p-1 text-neutral-700 focus:outline-2 focus:outline-yellow-300 disabled:cursor-not-allowed disabled:bg-neutral-100 disabled:text-neutral-600 disabled:opacity-50"
+              class="h-9 w-full rounded-xs border border-text-light-50 bg-white p-1 text-text-dark-50 focus:outline-2 focus:outline-warning-light-50 disabled:cursor-not-allowed disabled:bg-text-light-95 disabled:text-text-dark-25 disabled:opacity-50"
               id="data-table-page-size-select"
               name="data-table-page-size-select"
             >
               <option
-                class="bg-white text-neutral-900"
+                class="bg-white text-text-dark-50"
                 data-testid="data-table-page-size-select-option"
                 selected=""
                 value="10"
@@ -895,28 +895,28 @@ exports[`ConsultationList > should match snapshot after loading 1`] = `
                 10
               </option>
               <option
-                class="bg-white text-neutral-900"
+                class="bg-white text-text-dark-50"
                 data-testid="data-table-page-size-select-option"
                 value="50"
               >
                 50
               </option>
               <option
-                class="bg-white text-neutral-900"
+                class="bg-white text-text-dark-50"
                 data-testid="data-table-page-size-select-option"
                 value="100"
               >
                 100
               </option>
               <option
-                class="bg-white text-neutral-900"
+                class="bg-white text-text-dark-50"
                 data-testid="data-table-page-size-select-option"
                 value="250"
               >
                 250
               </option>
               <option
-                class="bg-white text-neutral-900"
+                class="bg-white text-text-dark-50"
                 data-testid="data-table-page-size-select-option"
                 value="500"
               >
@@ -950,7 +950,7 @@ exports[`ConsultationList > should match snapshot initially 1`] = `
     <div>
       <!---->
       <h2
-        class="text-neutral-700 text-lg"
+        class="text-text-dark-25 text-lg"
       >
         <!---->
         Consultations
@@ -961,7 +961,7 @@ exports[`ConsultationList > should match snapshot initially 1`] = `
       <!---->
        
       <p
-        class="text-neutral-500 text-sm"
+        class="text-text text-sm"
       >
         Loading consultations...
         <!---->
@@ -971,7 +971,7 @@ exports[`ConsultationList > should match snapshot initially 1`] = `
     <!---->
     <a
       aria-pressed="false"
-      class="text-md cursor-pointer rounded-md py-1 px-2 border border-gray-300 bg-primary text-white transition-colors duration-300 self-start inline-flex gap-1 items-center hover:bg-gray-100 hover:border-primary hover:text-primary svelte-1d0mdzt"
+      class="text-md cursor-pointer rounded-md py-1 px-2 border border-text-light-50 bg-primary text-white transition-colors duration-300 self-start inline-flex gap-1 items-center hover:bg-text-light-80 hover:border-primary hover:text-primary svelte-1d0mdzt"
       data-variant="primary"
       disabled="false"
       href="/consultations/new"
@@ -1033,7 +1033,7 @@ exports[`ConsultationList > should match snapshot initially 1`] = `
             </label>
              
             <input
-              class="h-9 w-full p-1 border border-gray-300 rounded-xs focus:outline-2 focus:outline-yellow-300 pl-8 pr-4 svelte-1auzwdn"
+              class="h-9 w-full p-1 border border-text-light-50 rounded-xs focus:outline-2 focus:outline-warning-light-50 pl-8 pr-4 svelte-1auzwdn"
               id="data-table-search-input"
               placeholder="Search..."
               type="text"
@@ -1046,7 +1046,7 @@ exports[`ConsultationList > should match snapshot initially 1`] = `
             >
               <svg
                 aria-hidden="true"
-                class="fill-neutral-400"
+                class="fill-text"
                 height="1.2rem"
                 viewBox="0 -960 960 960"
                 width="1.2rem"
@@ -1069,10 +1069,10 @@ exports[`ConsultationList > should match snapshot initially 1`] = `
       </div>
        
       <div
-        class="max-h-[50rem] overflow-x-auto rounded-lg border border-neutral-200 bg-white"
+        class="max-h-[50rem] overflow-x-auto rounded-lg border border-text-light-80 bg-white"
       >
         <table
-          class="min-w-full divide-y divide-neutral-200"
+          class="min-w-full divide-y divide-text-light-80"
         >
           <caption
             class="sr-only"
@@ -1081,12 +1081,12 @@ exports[`ConsultationList > should match snapshot initially 1`] = `
           </caption>
           <!---->
           <thead
-            class="bg-neutral-50"
+            class="bg-text-light-95"
           >
             <tr>
               <th
                 aria-sort="none"
-                class="px-4 py-3 text-left text-xs font-[500] tracking-wide text-neutral-600"
+                class="px-4 py-3 text-left text-xs font-[500] tracking-wide text-text"
                 data-testid="header-name"
                 scope="col"
               >
@@ -1094,7 +1094,7 @@ exports[`ConsultationList > should match snapshot initially 1`] = `
                 <button
                   aria-label="Sort by Name"
                   aria-pressed="false"
-                  class="text-xs cursor-pointer rounded-md py-0.5 px-1 border text-start border-transparent transition-colors duration-300 self-start inline-flex gap-1 items-center hover:bg-gray-100 svelte-1d0mdzt"
+                  class="text-xs cursor-pointer rounded-md py-0.5 px-1 border text-start border-transparent hover:bg-text-light-80 transition-colors duration-300 self-start inline-flex gap-1 items-center hover:bg-text-light-80 svelte-1d0mdzt"
                   data-variant="ghost"
                   role="button"
                   tabindex="0"
@@ -1107,11 +1107,11 @@ exports[`ConsultationList > should match snapshot initially 1`] = `
                    
                   <span
                     aria-hidden="true"
-                    class="text-neutral-400"
+                    class="text-text"
                   >
                     <svg
                       aria-hidden="true"
-                      class="fill-neutral-500"
+                      class="fill-text-light-950"
                       height="1rem"
                       viewBox="0 -960 960 960"
                       width="1rem"
@@ -1135,7 +1135,7 @@ exports[`ConsultationList > should match snapshot initially 1`] = `
               </th>
               <th
                 aria-sort="none"
-                class="px-4 py-3 text-left text-xs font-[500] tracking-wide text-neutral-600"
+                class="px-4 py-3 text-left text-xs font-[500] tracking-wide text-text"
                 data-testid="header-status"
                 scope="col"
               >
@@ -1143,7 +1143,7 @@ exports[`ConsultationList > should match snapshot initially 1`] = `
                 <button
                   aria-label="Sort by Status"
                   aria-pressed="false"
-                  class="text-xs cursor-pointer rounded-md py-0.5 px-1 border text-start border-transparent transition-colors duration-300 self-start inline-flex gap-1 items-center hover:bg-gray-100 svelte-1d0mdzt"
+                  class="text-xs cursor-pointer rounded-md py-0.5 px-1 border text-start border-transparent hover:bg-text-light-80 transition-colors duration-300 self-start inline-flex gap-1 items-center hover:bg-text-light-80 svelte-1d0mdzt"
                   data-variant="ghost"
                   role="button"
                   tabindex="0"
@@ -1156,11 +1156,11 @@ exports[`ConsultationList > should match snapshot initially 1`] = `
                    
                   <span
                     aria-hidden="true"
-                    class="text-neutral-400"
+                    class="text-text"
                   >
                     <svg
                       aria-hidden="true"
-                      class="fill-neutral-500"
+                      class="fill-text-light-950"
                       height="1rem"
                       viewBox="0 -960 960 960"
                       width="1rem"
@@ -1184,7 +1184,7 @@ exports[`ConsultationList > should match snapshot initially 1`] = `
               </th>
               <th
                 aria-sort="none"
-                class="px-4 py-3 text-left text-xs font-[500] tracking-wide text-neutral-600"
+                class="px-4 py-3 text-left text-xs font-[500] tracking-wide text-text"
                 data-testid="header-links"
                 scope="col"
               >
@@ -1195,7 +1195,7 @@ exports[`ConsultationList > should match snapshot initially 1`] = `
               </th>
               <th
                 aria-sort="none"
-                class="px-4 py-3 text-left text-xs font-[500] tracking-wide text-neutral-600"
+                class="px-4 py-3 text-left text-xs font-[500] tracking-wide text-text"
                 data-testid="header-createdAt"
                 scope="col"
               >
@@ -1203,7 +1203,7 @@ exports[`ConsultationList > should match snapshot initially 1`] = `
                 <button
                   aria-label="Sort by Date Created"
                   aria-pressed="false"
-                  class="text-xs cursor-pointer rounded-md py-0.5 px-1 border text-start border-transparent transition-colors duration-300 self-start inline-flex gap-1 items-center hover:bg-gray-100 svelte-1d0mdzt"
+                  class="text-xs cursor-pointer rounded-md py-0.5 px-1 border text-start border-transparent hover:bg-text-light-80 transition-colors duration-300 self-start inline-flex gap-1 items-center hover:bg-text-light-80 svelte-1d0mdzt"
                   data-variant="ghost"
                   role="button"
                   tabindex="0"
@@ -1216,11 +1216,11 @@ exports[`ConsultationList > should match snapshot initially 1`] = `
                    
                   <span
                     aria-hidden="true"
-                    class="text-neutral-400"
+                    class="text-text"
                   >
                     <svg
                       aria-hidden="true"
-                      class="fill-neutral-500"
+                      class="fill-text-light-950"
                       height="1rem"
                       viewBox="0 -960 960 960"
                       width="1rem"
@@ -1244,7 +1244,7 @@ exports[`ConsultationList > should match snapshot initially 1`] = `
               </th>
               <th
                 aria-sort="none"
-                class="px-4 py-3 text-left text-xs font-[500] tracking-wide text-neutral-600"
+                class="px-4 py-3 text-left text-xs font-[500] tracking-wide text-text"
                 data-testid="header-createdBy"
                 scope="col"
               >
@@ -1252,7 +1252,7 @@ exports[`ConsultationList > should match snapshot initially 1`] = `
                 <button
                   aria-label="Sort by Created by"
                   aria-pressed="false"
-                  class="text-xs cursor-pointer rounded-md py-0.5 px-1 border text-start border-transparent transition-colors duration-300 self-start inline-flex gap-1 items-center hover:bg-gray-100 svelte-1d0mdzt"
+                  class="text-xs cursor-pointer rounded-md py-0.5 px-1 border text-start border-transparent hover:bg-text-light-80 transition-colors duration-300 self-start inline-flex gap-1 items-center hover:bg-text-light-80 svelte-1d0mdzt"
                   data-variant="ghost"
                   role="button"
                   tabindex="0"
@@ -1265,11 +1265,11 @@ exports[`ConsultationList > should match snapshot initially 1`] = `
                    
                   <span
                     aria-hidden="true"
-                    class="text-neutral-400"
+                    class="text-text"
                   >
                     <svg
                       aria-hidden="true"
-                      class="fill-neutral-500"
+                      class="fill-text-light-950"
                       height="1rem"
                       viewBox="0 -960 960 960"
                       width="1rem"
@@ -1293,7 +1293,7 @@ exports[`ConsultationList > should match snapshot initially 1`] = `
               </th>
               <th
                 aria-sort="none"
-                class="px-4 py-3 text-left text-xs font-[500] tracking-wide text-neutral-600"
+                class="px-4 py-3 text-left text-xs font-[500] tracking-wide text-text"
                 data-testid="header-team"
                 scope="col"
               >
@@ -1304,7 +1304,7 @@ exports[`ConsultationList > should match snapshot initially 1`] = `
               </th>
               <th
                 aria-sort="none"
-                class="px-4 py-3 text-left text-xs font-[500] tracking-wide text-neutral-600"
+                class="px-4 py-3 text-left text-xs font-[500] tracking-wide text-text"
                 data-testid="header-actions"
                 scope="col"
               >
@@ -1317,11 +1317,11 @@ exports[`ConsultationList > should match snapshot initially 1`] = `
             </tr>
           </thead>
           <tbody
-            class="divide-y divide-neutral-200"
+            class="divide-y divide-text-light-80"
           >
             <tr>
               <td
-                class="px-4 py-12 text-center text-sm text-neutral-500"
+                class="px-4 py-12 text-center text-sm text-text-light-950"
                 colspan="7"
               >
                 <div
@@ -1333,7 +1333,7 @@ exports[`ConsultationList > should match snapshot initially 1`] = `
                   >
                     <svg
                       aria-hidden="true"
-                      class="fill-neutral-300"
+                      class="fill-text-light-50"
                       height="3rem"
                       viewBox="0 -960 960 960"
                       width="3rem"

@@ -5,7 +5,7 @@ exports[`StepOneBPage > should match snapshot 1`] = `
   <!---->
   <!---->
   <h1
-    class="text-neutral-700 text-xl"
+    class="text-text-dark-25 text-xl"
   >
     <!---->
     <!---->
@@ -19,7 +19,7 @@ exports[`StepOneBPage > should match snapshot 1`] = `
    
   <section>
     <p
-      class="text-sm text-neutral-500 py-4 pb-6"
+      class="text-sm text-text py-4 pb-6"
     >
       Before uploading, you'll need to clean and format your spreadsheet. Use this
     as your chance to read through the responses — you'll go into the analysis
@@ -28,14 +28,14 @@ exports[`StepOneBPage > should match snapshot 1`] = `
      
     <div>
       <div
-        class="border border-secondary p-4 rounded-lg"
+        class="border border-success p-4 rounded-lg"
       >
         <div
           class="flex gap-2 justify-between items-center"
         >
           <!---->
           <h3
-            class="text-neutral-700 text-md"
+            class="text-text-dark-25 text-md"
           >
             <!---->
             <!---->
@@ -58,7 +58,7 @@ exports[`StepOneBPage > should match snapshot 1`] = `
             <button
               aria-label="close-learnings-panel"
               aria-pressed="false"
-              class="text-md cursor-pointer rounded-md py-1 px-2 border border-transparent transition-colors duration-300 self-start inline-flex gap-1 items-center hover:bg-gray-100 svelte-1d0mdzt"
+              class="text-md cursor-pointer rounded-md py-1 px-2 border border-transparent hover:bg-text-light-80 transition-colors duration-300 self-start inline-flex gap-1 items-center hover:bg-text-light-80 svelte-1d0mdzt"
               data-variant="ghost"
               role="button"
               tabindex="0"
@@ -67,7 +67,7 @@ exports[`StepOneBPage > should match snapshot 1`] = `
               <!---->
               <svg
                 aria-hidden="true"
-                class="fill-neutral-500"
+                class="fill-text"
                 height="1rem"
                 viewBox="0 -960 960 960"
                 width="1rem"
@@ -89,14 +89,14 @@ exports[`StepOneBPage > should match snapshot 1`] = `
         </div>
          
         <div
-          class="bg-neutral-100 px-4 pt-6 pb-8 rounded-lg"
+          class="bg-text-light-95 px-4 pt-6 pb-8 rounded-lg"
           id="learnings-component"
         >
           <div
             class="flex gap-4"
           >
             <div
-              class="flex items-center justify-center flex-col mb-auto py-2 px-4 font-bold text-xs text-neutral-700 bg-white border-2 border-neutral-500"
+              class="flex items-center justify-center flex-col mb-auto py-2 px-4 font-bold text-xs text-text-dark-50 bg-white border-2 border-text"
             >
               <div
                 class="w-16 min-h-16 flex items-center justify-center"
@@ -112,14 +112,14 @@ exports[`StepOneBPage > should match snapshot 1`] = `
              
             <div>
               <p
-                class="text-sm text-neutral-600 mb-2"
+                class="text-sm text-text-dark-25 mb-2"
               >
                 "Taking time to prepare our data correctly at the start saved us hours during the analysis phase. We were able to jump straight into insights rather than troubleshooting data issues."
               </p>
                
               <!---->
               <h4
-                class="text-neutral-700 text-sm"
+                class="text-text-dark-25 text-sm"
               >
                 <!---->
                 <!---->
@@ -136,7 +136,7 @@ exports[`StepOneBPage > should match snapshot 1`] = `
               <!---->
                
               <p
-                class="text-xs text-neutral-600"
+                class="text-xs text-text-dark-25"
               >
                 Department for Education
               </p>
@@ -163,7 +163,7 @@ exports[`StepOneBPage > should match snapshot 1`] = `
                 aria-controls="learnings-component"
                 aria-label="Previous Learning"
                 aria-pressed="false"
-                class="text-md cursor-pointer rounded-md py-1 px-2 border border-gray-300 bg-white transition-colors duration-300 self-start inline-flex gap-1 items-center hover:bg-gray-100 svelte-1d0mdzt"
+                class="text-md cursor-pointer rounded-md py-1 px-2 border border-text-light-50 bg-white transition-colors duration-300 self-start inline-flex gap-1 items-center hover:bg-text-light-80 svelte-1d0mdzt"
                 data-variant="default"
                 role="button"
                 tabindex="0"
@@ -173,7 +173,7 @@ exports[`StepOneBPage > should match snapshot 1`] = `
                 <!---->
                 <svg
                   aria-hidden="true"
-                  class="fill-neutral-500"
+                  class="fill-text"
                   height="1rem"
                   viewBox="0 -960 960 960"
                   width="1rem"
@@ -199,7 +199,7 @@ exports[`StepOneBPage > should match snapshot 1`] = `
               aria-controls="learnings-component"
               aria-label="Learning 1"
               aria-pressed="true"
-              class="text-md cursor-pointer rounded-md border border-transparent text-neutral-400 transition-colors duration-300 self-start inline-flex gap-1 items-center hover:text-secondary text-secondary svelte-1d0mdzt"
+              class="text-md cursor-pointer rounded-md border border-transparent text-text transition-colors duration-300 self-start inline-flex gap-1 items-center hover:text-success text-success svelte-1d0mdzt"
               data-testid="Learnings Button"
               data-variant="dot"
               role="button"
@@ -217,7 +217,7 @@ exports[`StepOneBPage > should match snapshot 1`] = `
               aria-controls="learnings-component"
               aria-label="Learning 2"
               aria-pressed="false"
-              class="text-md cursor-pointer rounded-md border border-transparent text-neutral-400 transition-colors duration-300 self-start inline-flex gap-1 items-center hover:text-secondary svelte-1d0mdzt"
+              class="text-md cursor-pointer rounded-md border border-transparent text-text transition-colors duration-300 self-start inline-flex gap-1 items-center hover:text-success svelte-1d0mdzt"
               data-testid="Learnings Button"
               data-variant="dot"
               role="button"
@@ -235,7 +235,7 @@ exports[`StepOneBPage > should match snapshot 1`] = `
               aria-controls="learnings-component"
               aria-label="Learning 3"
               aria-pressed="false"
-              class="text-md cursor-pointer rounded-md border border-transparent text-neutral-400 transition-colors duration-300 self-start inline-flex gap-1 items-center hover:text-secondary svelte-1d0mdzt"
+              class="text-md cursor-pointer rounded-md border border-transparent text-text transition-colors duration-300 self-start inline-flex gap-1 items-center hover:text-success svelte-1d0mdzt"
               data-testid="Learnings Button"
               data-variant="dot"
               role="button"
@@ -258,7 +258,7 @@ exports[`StepOneBPage > should match snapshot 1`] = `
                 aria-controls="learnings-component"
                 aria-label="Next Learning"
                 aria-pressed="false"
-                class="text-md cursor-pointer rounded-md py-1 px-2 border border-gray-300 bg-white transition-colors duration-300 self-start inline-flex gap-1 items-center hover:bg-gray-100 svelte-1d0mdzt"
+                class="text-md cursor-pointer rounded-md py-1 px-2 border border-text-light-50 bg-white transition-colors duration-300 self-start inline-flex gap-1 items-center hover:bg-text-light-80 svelte-1d0mdzt"
                 data-variant="default"
                 role="button"
                 tabindex="0"
@@ -268,7 +268,7 @@ exports[`StepOneBPage > should match snapshot 1`] = `
                 <!---->
                 <svg
                   aria-hidden="true"
-                  class="fill-neutral-500"
+                  class="fill-text"
                   height="1rem"
                   viewBox="0 -960 960 960"
                   width="1rem"
@@ -296,7 +296,7 @@ exports[`StepOneBPage > should match snapshot 1`] = `
             <!---->
             <button
               aria-pressed="false"
-              class="text-md cursor-pointer rounded-md py-1 px-2 border border-transparent transition-colors duration-300 self-start inline-flex gap-1 items-center hover:bg-gray-100 svelte-1d0mdzt"
+              class="text-md cursor-pointer rounded-md py-1 px-2 border border-transparent hover:bg-text-light-80 transition-colors duration-300 self-start inline-flex gap-1 items-center hover:bg-text-light-80 svelte-1d0mdzt"
               data-variant="ghost"
               role="button"
               tabindex="0"
@@ -304,7 +304,7 @@ exports[`StepOneBPage > should match snapshot 1`] = `
               <!---->
               <!---->
               <div
-                class="underline text-xs text-neutral-500"
+                class="underline text-xs text-text"
               >
                 Don't show me this again
               </div>
@@ -326,7 +326,7 @@ exports[`StepOneBPage > should match snapshot 1`] = `
     class="my-8"
   >
     <div
-      class="h-full my-4 p-4 rounded-2xl border border-gray-200"
+      class="h-full my-4 p-4 rounded-2xl border border-text-light-80"
       data-testid="panel-component"
     >
       <div
@@ -335,7 +335,7 @@ exports[`StepOneBPage > should match snapshot 1`] = `
         <div>
           <!---->
           <h3
-            class="text-neutral-700 text-md"
+            class="text-text-dark-25 text-md"
           >
             <!---->
             <!---->
@@ -357,7 +357,7 @@ exports[`StepOneBPage > should match snapshot 1`] = `
             <!---->
              
             <div
-              class="bg-neutral-50 shadow-sm text-xs p-2 rounded-lg flex gap-2 mb-3 last:mb-0"
+              class="bg-text-light-95 shadow-sm text-xs p-2 rounded-lg flex gap-2 mb-3 last:mb-0"
             >
               <div>
                 <!---->
@@ -368,7 +368,7 @@ exports[`StepOneBPage > should match snapshot 1`] = `
                   class="flex items-center gap-3"
                 >
                   <input
-                    class="mt-0.5 rounded-sm border border-neutral-300 bg-white text-neutral-900 focus:border-transparent focus:outline-hidden focus:ring-2 focus:ring-yellow-400 shrink-0 disabled:cursor-not-allowed disabled:opacity-50 checked:border-primary checked:bg-primary cursor-pointer h-4 w-4"
+                    class="mt-0.5 rounded-sm border border-text-light-50 bg-white text-text-dark-50 focus:border-transparent focus:outline-hidden focus:ring-2 focus:ring-warning shrink-0 disabled:cursor-not-allowed disabled:opacity-50 checked:border-primary checked:bg-primary cursor-pointer h-4 w-4"
                     id="checklist-aa"
                     name="checklist-aa"
                     type="checkbox"
@@ -392,7 +392,7 @@ exports[`StepOneBPage > should match snapshot 1`] = `
                   >
                     <!---->
                     <h4
-                      class="text-neutral-700 text-sm"
+                      class="text-text-dark-25 text-sm"
                     >
                       <!---->
                       <!---->
@@ -414,7 +414,7 @@ exports[`StepOneBPage > should match snapshot 1`] = `
                     aria-controls="aa-details"
                     aria-label="Show/Hide aa-details"
                     aria-pressed="false"
-                    class="text-md cursor-pointer rounded-md py-1 px-2 border border-transparent transition-colors duration-300 self-start inline-flex gap-1 items-center hover:bg-gray-100 svelte-1d0mdzt"
+                    class="text-md cursor-pointer rounded-md py-1 px-2 border border-transparent hover:bg-text-light-80 transition-colors duration-300 self-start inline-flex gap-1 items-center hover:bg-text-light-80 svelte-1d0mdzt"
                     data-variant="ghost"
                     role="button"
                     tabindex="0"
@@ -422,7 +422,7 @@ exports[`StepOneBPage > should match snapshot 1`] = `
                     <!---->
                     <!---->
                     <span
-                      class="-ml-2 text-nowrap text-secondarydark hover:underline"
+                      class="-ml-2 text-nowrap text-success-dark-25 hover:underline"
                     >
                       Show me an example
                     </span>
@@ -438,7 +438,7 @@ exports[`StepOneBPage > should match snapshot 1`] = `
               </div>
             </div>
             <div
-              class="bg-neutral-50 shadow-sm text-xs p-2 rounded-lg flex gap-2 mb-3 last:mb-0"
+              class="bg-text-light-95 shadow-sm text-xs p-2 rounded-lg flex gap-2 mb-3 last:mb-0"
             >
               <div>
                 <!---->
@@ -449,7 +449,7 @@ exports[`StepOneBPage > should match snapshot 1`] = `
                   class="flex items-center gap-3"
                 >
                   <input
-                    class="mt-0.5 rounded-sm border border-neutral-300 bg-white text-neutral-900 focus:border-transparent focus:outline-hidden focus:ring-2 focus:ring-yellow-400 shrink-0 disabled:cursor-not-allowed disabled:opacity-50 checked:border-primary checked:bg-primary cursor-pointer h-4 w-4"
+                    class="mt-0.5 rounded-sm border border-text-light-50 bg-white text-text-dark-50 focus:border-transparent focus:outline-hidden focus:ring-2 focus:ring-warning shrink-0 disabled:cursor-not-allowed disabled:opacity-50 checked:border-primary checked:bg-primary cursor-pointer h-4 w-4"
                     id="checklist-ab"
                     name="checklist-ab"
                     type="checkbox"
@@ -473,7 +473,7 @@ exports[`StepOneBPage > should match snapshot 1`] = `
                   >
                     <!---->
                     <h4
-                      class="text-neutral-700 text-sm"
+                      class="text-text-dark-25 text-sm"
                     >
                       <!---->
                       <!---->
@@ -495,7 +495,7 @@ exports[`StepOneBPage > should match snapshot 1`] = `
                     aria-controls="ab-details"
                     aria-label="Show/Hide ab-details"
                     aria-pressed="false"
-                    class="text-md cursor-pointer rounded-md py-1 px-2 border border-transparent transition-colors duration-300 self-start inline-flex gap-1 items-center hover:bg-gray-100 svelte-1d0mdzt"
+                    class="text-md cursor-pointer rounded-md py-1 px-2 border border-transparent hover:bg-text-light-80 transition-colors duration-300 self-start inline-flex gap-1 items-center hover:bg-text-light-80 svelte-1d0mdzt"
                     data-variant="ghost"
                     role="button"
                     tabindex="0"
@@ -503,7 +503,7 @@ exports[`StepOneBPage > should match snapshot 1`] = `
                     <!---->
                     <!---->
                     <span
-                      class="-ml-2 text-nowrap text-secondarydark hover:underline"
+                      class="-ml-2 text-nowrap text-success-dark-25 hover:underline"
                     >
                       Show me an example
                     </span>
@@ -519,7 +519,7 @@ exports[`StepOneBPage > should match snapshot 1`] = `
               </div>
             </div>
             <div
-              class="bg-neutral-50 shadow-sm text-xs p-2 rounded-lg flex gap-2 mb-3 last:mb-0"
+              class="bg-text-light-95 shadow-sm text-xs p-2 rounded-lg flex gap-2 mb-3 last:mb-0"
             >
               <div>
                 <!---->
@@ -530,7 +530,7 @@ exports[`StepOneBPage > should match snapshot 1`] = `
                   class="flex items-center gap-3"
                 >
                   <input
-                    class="mt-0.5 rounded-sm border border-neutral-300 bg-white text-neutral-900 focus:border-transparent focus:outline-hidden focus:ring-2 focus:ring-yellow-400 shrink-0 disabled:cursor-not-allowed disabled:opacity-50 checked:border-primary checked:bg-primary cursor-pointer h-4 w-4"
+                    class="mt-0.5 rounded-sm border border-text-light-50 bg-white text-text-dark-50 focus:border-transparent focus:outline-hidden focus:ring-2 focus:ring-warning shrink-0 disabled:cursor-not-allowed disabled:opacity-50 checked:border-primary checked:bg-primary cursor-pointer h-4 w-4"
                     id="checklist-ac"
                     name="checklist-ac"
                     type="checkbox"
@@ -554,7 +554,7 @@ exports[`StepOneBPage > should match snapshot 1`] = `
                   >
                     <!---->
                     <h4
-                      class="text-neutral-700 text-sm"
+                      class="text-text-dark-25 text-sm"
                     >
                       <!---->
                       <!---->
@@ -576,7 +576,7 @@ exports[`StepOneBPage > should match snapshot 1`] = `
                     aria-controls="ac-details"
                     aria-label="Show/Hide ac-details"
                     aria-pressed="false"
-                    class="text-md cursor-pointer rounded-md py-1 px-2 border border-transparent transition-colors duration-300 self-start inline-flex gap-1 items-center hover:bg-gray-100 svelte-1d0mdzt"
+                    class="text-md cursor-pointer rounded-md py-1 px-2 border border-transparent hover:bg-text-light-80 transition-colors duration-300 self-start inline-flex gap-1 items-center hover:bg-text-light-80 svelte-1d0mdzt"
                     data-variant="ghost"
                     role="button"
                     tabindex="0"
@@ -584,7 +584,7 @@ exports[`StepOneBPage > should match snapshot 1`] = `
                     <!---->
                     <!---->
                     <span
-                      class="-ml-2 text-nowrap text-secondarydark hover:underline"
+                      class="-ml-2 text-nowrap text-success-dark-25 hover:underline"
                     >
                       Show me an example
                     </span>
@@ -600,7 +600,7 @@ exports[`StepOneBPage > should match snapshot 1`] = `
               </div>
             </div>
             <div
-              class="bg-neutral-50 shadow-sm text-xs p-2 rounded-lg flex gap-2 mb-3 last:mb-0"
+              class="bg-text-light-95 shadow-sm text-xs p-2 rounded-lg flex gap-2 mb-3 last:mb-0"
             >
               <div>
                 <!---->
@@ -611,7 +611,7 @@ exports[`StepOneBPage > should match snapshot 1`] = `
                   class="flex items-center gap-3"
                 >
                   <input
-                    class="mt-0.5 rounded-sm border border-neutral-300 bg-white text-neutral-900 focus:border-transparent focus:outline-hidden focus:ring-2 focus:ring-yellow-400 shrink-0 disabled:cursor-not-allowed disabled:opacity-50 checked:border-primary checked:bg-primary cursor-pointer h-4 w-4"
+                    class="mt-0.5 rounded-sm border border-text-light-50 bg-white text-text-dark-50 focus:border-transparent focus:outline-hidden focus:ring-2 focus:ring-warning shrink-0 disabled:cursor-not-allowed disabled:opacity-50 checked:border-primary checked:bg-primary cursor-pointer h-4 w-4"
                     id="checklist-ad"
                     name="checklist-ad"
                     type="checkbox"
@@ -635,7 +635,7 @@ exports[`StepOneBPage > should match snapshot 1`] = `
                   >
                     <!---->
                     <h4
-                      class="text-neutral-700 text-sm"
+                      class="text-text-dark-25 text-sm"
                     >
                       <!---->
                       <!---->
@@ -657,7 +657,7 @@ exports[`StepOneBPage > should match snapshot 1`] = `
                     aria-controls="ad-details"
                     aria-label="Show/Hide ad-details"
                     aria-pressed="false"
-                    class="text-md cursor-pointer rounded-md py-1 px-2 border border-transparent transition-colors duration-300 self-start inline-flex gap-1 items-center hover:bg-gray-100 svelte-1d0mdzt"
+                    class="text-md cursor-pointer rounded-md py-1 px-2 border border-transparent hover:bg-text-light-80 transition-colors duration-300 self-start inline-flex gap-1 items-center hover:bg-text-light-80 svelte-1d0mdzt"
                     data-variant="ghost"
                     role="button"
                     tabindex="0"
@@ -665,7 +665,7 @@ exports[`StepOneBPage > should match snapshot 1`] = `
                     <!---->
                     <!---->
                     <span
-                      class="-ml-2 text-nowrap text-secondarydark hover:underline"
+                      class="-ml-2 text-nowrap text-success-dark-25 hover:underline"
                     >
                       Show me an example
                     </span>
@@ -681,7 +681,7 @@ exports[`StepOneBPage > should match snapshot 1`] = `
               </div>
             </div>
             <div
-              class="bg-neutral-50 shadow-sm text-xs p-2 rounded-lg flex gap-2 mb-3 last:mb-0"
+              class="bg-text-light-95 shadow-sm text-xs p-2 rounded-lg flex gap-2 mb-3 last:mb-0"
             >
               <div>
                 <!---->
@@ -692,7 +692,7 @@ exports[`StepOneBPage > should match snapshot 1`] = `
                   class="flex items-center gap-3"
                 >
                   <input
-                    class="mt-0.5 rounded-sm border border-neutral-300 bg-white text-neutral-900 focus:border-transparent focus:outline-hidden focus:ring-2 focus:ring-yellow-400 shrink-0 disabled:cursor-not-allowed disabled:opacity-50 checked:border-primary checked:bg-primary cursor-pointer h-4 w-4"
+                    class="mt-0.5 rounded-sm border border-text-light-50 bg-white text-text-dark-50 focus:border-transparent focus:outline-hidden focus:ring-2 focus:ring-warning shrink-0 disabled:cursor-not-allowed disabled:opacity-50 checked:border-primary checked:bg-primary cursor-pointer h-4 w-4"
                     id="checklist-ae"
                     name="checklist-ae"
                     type="checkbox"
@@ -716,7 +716,7 @@ exports[`StepOneBPage > should match snapshot 1`] = `
                   >
                     <!---->
                     <h4
-                      class="text-neutral-700 text-sm"
+                      class="text-text-dark-25 text-sm"
                     >
                       <!---->
                       <!---->
@@ -738,7 +738,7 @@ exports[`StepOneBPage > should match snapshot 1`] = `
                     aria-controls="ae-details"
                     aria-label="Show/Hide ae-details"
                     aria-pressed="false"
-                    class="text-md cursor-pointer rounded-md py-1 px-2 border border-transparent transition-colors duration-300 self-start inline-flex gap-1 items-center hover:bg-gray-100 svelte-1d0mdzt"
+                    class="text-md cursor-pointer rounded-md py-1 px-2 border border-transparent hover:bg-text-light-80 transition-colors duration-300 self-start inline-flex gap-1 items-center hover:bg-text-light-80 svelte-1d0mdzt"
                     data-variant="ghost"
                     role="button"
                     tabindex="0"
@@ -746,7 +746,7 @@ exports[`StepOneBPage > should match snapshot 1`] = `
                     <!---->
                     <!---->
                     <span
-                      class="-ml-2 text-nowrap text-secondarydark hover:underline"
+                      class="-ml-2 text-nowrap text-success-dark-25 hover:underline"
                     >
                       Show me an example
                     </span>
@@ -762,7 +762,7 @@ exports[`StepOneBPage > should match snapshot 1`] = `
               </div>
             </div>
             <div
-              class="bg-neutral-50 shadow-sm text-xs p-2 rounded-lg flex gap-2 mb-3 last:mb-0"
+              class="bg-text-light-95 shadow-sm text-xs p-2 rounded-lg flex gap-2 mb-3 last:mb-0"
             >
               <div>
                 <!---->
@@ -773,7 +773,7 @@ exports[`StepOneBPage > should match snapshot 1`] = `
                   class="flex items-center gap-3"
                 >
                   <input
-                    class="mt-0.5 rounded-sm border border-neutral-300 bg-white text-neutral-900 focus:border-transparent focus:outline-hidden focus:ring-2 focus:ring-yellow-400 shrink-0 disabled:cursor-not-allowed disabled:opacity-50 checked:border-primary checked:bg-primary cursor-pointer h-4 w-4"
+                    class="mt-0.5 rounded-sm border border-text-light-50 bg-white text-text-dark-50 focus:border-transparent focus:outline-hidden focus:ring-2 focus:ring-warning shrink-0 disabled:cursor-not-allowed disabled:opacity-50 checked:border-primary checked:bg-primary cursor-pointer h-4 w-4"
                     id="checklist-af"
                     name="checklist-af"
                     type="checkbox"
@@ -797,7 +797,7 @@ exports[`StepOneBPage > should match snapshot 1`] = `
                   >
                     <!---->
                     <h4
-                      class="text-neutral-700 text-sm"
+                      class="text-text-dark-25 text-sm"
                     >
                       <!---->
                       <!---->
@@ -819,7 +819,7 @@ exports[`StepOneBPage > should match snapshot 1`] = `
                     aria-controls="af-details"
                     aria-label="Show/Hide af-details"
                     aria-pressed="false"
-                    class="text-md cursor-pointer rounded-md py-1 px-2 border border-transparent transition-colors duration-300 self-start inline-flex gap-1 items-center hover:bg-gray-100 svelte-1d0mdzt"
+                    class="text-md cursor-pointer rounded-md py-1 px-2 border border-transparent hover:bg-text-light-80 transition-colors duration-300 self-start inline-flex gap-1 items-center hover:bg-text-light-80 svelte-1d0mdzt"
                     data-variant="ghost"
                     role="button"
                     tabindex="0"
@@ -827,7 +827,7 @@ exports[`StepOneBPage > should match snapshot 1`] = `
                     <!---->
                     <!---->
                     <span
-                      class="-ml-2 text-nowrap text-secondarydark hover:underline"
+                      class="-ml-2 text-nowrap text-success-dark-25 hover:underline"
                     >
                       Show me an example
                     </span>
@@ -843,7 +843,7 @@ exports[`StepOneBPage > should match snapshot 1`] = `
               </div>
             </div>
             <div
-              class="bg-neutral-50 shadow-sm text-xs p-2 rounded-lg flex gap-2 mb-3 last:mb-0"
+              class="bg-text-light-95 shadow-sm text-xs p-2 rounded-lg flex gap-2 mb-3 last:mb-0"
             >
               <div>
                 <!---->
@@ -854,7 +854,7 @@ exports[`StepOneBPage > should match snapshot 1`] = `
                   class="flex items-center gap-3"
                 >
                   <input
-                    class="mt-0.5 rounded-sm border border-neutral-300 bg-white text-neutral-900 focus:border-transparent focus:outline-hidden focus:ring-2 focus:ring-yellow-400 shrink-0 disabled:cursor-not-allowed disabled:opacity-50 checked:border-primary checked:bg-primary cursor-pointer h-4 w-4"
+                    class="mt-0.5 rounded-sm border border-text-light-50 bg-white text-text-dark-50 focus:border-transparent focus:outline-hidden focus:ring-2 focus:ring-warning shrink-0 disabled:cursor-not-allowed disabled:opacity-50 checked:border-primary checked:bg-primary cursor-pointer h-4 w-4"
                     id="checklist-ag"
                     name="checklist-ag"
                     type="checkbox"
@@ -878,7 +878,7 @@ exports[`StepOneBPage > should match snapshot 1`] = `
                   >
                     <!---->
                     <h4
-                      class="text-neutral-700 text-sm"
+                      class="text-text-dark-25 text-sm"
                     >
                       <!---->
                       <!---->
@@ -900,7 +900,7 @@ exports[`StepOneBPage > should match snapshot 1`] = `
                     aria-controls="ag-details"
                     aria-label="Show/Hide ag-details"
                     aria-pressed="false"
-                    class="text-md cursor-pointer rounded-md py-1 px-2 border border-transparent transition-colors duration-300 self-start inline-flex gap-1 items-center hover:bg-gray-100 svelte-1d0mdzt"
+                    class="text-md cursor-pointer rounded-md py-1 px-2 border border-transparent hover:bg-text-light-80 transition-colors duration-300 self-start inline-flex gap-1 items-center hover:bg-text-light-80 svelte-1d0mdzt"
                     data-variant="ghost"
                     role="button"
                     tabindex="0"
@@ -908,7 +908,7 @@ exports[`StepOneBPage > should match snapshot 1`] = `
                     <!---->
                     <!---->
                     <span
-                      class="-ml-2 text-nowrap text-secondarydark hover:underline"
+                      class="-ml-2 text-nowrap text-success-dark-25 hover:underline"
                     >
                       Show me an example
                     </span>
@@ -935,7 +935,7 @@ exports[`StepOneBPage > should match snapshot 1`] = `
         <div>
           <!---->
           <h3
-            class="text-neutral-700 text-md"
+            class="text-text-dark-25 text-md"
           >
             <!---->
             <!---->
@@ -957,7 +957,7 @@ exports[`StepOneBPage > should match snapshot 1`] = `
             <!---->
              
             <div
-              class="bg-neutral-50 shadow-sm text-xs p-2 rounded-lg flex gap-2 mb-3 last:mb-0"
+              class="bg-text-light-95 shadow-sm text-xs p-2 rounded-lg flex gap-2 mb-3 last:mb-0"
             >
               <div>
                 <!---->
@@ -968,7 +968,7 @@ exports[`StepOneBPage > should match snapshot 1`] = `
                   class="flex items-center gap-3"
                 >
                   <input
-                    class="mt-0.5 rounded-sm border border-neutral-300 bg-white text-neutral-900 focus:border-transparent focus:outline-hidden focus:ring-2 focus:ring-yellow-400 shrink-0 disabled:cursor-not-allowed disabled:opacity-50 checked:border-primary checked:bg-primary cursor-pointer h-4 w-4"
+                    class="mt-0.5 rounded-sm border border-text-light-50 bg-white text-text-dark-50 focus:border-transparent focus:outline-hidden focus:ring-2 focus:ring-warning shrink-0 disabled:cursor-not-allowed disabled:opacity-50 checked:border-primary checked:bg-primary cursor-pointer h-4 w-4"
                     id="checklist-ba"
                     name="checklist-ba"
                     type="checkbox"
@@ -992,7 +992,7 @@ exports[`StepOneBPage > should match snapshot 1`] = `
                   >
                     <!---->
                     <h4
-                      class="text-neutral-700 text-sm"
+                      class="text-text-dark-25 text-sm"
                     >
                       <!---->
                       <!---->
@@ -1014,7 +1014,7 @@ exports[`StepOneBPage > should match snapshot 1`] = `
                     aria-controls="ba-details"
                     aria-label="Show/Hide ba-details"
                     aria-pressed="false"
-                    class="text-md cursor-pointer rounded-md py-1 px-2 border border-transparent transition-colors duration-300 self-start inline-flex gap-1 items-center hover:bg-gray-100 svelte-1d0mdzt"
+                    class="text-md cursor-pointer rounded-md py-1 px-2 border border-transparent hover:bg-text-light-80 transition-colors duration-300 self-start inline-flex gap-1 items-center hover:bg-text-light-80 svelte-1d0mdzt"
                     data-variant="ghost"
                     role="button"
                     tabindex="0"
@@ -1022,7 +1022,7 @@ exports[`StepOneBPage > should match snapshot 1`] = `
                     <!---->
                     <!---->
                     <span
-                      class="-ml-2 text-nowrap text-secondarydark hover:underline"
+                      class="-ml-2 text-nowrap text-success-dark-25 hover:underline"
                     >
                       Show me an example
                     </span>
@@ -1038,7 +1038,7 @@ exports[`StepOneBPage > should match snapshot 1`] = `
               </div>
             </div>
             <div
-              class="bg-neutral-50 shadow-sm text-xs p-2 rounded-lg flex gap-2 mb-3 last:mb-0"
+              class="bg-text-light-95 shadow-sm text-xs p-2 rounded-lg flex gap-2 mb-3 last:mb-0"
             >
               <div>
                 <!---->
@@ -1049,7 +1049,7 @@ exports[`StepOneBPage > should match snapshot 1`] = `
                   class="flex items-center gap-3"
                 >
                   <input
-                    class="mt-0.5 rounded-sm border border-neutral-300 bg-white text-neutral-900 focus:border-transparent focus:outline-hidden focus:ring-2 focus:ring-yellow-400 shrink-0 disabled:cursor-not-allowed disabled:opacity-50 checked:border-primary checked:bg-primary cursor-pointer h-4 w-4"
+                    class="mt-0.5 rounded-sm border border-text-light-50 bg-white text-text-dark-50 focus:border-transparent focus:outline-hidden focus:ring-2 focus:ring-warning shrink-0 disabled:cursor-not-allowed disabled:opacity-50 checked:border-primary checked:bg-primary cursor-pointer h-4 w-4"
                     id="checklist-bb"
                     name="checklist-bb"
                     type="checkbox"
@@ -1073,7 +1073,7 @@ exports[`StepOneBPage > should match snapshot 1`] = `
                   >
                     <!---->
                     <h4
-                      class="text-neutral-700 text-sm"
+                      class="text-text-dark-25 text-sm"
                     >
                       <!---->
                       <!---->
@@ -1095,7 +1095,7 @@ exports[`StepOneBPage > should match snapshot 1`] = `
                     aria-controls="bb-details"
                     aria-label="Show/Hide bb-details"
                     aria-pressed="false"
-                    class="text-md cursor-pointer rounded-md py-1 px-2 border border-transparent transition-colors duration-300 self-start inline-flex gap-1 items-center hover:bg-gray-100 svelte-1d0mdzt"
+                    class="text-md cursor-pointer rounded-md py-1 px-2 border border-transparent hover:bg-text-light-80 transition-colors duration-300 self-start inline-flex gap-1 items-center hover:bg-text-light-80 svelte-1d0mdzt"
                     data-variant="ghost"
                     role="button"
                     tabindex="0"
@@ -1103,7 +1103,7 @@ exports[`StepOneBPage > should match snapshot 1`] = `
                     <!---->
                     <!---->
                     <span
-                      class="-ml-2 text-nowrap text-secondarydark hover:underline"
+                      class="-ml-2 text-nowrap text-success-dark-25 hover:underline"
                     >
                       Show me an example
                     </span>
@@ -1119,7 +1119,7 @@ exports[`StepOneBPage > should match snapshot 1`] = `
               </div>
             </div>
             <div
-              class="bg-neutral-50 shadow-sm text-xs p-2 rounded-lg flex gap-2 mb-3 last:mb-0"
+              class="bg-text-light-95 shadow-sm text-xs p-2 rounded-lg flex gap-2 mb-3 last:mb-0"
             >
               <div>
                 <!---->
@@ -1130,7 +1130,7 @@ exports[`StepOneBPage > should match snapshot 1`] = `
                   class="flex items-center gap-3"
                 >
                   <input
-                    class="mt-0.5 rounded-sm border border-neutral-300 bg-white text-neutral-900 focus:border-transparent focus:outline-hidden focus:ring-2 focus:ring-yellow-400 shrink-0 disabled:cursor-not-allowed disabled:opacity-50 checked:border-primary checked:bg-primary cursor-pointer h-4 w-4"
+                    class="mt-0.5 rounded-sm border border-text-light-50 bg-white text-text-dark-50 focus:border-transparent focus:outline-hidden focus:ring-2 focus:ring-warning shrink-0 disabled:cursor-not-allowed disabled:opacity-50 checked:border-primary checked:bg-primary cursor-pointer h-4 w-4"
                     id="checklist-bc"
                     name="checklist-bc"
                     type="checkbox"
@@ -1154,7 +1154,7 @@ exports[`StepOneBPage > should match snapshot 1`] = `
                   >
                     <!---->
                     <h4
-                      class="text-neutral-700 text-sm"
+                      class="text-text-dark-25 text-sm"
                     >
                       <!---->
                       <!---->
@@ -1176,7 +1176,7 @@ exports[`StepOneBPage > should match snapshot 1`] = `
                     aria-controls="bc-details"
                     aria-label="Show/Hide bc-details"
                     aria-pressed="false"
-                    class="text-md cursor-pointer rounded-md py-1 px-2 border border-transparent transition-colors duration-300 self-start inline-flex gap-1 items-center hover:bg-gray-100 svelte-1d0mdzt"
+                    class="text-md cursor-pointer rounded-md py-1 px-2 border border-transparent hover:bg-text-light-80 transition-colors duration-300 self-start inline-flex gap-1 items-center hover:bg-text-light-80 svelte-1d0mdzt"
                     data-variant="ghost"
                     role="button"
                     tabindex="0"
@@ -1184,7 +1184,7 @@ exports[`StepOneBPage > should match snapshot 1`] = `
                     <!---->
                     <!---->
                     <span
-                      class="-ml-2 text-nowrap text-secondarydark hover:underline"
+                      class="-ml-2 text-nowrap text-success-dark-25 hover:underline"
                     >
                       Show me an example
                     </span>
@@ -1206,7 +1206,7 @@ exports[`StepOneBPage > should match snapshot 1`] = `
       </div>
        
       <small
-        class="block mt-4 text-xs text-neutral-500"
+        class="block mt-4 text-xs text-text"
       >
         As you review, note which questions are open (free-text) and which are
       closed (yes/no, multiple choice) — Consult will handle these differently
@@ -1224,7 +1224,7 @@ exports[`StepOneBPage > should match snapshot 1`] = `
       <!---->
       <button
         aria-pressed="false"
-        class="text-sm cursor-pointer rounded-md py-1 px-2 border border-gray-300 bg-white transition-colors duration-300 self-start inline-flex gap-1 items-center hover:bg-gray-100 svelte-1d0mdzt"
+        class="text-sm cursor-pointer rounded-md py-1 px-2 border border-text-light-50 bg-white transition-colors duration-300 self-start inline-flex gap-1 items-center hover:bg-text-light-80 svelte-1d0mdzt"
         data-variant="default"
         role="button"
         tabindex="0"
@@ -1236,7 +1236,7 @@ exports[`StepOneBPage > should match snapshot 1`] = `
         >
           <svg
             aria-hidden="true"
-            class="fill-neutral-500"
+            class="fill-text"
             height="0.9rem"
             viewBox="0 -960 960 960"
             width="0.9rem"
@@ -1267,7 +1267,7 @@ exports[`StepOneBPage > should match snapshot 1`] = `
       <!---->
       <button
         aria-pressed="false"
-        class="text-sm cursor-pointer rounded-md py-1 px-2 border border-gray-300 bg-secondary text-white transition-colors duration-300 self-start inline-flex gap-1 items-center hover:bg-gray-100 hover:border-secondary hover:text-secondary disabled disabled:bg-gray-200 disabled:text-gray-400 disabled:cursor-not-allowed disabled:hover:bg-gray-200 disabled:hover:border-gray-300 disabled:hover:text-gray-400 svelte-1d0mdzt"
+        class="text-sm cursor-pointer rounded-md py-1 px-2 border border-text-light-50 bg-success text-white transition-colors duration-300 self-start inline-flex gap-1 items-center hover:bg-text-light-80 hover:border-success hover:text-success disabled disabled:bg-text-light-80 disabled:text-text disabled:cursor-not-allowed disabled:hover:bg-text-light-80 disabled:hover:border-text-light-50 disabled:hover:text-text svelte-1d0mdzt"
         data-variant="approve"
         disabled=""
         role="button"

@@ -31,7 +31,7 @@ exports[`ResponsesList > should render 1`] = `
     </h2>
      
     <div
-      class="ml-1 px-1.5 py-0.5 rounded-lg text-xs bg-pink-100 text-primary"
+      class="ml-1 px-1.5 py-0.5 rounded-lg text-xs bg-primary-light-95 text-primary"
     >
       2
       <!---->
@@ -39,7 +39,7 @@ exports[`ResponsesList > should render 1`] = `
   </div>
    
   <p
-    class="mt-2 text-sm text-neutral-500"
+    class="mt-2 text-sm text-text"
   >
     Showing a sample of 2 out of a total of 2 answers.
   </p>
@@ -48,10 +48,10 @@ exports[`ResponsesList > should render 1`] = `
     class="mt-2 max-h-80 overflow-y-auto"
   >
     <li
-      class="flex items-start gap-2 mb-2 last:mb-0 p-2 rounded-lg text-neutral-600 bg-neutral-50"
+      class="flex items-start gap-2 mb-2 last:mb-0 p-2 rounded-lg text-text bg-text-light-95"
     >
       <div
-        class="shrink-0 flex justify-center items-center w-[3ch] h-[3ch] rounded-full text-xs bg-pink-200 text-primary"
+        class="shrink-0 flex justify-center items-center w-[3ch] h-[3ch] rounded-full text-xs bg-primary-light-80 text-primary-dark-25"
       >
         1
       </div>
@@ -63,10 +63,10 @@ exports[`ResponsesList > should render 1`] = `
       </p>
     </li>
     <li
-      class="flex items-start gap-2 mb-2 last:mb-0 p-2 rounded-lg text-neutral-600 bg-neutral-50"
+      class="flex items-start gap-2 mb-2 last:mb-0 p-2 rounded-lg text-text bg-text-light-95"
     >
       <div
-        class="shrink-0 flex justify-center items-center w-[3ch] h-[3ch] rounded-full text-xs bg-pink-200 text-primary"
+        class="shrink-0 flex justify-center items-center w-[3ch] h-[3ch] rounded-full text-xs bg-primary-light-80 text-primary-dark-25"
       >
         2
       </div>

@@ -8,7 +8,7 @@ exports[`Section > should match snapshot 1`] = `
     >
       <svg
         aria-hidden="true"
-        class="fill-neutral-200"
+        class="fill-text-light-80"
         height="4rem"
         viewBox="0 -960 960 960"
         width="4rem"
@@ -30,7 +30,7 @@ exports[`Section > should match snapshot 1`] = `
       </p>
        
       <p
-        class="text-neutral-600"
+        class="text-text-dark-25"
       >
         Test body
       </p>

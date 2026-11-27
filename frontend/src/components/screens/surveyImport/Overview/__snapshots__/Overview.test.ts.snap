@@ -7,7 +7,7 @@ exports[`Overview > should match snapshot after loading 1`] = `
   >
     <!---->
     <h1
-      class="text-neutral-700 text-xl"
+      class="text-text-dark-25 text-xl"
     >
       <!---->
       <!---->
@@ -27,7 +27,7 @@ exports[`Overview > should match snapshot after loading 1`] = `
       class="-mt-2"
     >
       <div
-        class="h-full my-4 p-4 rounded-2xl border border-gray-300 bg-neutral-100"
+        class="h-full my-4 p-4 rounded-2xl border border-text-light-50 bg-text-light-95"
         data-testid="panel-component"
       >
         <div
@@ -36,7 +36,7 @@ exports[`Overview > should match snapshot after loading 1`] = `
           <div>
             <!---->
             <h2
-              class="text-neutral-700 text-lg"
+              class="text-text-dark-25 text-lg"
             >
               <!---->
               <!---->
@@ -56,7 +56,7 @@ exports[`Overview > should match snapshot after loading 1`] = `
             <!---->
              
             <p
-              class="text-md text-neutral-500"
+              class="text-md text-text"
             >
               <span>
                 Created by an unknown user on 29/01/2026.
@@ -71,7 +71,7 @@ exports[`Overview > should match snapshot after loading 1`] = `
             <!---->
             <a
               aria-pressed="false"
-              class="text-sm cursor-pointer rounded-md py-1 px-2 border border-gray-300 bg-white transition-colors duration-300 self-start inline-flex gap-1 items-center hover:bg-gray-100 svelte-1d0mdzt"
+              class="text-sm cursor-pointer rounded-md py-1 px-2 border border-text-light-50 bg-white transition-colors duration-300 self-start inline-flex gap-1 items-center hover:bg-text-light-80 svelte-1d0mdzt"
               data-variant="default"
               disabled="false"
               href="/consultations/test-consultation/users?from=data-upload"
@@ -100,20 +100,20 @@ exports[`Overview > should match snapshot after loading 1`] = `
     </div>
      
     <p
-      class="text-neutral-500 text-md my-6"
+      class="text-text text-md my-6"
     >
       Consult analyses files of consultation responses. These six steps upload the
     file, check it and confirm the question type.
     </p>
      
     <div
-      class="h-full my-4 p-4 rounded-2xl border border-gray-200"
+      class="h-full my-4 p-4 rounded-2xl border border-text-light-80"
       data-testid="panel-component"
     >
       <!---->
       <!---->
       <h2
-        class="text-neutral-700 text-lg"
+        class="text-text-dark-25 text-lg"
       >
         <!---->
         <!---->
@@ -130,7 +130,7 @@ exports[`Overview > should match snapshot after loading 1`] = `
       <!---->
        
       <p
-        class="text-neutral-500 text-md my-6"
+        class="text-text text-md my-6"
       >
         Every question is either open, closed or hybrid and that impacts the
       format in the app
@@ -144,7 +144,7 @@ exports[`Overview > should match snapshot after loading 1`] = `
         >
           <svg
             aria-hidden="true"
-            class="fill-secondary"
+            class="fill-success"
             height="1.5rem"
             viewBox="0 -960 960 960"
             width="1.5rem"
@@ -163,7 +163,7 @@ exports[`Overview > should match snapshot after loading 1`] = `
         </div>
          
         <p
-          class="text-md text-neutral-700"
+          class="text-md text-text-dark-25"
         >
           <div>
             
@@ -193,7 +193,7 @@ exports[`Overview > should match snapshot after loading 1`] = `
         >
           <svg
             aria-hidden="true"
-            class="fill-secondary"
+            class="fill-success"
             height="1.5rem"
             viewBox="0 -960 960 960"
             width="1.5rem"
@@ -212,7 +212,7 @@ exports[`Overview > should match snapshot after loading 1`] = `
         </div>
          
         <p
-          class="text-md text-neutral-700"
+          class="text-md text-text-dark-25"
         >
           <div>
             
@@ -242,13 +242,13 @@ exports[`Overview > should match snapshot after loading 1`] = `
     class="mb-6"
   >
     <div
-      class="h-full my-4 p-4 rounded-2xl border border-gray-200"
+      class="h-full my-4 p-4 rounded-2xl border border-text-light-80"
       data-testid="panel-component"
     >
       <!---->
       <!---->
       <h2
-        class="text-neutral-700 text-lg"
+        class="text-text-dark-25 text-lg"
       >
         <!---->
         <!---->
@@ -261,7 +261,7 @@ exports[`Overview > should match snapshot after loading 1`] = `
       <!---->
        
       <p
-        class="text-neutral-500 text-sm mt-4 mb-8"
+        class="text-text text-sm mt-4 mb-8"
       >
         The first two happen in your survey tool and your spreadsheet. They are
       part of the job, so they are listed here with the rest.
@@ -274,11 +274,11 @@ exports[`Overview > should match snapshot after loading 1`] = `
           class="flex gap-4 relative mb-8 -ml-10 pl-4"
         >
           <div
-            class="flex justify-center items-center w-12 h-12 p-2 rounded-full border border-neutral-300 bg-white"
+            class="flex justify-center items-center w-12 h-12 p-2 rounded-full border border-text-light-50 bg-white"
           >
             <svg
               aria-hidden="true"
-              class="fill-neutral-500"
+              class="fill-text"
               height="2rem"
               viewBox="0 -960 960 960"
               width="2rem"
@@ -308,14 +308,14 @@ exports[`Overview > should match snapshot after loading 1`] = `
               class="my-2"
             >
               <div
-                class="flex justify-between items-center gap-2 rounded-md w-max py-0.5 px-2 text-xs bg-neutral-100 text-neutral-800 border border-neutral-300"
+                class="flex justify-between items-center gap-2 rounded-md w-max py-0.5 px-2 text-xs bg-text-light-95 text-text-dark-25 border border-text-light-50"
               >
                 <span
                   class="flex items-center gap-2"
                 >
                   <svg
                     aria-hidden="true"
-                    class="fill-neutral-500"
+                    class="fill-text"
                     height="0.8rem"
                     viewBox="0 -960 960 960"
                     width="0.8rem"
@@ -340,7 +340,7 @@ exports[`Overview > should match snapshot after loading 1`] = `
             <!---->
              
             <p
-              class="text-neutral-500 text-sm"
+              class="text-text text-sm"
             >
               Get your data out of Qualtrics or Citizen Space
             </p>
@@ -350,11 +350,11 @@ exports[`Overview > should match snapshot after loading 1`] = `
           class="flex gap-4 relative mb-8 -ml-10 pl-4"
         >
           <div
-            class="flex justify-center items-center w-12 h-12 p-2 rounded-full border border-neutral-300 bg-white"
+            class="flex justify-center items-center w-12 h-12 p-2 rounded-full border border-text-light-50 bg-white"
           >
             <svg
               aria-hidden="true"
-              class="fill-neutral-500"
+              class="fill-text"
               height="2rem"
               viewBox="0 -960 960 960"
               width="2rem"
@@ -385,14 +385,14 @@ exports[`Overview > should match snapshot after loading 1`] = `
               class="my-2"
             >
               <div
-                class="flex justify-between items-center gap-2 rounded-md w-max py-0.5 px-2 text-xs bg-neutral-100 text-neutral-800 border border-neutral-300"
+                class="flex justify-between items-center gap-2 rounded-md w-max py-0.5 px-2 text-xs bg-text-light-95 text-text-dark-25 border border-text-light-50"
               >
                 <span
                   class="flex items-center gap-2"
                 >
                   <svg
                     aria-hidden="true"
-                    class="fill-neutral-500"
+                    class="fill-text"
                     height="0.8rem"
                     viewBox="0 -960 960 960"
                     width="0.8rem"
@@ -417,7 +417,7 @@ exports[`Overview > should match snapshot after loading 1`] = `
             <!---->
              
             <p
-              class="text-neutral-500 text-sm"
+              class="text-text text-sm"
             >
               Set it up in the right way for Consult, and remove personal information if needed
             </p>
@@ -427,11 +427,11 @@ exports[`Overview > should match snapshot after loading 1`] = `
           class="flex gap-4 relative mb-8 -ml-10 pl-4"
         >
           <div
-            class="flex justify-center items-center w-12 h-12 p-2 rounded-full border border-neutral-300 bg-white"
+            class="flex justify-center items-center w-12 h-12 p-2 rounded-full border border-text-light-50 bg-white"
           >
             <svg
               aria-hidden="true"
-              class="fill-neutral-500"
+              class="fill-text"
               height="2rem"
               viewBox="0 -960 960 960"
               width="2rem"
@@ -461,7 +461,7 @@ exports[`Overview > should match snapshot after loading 1`] = `
             <!---->
              
             <p
-              class="text-neutral-500 text-sm"
+              class="text-text text-sm"
             >
               Provided data is in the correct format, Consult uploads it into the app
             </p>
@@ -471,11 +471,11 @@ exports[`Overview > should match snapshot after loading 1`] = `
           class="flex gap-4 relative mb-8 -ml-10 pl-4"
         >
           <div
-            class="flex justify-center items-center w-12 h-12 p-2 rounded-full border border-neutral-300 bg-white"
+            class="flex justify-center items-center w-12 h-12 p-2 rounded-full border border-text-light-50 bg-white"
           >
             <svg
               aria-hidden="true"
-              class="fill-neutral-500"
+              class="fill-text"
               height="2rem"
               viewBox="0 -960 960 960"
               width="2rem"
@@ -505,7 +505,7 @@ exports[`Overview > should match snapshot after loading 1`] = `
             <!---->
              
             <p
-              class="text-neutral-500 text-sm"
+              class="text-text text-sm"
             >
               Delete any that are not questions, such as response IDs or dates
             </p>
@@ -515,11 +515,11 @@ exports[`Overview > should match snapshot after loading 1`] = `
           class="flex gap-4 relative mb-8 -ml-10 pl-4"
         >
           <div
-            class="flex justify-center items-center w-12 h-12 p-2 rounded-full border border-neutral-300 bg-white"
+            class="flex justify-center items-center w-12 h-12 p-2 rounded-full border border-text-light-50 bg-white"
           >
             <svg
               aria-hidden="true"
-              class="fill-neutral-500"
+              class="fill-text"
               height="2rem"
               viewBox="0 -960 960 960"
               width="2rem"
@@ -549,7 +549,7 @@ exports[`Overview > should match snapshot after loading 1`] = `
             <!---->
              
             <p
-              class="text-neutral-500 text-sm"
+              class="text-text text-sm"
             >
               Confirm whether each question is open, closed or hybrid
             </p>
@@ -559,11 +559,11 @@ exports[`Overview > should match snapshot after loading 1`] = `
           class="flex gap-4 relative mb-8 -ml-10 pl-4"
         >
           <div
-            class="flex justify-center items-center w-12 h-12 p-2 rounded-full border border-neutral-300 bg-white"
+            class="flex justify-center items-center w-12 h-12 p-2 rounded-full border border-text-light-50 bg-white"
           >
             <svg
               aria-hidden="true"
-              class="fill-neutral-500"
+              class="fill-text"
               height="2rem"
               viewBox="0 -960 960 960"
               width="2rem"
@@ -595,7 +595,7 @@ exports[`Overview > should match snapshot after loading 1`] = `
             <!---->
              
             <p
-              class="text-neutral-500 text-sm"
+              class="text-text text-sm"
             >
               Choose which ones become filters on your dashboard
             </p>
@@ -613,7 +613,7 @@ exports[`Overview > should match snapshot after loading 1`] = `
     class="mb-6"
   >
     <div
-      class="h-full my-4 p-4 rounded-2xl border border-gray-200"
+      class="h-full my-4 p-4 rounded-2xl border border-text-light-80"
       data-testid="panel-component"
     >
       <div
@@ -621,7 +621,7 @@ exports[`Overview > should match snapshot after loading 1`] = `
       >
         <!---->
         <h2
-          class="text-neutral-700 text-lg"
+          class="text-text-dark-25 text-lg"
         >
           <!---->
           <!---->
@@ -646,7 +646,7 @@ exports[`Overview > should match snapshot after loading 1`] = `
         >
           <svg
             aria-hidden="true"
-            class="fill-secondary"
+            class="fill-success"
             height="1.5rem"
             viewBox="0 -960 960 960"
             width="1.5rem"
@@ -665,7 +665,7 @@ exports[`Overview > should match snapshot after loading 1`] = `
         </div>
          
         <p
-          class="text-md text-neutral-700"
+          class="text-md text-text-dark-25"
         >
           <div>
             
@@ -699,7 +699,7 @@ exports[`Overview > should match snapshot after loading 1`] = `
         >
           <svg
             aria-hidden="true"
-            class="fill-secondary"
+            class="fill-success"
             height="1.5rem"
             viewBox="0 -960 960 960"
             width="1.5rem"
@@ -718,7 +718,7 @@ exports[`Overview > should match snapshot after loading 1`] = `
         </div>
          
         <p
-          class="text-md text-neutral-700"
+          class="text-md text-text-dark-25"
         >
           <div>
             
@@ -744,7 +744,7 @@ exports[`Overview > should match snapshot after loading 1`] = `
         >
           <svg
             aria-hidden="true"
-            class="fill-secondary"
+            class="fill-success"
             height="1.5rem"
             viewBox="0 -960 960 960"
             width="1.5rem"
@@ -763,7 +763,7 @@ exports[`Overview > should match snapshot after loading 1`] = `
         </div>
          
         <p
-          class="text-md text-neutral-700"
+          class="text-md text-text-dark-25"
         >
           <div>
             
@@ -782,7 +782,7 @@ exports[`Overview > should match snapshot after loading 1`] = `
       <!---->
        
       <div
-        class="h-full my-4 p-4 rounded-2xl border border-gray-300 bg-neutral-100"
+        class="h-full my-4 p-4 rounded-2xl border border-text-light-50 bg-text-light-95"
         data-testid="panel-component"
       >
         <div
@@ -790,7 +790,7 @@ exports[`Overview > should match snapshot after loading 1`] = `
         >
           <!---->
           <h4
-            class="text-neutral-700 text-sm"
+            class="text-text-dark-25 text-sm"
           >
             <!---->
             <!---->
@@ -803,7 +803,7 @@ exports[`Overview > should match snapshot after loading 1`] = `
           <!---->
            
           <p
-            class="text-sm text-neutral-500"
+            class="text-sm text-text"
           >
             Start anyway. Steps 1 and 2 tell you what a usable file looks like,
           which is far easier to act on before your consultation closes than
@@ -825,7 +825,7 @@ exports[`Overview > should match snapshot after loading 1`] = `
       <!---->
       <a
         aria-pressed="false"
-        class="text-sm cursor-pointer rounded-md py-1 px-2 border border-gray-300 bg-primary text-white transition-colors duration-300 self-start inline-flex gap-1 items-center hover:bg-gray-100 hover:border-primary hover:text-primary svelte-1d0mdzt"
+        class="text-sm cursor-pointer rounded-md py-1 px-2 border border-text-light-50 bg-primary text-white transition-colors duration-300 self-start inline-flex gap-1 items-center hover:bg-text-light-80 hover:border-primary hover:text-primary svelte-1d0mdzt"
         data-variant="primary"
         disabled="false"
         href="/consultations/test-consultation/data-upload/select-provider"
@@ -855,7 +855,7 @@ exports[`Overview > should match snapshot initially 1`] = `
   >
     <!---->
     <h1
-      class="text-neutral-700 text-xl"
+      class="text-text-dark-25 text-xl"
     >
       <!---->
       <!---->
@@ -875,7 +875,7 @@ exports[`Overview > should match snapshot initially 1`] = `
       class="-mt-2"
     >
       <div
-        class="h-full my-4 p-4 rounded-2xl border border-gray-300 bg-neutral-100"
+        class="h-full my-4 p-4 rounded-2xl border border-text-light-50 bg-text-light-95"
         data-testid="panel-component"
       >
         <div
@@ -884,7 +884,7 @@ exports[`Overview > should match snapshot initially 1`] = `
           <div>
             <!---->
             <h2
-              class="text-neutral-700 text-lg"
+              class="text-text-dark-25 text-lg"
             >
               <!---->
               <!---->
@@ -893,7 +893,7 @@ exports[`Overview > should match snapshot initially 1`] = `
               >
                 <span
                   aria-hidden="true"
-                  class="blink w-max select-none bg-neutral-200 text-neutral-200"
+                  class="blink w-max select-none bg-text-light-80 text-text-light-80"
                 >
                   SKELETON SKELETON 
                 </span>
@@ -907,11 +907,11 @@ exports[`Overview > should match snapshot initially 1`] = `
             <!---->
              
             <p
-              class="text-md text-neutral-500"
+              class="text-md text-text"
             >
               <span
                 aria-hidden="true"
-                class="blink w-max select-none bg-neutral-200 text-neutral-200"
+                class="blink w-max select-none bg-text-light-80 text-text-light-80"
               >
                 SKELETON SKELETON SKELETON SKELETON SKELETON 
               </span>
@@ -925,7 +925,7 @@ exports[`Overview > should match snapshot initially 1`] = `
             <!---->
             <a
               aria-pressed="false"
-              class="text-sm cursor-pointer rounded-md py-1 px-2 border border-gray-300 bg-white transition-colors duration-300 self-start inline-flex gap-1 items-center hover:bg-gray-100 svelte-1d0mdzt"
+              class="text-sm cursor-pointer rounded-md py-1 px-2 border border-text-light-50 bg-white transition-colors duration-300 self-start inline-flex gap-1 items-center hover:bg-text-light-80 svelte-1d0mdzt"
               data-variant="default"
               disabled="false"
               href="/consultations/test-consultation/users?from=data-upload"
@@ -954,20 +954,20 @@ exports[`Overview > should match snapshot initially 1`] = `
     </div>
      
     <p
-      class="text-neutral-500 text-md my-6"
+      class="text-text text-md my-6"
     >
       Consult analyses files of consultation responses. These six steps upload the
     file, check it and confirm the question type.
     </p>
      
     <div
-      class="h-full my-4 p-4 rounded-2xl border border-gray-200"
+      class="h-full my-4 p-4 rounded-2xl border border-text-light-80"
       data-testid="panel-component"
     >
       <!---->
       <!---->
       <h2
-        class="text-neutral-700 text-lg"
+        class="text-text-dark-25 text-lg"
       >
         <!---->
         <!---->
@@ -984,7 +984,7 @@ exports[`Overview > should match snapshot initially 1`] = `
       <!---->
        
       <p
-        class="text-neutral-500 text-md my-6"
+        class="text-text text-md my-6"
       >
         Every question is either open, closed or hybrid and that impacts the
       format in the app
@@ -998,7 +998,7 @@ exports[`Overview > should match snapshot initially 1`] = `
         >
           <svg
             aria-hidden="true"
-            class="fill-secondary"
+            class="fill-success"
             height="1.5rem"
             viewBox="0 -960 960 960"
             width="1.5rem"
@@ -1017,7 +1017,7 @@ exports[`Overview > should match snapshot initially 1`] = `
         </div>
          
         <p
-          class="text-md text-neutral-700"
+          class="text-md text-text-dark-25"
         >
           <div>
             
@@ -1047,7 +1047,7 @@ exports[`Overview > should match snapshot initially 1`] = `
         >
           <svg
             aria-hidden="true"
-            class="fill-secondary"
+            class="fill-success"
             height="1.5rem"
             viewBox="0 -960 960 960"
             width="1.5rem"
@@ -1066,7 +1066,7 @@ exports[`Overview > should match snapshot initially 1`] = `
         </div>
          
         <p
-          class="text-md text-neutral-700"
+          class="text-md text-text-dark-25"
         >
           <div>
             
@@ -1096,13 +1096,13 @@ exports[`Overview > should match snapshot initially 1`] = `
     class="mb-6"
   >
     <div
-      class="h-full my-4 p-4 rounded-2xl border border-gray-200"
+      class="h-full my-4 p-4 rounded-2xl border border-text-light-80"
       data-testid="panel-component"
     >
       <!---->
       <!---->
       <h2
-        class="text-neutral-700 text-lg"
+        class="text-text-dark-25 text-lg"
       >
         <!---->
         <!---->
@@ -1115,7 +1115,7 @@ exports[`Overview > should match snapshot initially 1`] = `
       <!---->
        
       <p
-        class="text-neutral-500 text-sm mt-4 mb-8"
+        class="text-text text-sm mt-4 mb-8"
       >
         The first two happen in your survey tool and your spreadsheet. They are
       part of the job, so they are listed here with the rest.
@@ -1128,11 +1128,11 @@ exports[`Overview > should match snapshot initially 1`] = `
           class="flex gap-4 relative mb-8 -ml-10 pl-4"
         >
           <div
-            class="flex justify-center items-center w-12 h-12 p-2 rounded-full border border-neutral-300 bg-white"
+            class="flex justify-center items-center w-12 h-12 p-2 rounded-full border border-text-light-50 bg-white"
           >
             <svg
               aria-hidden="true"
-              class="fill-neutral-500"
+              class="fill-text"
               height="2rem"
               viewBox="0 -960 960 960"
               width="2rem"
@@ -1162,14 +1162,14 @@ exports[`Overview > should match snapshot initially 1`] = `
               class="my-2"
             >
               <div
-                class="flex justify-between items-center gap-2 rounded-md w-max py-0.5 px-2 text-xs bg-neutral-100 text-neutral-800 border border-neutral-300"
+                class="flex justify-between items-center gap-2 rounded-md w-max py-0.5 px-2 text-xs bg-text-light-95 text-text-dark-25 border border-text-light-50"
               >
                 <span
                   class="flex items-center gap-2"
                 >
                   <svg
                     aria-hidden="true"
-                    class="fill-neutral-500"
+                    class="fill-text"
                     height="0.8rem"
                     viewBox="0 -960 960 960"
                     width="0.8rem"
@@ -1194,7 +1194,7 @@ exports[`Overview > should match snapshot initially 1`] = `
             <!---->
              
             <p
-              class="text-neutral-500 text-sm"
+              class="text-text text-sm"
             >
               Get your data out of Qualtrics or Citizen Space
             </p>
@@ -1204,11 +1204,11 @@ exports[`Overview > should match snapshot initially 1`] = `
           class="flex gap-4 relative mb-8 -ml-10 pl-4"
         >
           <div
-            class="flex justify-center items-center w-12 h-12 p-2 rounded-full border border-neutral-300 bg-white"
+            class="flex justify-center items-center w-12 h-12 p-2 rounded-full border border-text-light-50 bg-white"
           >
             <svg
               aria-hidden="true"
-              class="fill-neutral-500"
+              class="fill-text"
               height="2rem"
               viewBox="0 -960 960 960"
               width="2rem"
@@ -1239,14 +1239,14 @@ exports[`Overview > should match snapshot initially 1`] = `
               class="my-2"
             >
               <div
-                class="flex justify-between items-center gap-2 rounded-md w-max py-0.5 px-2 text-xs bg-neutral-100 text-neutral-800 border border-neutral-300"
+                class="flex justify-between items-center gap-2 rounded-md w-max py-0.5 px-2 text-xs bg-text-light-95 text-text-dark-25 border border-text-light-50"
               >
                 <span
                   class="flex items-center gap-2"
                 >
                   <svg
                     aria-hidden="true"
-                    class="fill-neutral-500"
+                    class="fill-text"
                     height="0.8rem"
                     viewBox="0 -960 960 960"
                     width="0.8rem"
@@ -1271,7 +1271,7 @@ exports[`Overview > should match snapshot initially 1`] = `
             <!---->
              
             <p
-              class="text-neutral-500 text-sm"
+              class="text-text text-sm"
             >
               Set it up in the right way for Consult, and remove personal information if needed
             </p>
@@ -1281,11 +1281,11 @@ exports[`Overview > should match snapshot initially 1`] = `
           class="flex gap-4 relative mb-8 -ml-10 pl-4"
         >
           <div
-            class="flex justify-center items-center w-12 h-12 p-2 rounded-full border border-neutral-300 bg-white"
+            class="flex justify-center items-center w-12 h-12 p-2 rounded-full border border-text-light-50 bg-white"
           >
             <svg
               aria-hidden="true"
-              class="fill-neutral-500"
+              class="fill-text"
               height="2rem"
               viewBox="0 -960 960 960"
               width="2rem"
@@ -1315,7 +1315,7 @@ exports[`Overview > should match snapshot initially 1`] = `
             <!---->
              
             <p
-              class="text-neutral-500 text-sm"
+              class="text-text text-sm"
             >
               Provided data is in the correct format, Consult uploads it into the app
             </p>
@@ -1325,11 +1325,11 @@ exports[`Overview > should match snapshot initially 1`] = `
           class="flex gap-4 relative mb-8 -ml-10 pl-4"
         >
           <div
-            class="flex justify-center items-center w-12 h-12 p-2 rounded-full border border-neutral-300 bg-white"
+            class="flex justify-center items-center w-12 h-12 p-2 rounded-full border border-text-light-50 bg-white"
           >
             <svg
               aria-hidden="true"
-              class="fill-neutral-500"
+              class="fill-text"
               height="2rem"
               viewBox="0 -960 960 960"
               width="2rem"
@@ -1359,7 +1359,7 @@ exports[`Overview > should match snapshot initially 1`] = `
             <!---->
              
             <p
-              class="text-neutral-500 text-sm"
+              class="text-text text-sm"
             >
               Delete any that are not questions, such as response IDs or dates
             </p>
@@ -1369,11 +1369,11 @@ exports[`Overview > should match snapshot initially 1`] = `
           class="flex gap-4 relative mb-8 -ml-10 pl-4"
         >
           <div
-            class="flex justify-center items-center w-12 h-12 p-2 rounded-full border border-neutral-300 bg-white"
+            class="flex justify-center items-center w-12 h-12 p-2 rounded-full border border-text-light-50 bg-white"
           >
             <svg
               aria-hidden="true"
-              class="fill-neutral-500"
+              class="fill-text"
               height="2rem"
               viewBox="0 -960 960 960"
               width="2rem"
@@ -1403,7 +1403,7 @@ exports[`Overview > should match snapshot initially 1`] = `
             <!---->
              
             <p
-              class="text-neutral-500 text-sm"
+              class="text-text text-sm"
             >
               Confirm whether each question is open, closed or hybrid
             </p>
@@ -1413,11 +1413,11 @@ exports[`Overview > should match snapshot initially 1`] = `
           class="flex gap-4 relative mb-8 -ml-10 pl-4"
         >
           <div
-            class="flex justify-center items-center w-12 h-12 p-2 rounded-full border border-neutral-300 bg-white"
+            class="flex justify-center items-center w-12 h-12 p-2 rounded-full border border-text-light-50 bg-white"
           >
             <svg
               aria-hidden="true"
-              class="fill-neutral-500"
+              class="fill-text"
               height="2rem"
               viewBox="0 -960 960 960"
               width="2rem"
@@ -1449,7 +1449,7 @@ exports[`Overview > should match snapshot initially 1`] = `
             <!---->
              
             <p
-              class="text-neutral-500 text-sm"
+              class="text-text text-sm"
             >
               Choose which ones become filters on your dashboard
             </p>
@@ -1467,7 +1467,7 @@ exports[`Overview > should match snapshot initially 1`] = `
     class="mb-6"
   >
     <div
-      class="h-full my-4 p-4 rounded-2xl border border-gray-200"
+      class="h-full my-4 p-4 rounded-2xl border border-text-light-80"
       data-testid="panel-component"
     >
       <div
@@ -1475,7 +1475,7 @@ exports[`Overview > should match snapshot initially 1`] = `
       >
         <!---->
         <h2
-          class="text-neutral-700 text-lg"
+          class="text-text-dark-25 text-lg"
         >
           <!---->
           <!---->
@@ -1500,7 +1500,7 @@ exports[`Overview > should match snapshot initially 1`] = `
         >
           <svg
             aria-hidden="true"
-            class="fill-secondary"
+            class="fill-success"
             height="1.5rem"
             viewBox="0 -960 960 960"
             width="1.5rem"
@@ -1519,7 +1519,7 @@ exports[`Overview > should match snapshot initially 1`] = `
         </div>
          
         <p
-          class="text-md text-neutral-700"
+          class="text-md text-text-dark-25"
         >
           <div>
             
@@ -1553,7 +1553,7 @@ exports[`Overview > should match snapshot initially 1`] = `
         >
           <svg
             aria-hidden="true"
-            class="fill-secondary"
+            class="fill-success"
             height="1.5rem"
             viewBox="0 -960 960 960"
             width="1.5rem"
@@ -1572,7 +1572,7 @@ exports[`Overview > should match snapshot initially 1`] = `
         </div>
          
         <p
-          class="text-md text-neutral-700"
+          class="text-md text-text-dark-25"
         >
           <div>
             
@@ -1598,7 +1598,7 @@ exports[`Overview > should match snapshot initially 1`] = `
         >
           <svg
             aria-hidden="true"
-            class="fill-secondary"
+            class="fill-success"
             height="1.5rem"
             viewBox="0 -960 960 960"
             width="1.5rem"
@@ -1617,7 +1617,7 @@ exports[`Overview > should match snapshot initially 1`] = `
         </div>
          
         <p
-          class="text-md text-neutral-700"
+          class="text-md text-text-dark-25"
         >
           <div>
             
@@ -1636,7 +1636,7 @@ exports[`Overview > should match snapshot initially 1`] = `
       <!---->
        
       <div
-        class="h-full my-4 p-4 rounded-2xl border border-gray-300 bg-neutral-100"
+        class="h-full my-4 p-4 rounded-2xl border border-text-light-50 bg-text-light-95"
         data-testid="panel-component"
       >
         <div
@@ -1644,7 +1644,7 @@ exports[`Overview > should match snapshot initially 1`] = `
         >
           <!---->
           <h4
-            class="text-neutral-700 text-sm"
+            class="text-text-dark-25 text-sm"
           >
             <!---->
             <!---->
@@ -1657,7 +1657,7 @@ exports[`Overview > should match snapshot initially 1`] = `
           <!---->
            
           <p
-            class="text-sm text-neutral-500"
+            class="text-sm text-text"
           >
             Start anyway. Steps 1 and 2 tell you what a usable file looks like,
           which is far easier to act on before your consultation closes than
@@ -1679,7 +1679,7 @@ exports[`Overview > should match snapshot initially 1`] = `
       <!---->
       <a
         aria-pressed="false"
-        class="text-sm cursor-pointer rounded-md py-1 px-2 border border-gray-300 bg-primary text-white transition-colors duration-300 self-start inline-flex gap-1 items-center hover:bg-gray-100 hover:border-primary hover:text-primary svelte-1d0mdzt"
+        class="text-sm cursor-pointer rounded-md py-1 px-2 border border-text-light-50 bg-primary text-white transition-colors duration-300 self-start inline-flex gap-1 items-center hover:bg-text-light-80 hover:border-primary hover:text-primary svelte-1d0mdzt"
         data-variant="primary"
         disabled="false"
         href="/consultations/test-consultation/data-upload/select-provider"

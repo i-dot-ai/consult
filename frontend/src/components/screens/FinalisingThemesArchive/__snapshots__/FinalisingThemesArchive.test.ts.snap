@@ -10,11 +10,11 @@ exports[`FinalisingThemesArchive > should match snapshot after loading 1`] = `
       class="flex items-center justify-center"
     >
       <div
-        class="bg-pink-50 p-2 rounded-md"
+        class="bg-primary-light-95 p-2 rounded-md"
       >
         <svg
           aria-hidden="true"
-          class="fill-pink-700"
+          class="fill-primary"
           height="1.8rem"
           viewBox="0 -960 960 960"
           width="1.8rem"
@@ -39,7 +39,7 @@ exports[`FinalisingThemesArchive > should match snapshot after loading 1`] = `
     >
       <!---->
       <h1
-        class="text-neutral-700 text-2xl"
+        class="text-text-dark-25 text-2xl"
       >
         <!---->
         Finalise Themes
@@ -50,7 +50,7 @@ exports[`FinalisingThemesArchive > should match snapshot after loading 1`] = `
       <!---->
        
       <p
-        class="text-neutral-600 text-md"
+        class="text-text text-md"
       >
         Finalise themes to use for AI to map responses to
       </p>
@@ -72,7 +72,7 @@ exports[`FinalisingThemesArchive > should match snapshot after loading 1`] = `
   <!---->
   <section>
     <div
-      class="h-full my-4 p-4 rounded-2xl border border-secondary bg-neutral-50"
+      class="h-full my-4 p-4 rounded-2xl border border-success bg-text-light-95"
       data-testid="panel-component"
     >
       <div
@@ -80,14 +80,14 @@ exports[`FinalisingThemesArchive > should match snapshot after loading 1`] = `
       >
         <ol
           aria-label="Consultation progress"
-          class="px-1 flex items-center justify-around gap-4 text-xs text-center text-neutral-700 mb-8 w-3/4 mx-auto overflow-x-auto"
+          class="px-1 flex items-center justify-around gap-4 text-xs text-center text-text-dark-25 mb-8 w-3/4 mx-auto overflow-x-auto"
         >
           <li>
             <div
               class="flex min-w-16 flex-col items-center"
             >
               <div
-                class="my-2 rounded-full p-2 bg-secondary"
+                class="my-2 rounded-full p-2 bg-success"
               >
                 <svg
                   aria-hidden="true"
@@ -122,7 +122,7 @@ exports[`FinalisingThemesArchive > should match snapshot after loading 1`] = `
               class="flex min-w-16 flex-col items-center"
             >
               <div
-                class="my-2 rounded-full p-2 bg-secondary ring-4 ring-teal-100"
+                class="my-2 rounded-full p-2 bg-success ring-4 ring-success-light-50"
               >
                 <svg
                   aria-hidden="true"
@@ -145,7 +145,7 @@ exports[`FinalisingThemesArchive > should match snapshot after loading 1`] = `
               </div>
                
               <h3
-                class="text-xs text-secondary"
+                class="text-xs text-success"
               >
                 Finalising Themes
               </h3>
@@ -157,11 +157,11 @@ exports[`FinalisingThemesArchive > should match snapshot after loading 1`] = `
               class="flex min-w-16 flex-col items-center"
             >
               <div
-                class="my-2 rounded-full p-2 bg-neutral-200"
+                class="my-2 rounded-full p-2 bg-text-light-80"
               >
                 <svg
                   aria-hidden="true"
-                  class="fill-neutral-500"
+                  class="fill-text"
                   height="1.2rem"
                   viewBox="0 -960 960 960"
                   width="1.2rem"
@@ -192,11 +192,11 @@ exports[`FinalisingThemesArchive > should match snapshot after loading 1`] = `
               class="flex min-w-16 flex-col items-center"
             >
               <div
-                class="my-2 rounded-full p-2 bg-neutral-200"
+                class="my-2 rounded-full p-2 bg-text-light-80"
               >
                 <svg
                   aria-hidden="true"
-                  class="fill-neutral-500"
+                  class="fill-text"
                   height="1.2rem"
                   viewBox="0 -960 960 960"
                   width="1.2rem"
@@ -229,20 +229,20 @@ exports[`FinalisingThemesArchive > should match snapshot after loading 1`] = `
           class="px-0 md:px-16"
         >
           <h2
-            class="text-center text-secondary"
+            class="text-center text-success"
           >
             Finalising Themes
           </h2>
            
           <p
-            class="my-4 text-center text-sm text-neutral-500"
+            class="my-4 text-center text-sm text-text"
           >
             Review and sign off themes for each consultation question.
     0 of 3 questions signed off.
           </p>
            
           <p
-            class="my-4 text-center text-sm text-neutral-500"
+            class="my-4 text-center text-sm text-text"
           >
             <strong>
               Next:
@@ -278,11 +278,11 @@ exports[`FinalisingThemesArchive > should match snapshot after loading 1`] = `
           class="flex items-center justify-center"
         >
           <div
-            class="bg-pink-50 p-2 rounded-md"
+            class="bg-primary-light-95 p-2 rounded-md"
           >
             <svg
               aria-hidden="true"
-              class="fill-pink-700"
+              class="fill-primary"
               height="1.3rem"
               viewBox="0 -960 960 960"
               width="1.3rem"
@@ -306,7 +306,7 @@ exports[`FinalisingThemesArchive > should match snapshot after loading 1`] = `
         >
           <!---->
           <h2
-            class="text-neutral-700 text-lg"
+            class="text-text-dark-25 text-lg"
           >
             <!---->
             All consultation questions
@@ -317,7 +317,7 @@ exports[`FinalisingThemesArchive > should match snapshot after loading 1`] = `
           <!---->
            
           <p
-            class="text-neutral-600 text-sm"
+            class="text-text text-sm"
           >
             Browse or search through all questions in this consultation.
           </p>
@@ -338,7 +338,7 @@ exports[`FinalisingThemesArchive > should match snapshot after loading 1`] = `
     </div>
      
     <div
-      class="h-full my-4 p-4 rounded-2xl border border-gray-200 bg-neutral-50"
+      class="h-full my-4 p-4 rounded-2xl border border-text-light-80"
       data-testid="panel-component"
     >
       <!---->
@@ -354,7 +354,7 @@ exports[`FinalisingThemesArchive > should match snapshot after loading 1`] = `
           </label>
            
           <input
-            class="h-9 w-full p-1 border border-gray-300 rounded-xs focus:outline-2 focus:outline-yellow-300 pl-8 pr-4 svelte-1auzwdn"
+            class="h-9 w-full p-1 border border-text-light-50 rounded-xs focus:outline-2 focus:outline-warning-light-50 pl-8 pr-4 svelte-1auzwdn"
             id="search-input"
             placeholder="Search..."
             type="text"
@@ -367,7 +367,7 @@ exports[`FinalisingThemesArchive > should match snapshot after loading 1`] = `
           >
             <svg
               aria-hidden="true"
-              class="fill-neutral-400"
+              class="fill-text"
               height="1.2rem"
               viewBox="0 -960 960 960"
               width="1.2rem"
@@ -400,7 +400,7 @@ exports[`FinalisingThemesArchive > should match snapshot after loading 1`] = `
             <!---->
             <div
               aria-label="Click to view question: What measures should we consider to better support and increase rural affordable housing?"
-              class="transition-colors duration-300 block rounded-xl cursor-pointer hover:bg-gray-200"
+              class="transition-colors duration-300 block rounded-xl cursor-pointer hover:bg-text-light-80"
               data-testid="question-link-2d3bea3e-abd1-4231-80d9-41a974724731"
               role="button"
               tabindex="0"
@@ -409,7 +409,7 @@ exports[`FinalisingThemesArchive > should match snapshot after loading 1`] = `
               <!---->
               <!---->
               <div
-                class="h-full my-4 p-4 rounded-2xl border border-gray-200"
+                class="h-full my-4 p-4 rounded-2xl border border-text-light-80"
                 data-testid="panel-component"
               >
                 <article
@@ -423,7 +423,7 @@ exports[`FinalisingThemesArchive > should match snapshot after loading 1`] = `
                     >
                       <svg
                         aria-hidden="true"
-                        class="fill-secondary"
+                        class="fill-success"
                         height="1.3rem"
                         viewBox="0 -960 960 960"
                         width="1.3rem"
@@ -494,7 +494,7 @@ exports[`FinalisingThemesArchive > should match snapshot after loading 1`] = `
                           <button
                             aria-label="Add question to favourites"
                             aria-pressed="false"
-                            class="text-md cursor-pointer rounded-md py-1 px-2 border border-transparent transition-colors duration-300 self-start inline-flex gap-1 items-center hover:bg-gray-100 svelte-1d0mdzt"
+                            class="text-md cursor-pointer rounded-md py-1 px-2 border border-transparent hover:bg-text-light-80 transition-colors duration-300 self-start inline-flex gap-1 items-center hover:bg-text-light-80 svelte-1d0mdzt"
                             data-testid="favourite-button-2d3bea3e-abd1-4231-80d9-41a974724731"
                             data-variant="ghost"
                             role="button"
@@ -504,7 +504,7 @@ exports[`FinalisingThemesArchive > should match snapshot after loading 1`] = `
                             <!---->
                             <svg
                               aria-hidden="true"
-                              class="fill-gray-500"
+                              class="fill-text"
                               height="1.3rem"
                               viewBox="0 -960 960 960"
                               width="1.3rem"
@@ -552,7 +552,7 @@ exports[`FinalisingThemesArchive > should match snapshot after loading 1`] = `
             <!---->
             <div
               aria-label="Click to view question: Are there other ways in which we can ensure that development supports and does not compromise food production?"
-              class="transition-colors duration-300 block rounded-xl cursor-pointer hover:bg-gray-200"
+              class="transition-colors duration-300 block rounded-xl cursor-pointer hover:bg-text-light-80"
               data-testid="question-link-7b809f89-a7a0-4c31-b788-008eef73f396"
               role="button"
               tabindex="0"
@@ -561,7 +561,7 @@ exports[`FinalisingThemesArchive > should match snapshot after loading 1`] = `
               <!---->
               <!---->
               <div
-                class="h-full my-4 p-4 rounded-2xl border border-gray-200"
+                class="h-full my-4 p-4 rounded-2xl border border-text-light-80"
                 data-testid="panel-component"
               >
                 <article
@@ -575,7 +575,7 @@ exports[`FinalisingThemesArchive > should match snapshot after loading 1`] = `
                     >
                       <svg
                         aria-hidden="true"
-                        class="fill-secondary"
+                        class="fill-success"
                         height="1.3rem"
                         viewBox="0 -960 960 960"
                         width="1.3rem"
@@ -646,7 +646,7 @@ exports[`FinalisingThemesArchive > should match snapshot after loading 1`] = `
                           <button
                             aria-label="Add question to favourites"
                             aria-pressed="false"
-                            class="text-md cursor-pointer rounded-md py-1 px-2 border border-transparent transition-colors duration-300 self-start inline-flex gap-1 items-center hover:bg-gray-100 svelte-1d0mdzt"
+                            class="text-md cursor-pointer rounded-md py-1 px-2 border border-transparent hover:bg-text-light-80 transition-colors duration-300 self-start inline-flex gap-1 items-center hover:bg-text-light-80 svelte-1d0mdzt"
                             data-testid="favourite-button-7b809f89-a7a0-4c31-b788-008eef73f396"
                             data-variant="ghost"
                             role="button"
@@ -656,7 +656,7 @@ exports[`FinalisingThemesArchive > should match snapshot after loading 1`] = `
                             <!---->
                             <svg
                               aria-hidden="true"
-                              class="fill-gray-500"
+                              class="fill-text"
                               height="1.3rem"
                               viewBox="0 -960 960 960"
                               width="1.3rem"
@@ -704,7 +704,7 @@ exports[`FinalisingThemesArchive > should match snapshot after loading 1`] = `
             <!---->
             <div
               aria-label="Click to view question: What would be the most appropriate way to promote high percentage Social Rent/affordable housing developments?"
-              class="transition-colors duration-300 block rounded-xl cursor-pointer hover:bg-gray-200"
+              class="transition-colors duration-300 block rounded-xl cursor-pointer hover:bg-text-light-80"
               data-testid="question-link-021b9599-35c3-42d5-afba-45aa691dfe53"
               role="button"
               tabindex="0"
@@ -713,7 +713,7 @@ exports[`FinalisingThemesArchive > should match snapshot after loading 1`] = `
               <!---->
               <!---->
               <div
-                class="h-full my-4 p-4 rounded-2xl border border-gray-200"
+                class="h-full my-4 p-4 rounded-2xl border border-text-light-80"
                 data-testid="panel-component"
               >
                 <article
@@ -727,7 +727,7 @@ exports[`FinalisingThemesArchive > should match snapshot after loading 1`] = `
                     >
                       <svg
                         aria-hidden="true"
-                        class="fill-secondary"
+                        class="fill-success"
                         height="1.3rem"
                         viewBox="0 -960 960 960"
                         width="1.3rem"
@@ -798,7 +798,7 @@ exports[`FinalisingThemesArchive > should match snapshot after loading 1`] = `
                           <button
                             aria-label="Add question to favourites"
                             aria-pressed="false"
-                            class="text-md cursor-pointer rounded-md py-1 px-2 border border-transparent transition-colors duration-300 self-start inline-flex gap-1 items-center hover:bg-gray-100 svelte-1d0mdzt"
+                            class="text-md cursor-pointer rounded-md py-1 px-2 border border-transparent hover:bg-text-light-80 transition-colors duration-300 self-start inline-flex gap-1 items-center hover:bg-text-light-80 svelte-1d0mdzt"
                             data-testid="favourite-button-021b9599-35c3-42d5-afba-45aa691dfe53"
                             data-variant="ghost"
                             role="button"
@@ -808,7 +808,7 @@ exports[`FinalisingThemesArchive > should match snapshot after loading 1`] = `
                             <!---->
                             <svg
                               aria-hidden="true"
-                              class="fill-gray-500"
+                              class="fill-text"
                               height="1.3rem"
                               viewBox="0 -960 960 960"
                               width="1.3rem"
@@ -860,11 +860,11 @@ exports[`FinalisingThemesArchive > should match snapshot after loading 1`] = `
   <div>
      
     <div
-      class="h-full my-4 p-4 rounded-2xl border border-gray-200"
+      class="h-full my-4 p-4 rounded-2xl border border-text-light-80"
       data-testid="panel-component"
     >
       <div
-        class="flex items-center justify-start gap-2 rounded-lg bg-pink-50 p-2"
+        class="flex items-center justify-start gap-2 rounded-lg bg-error-light-95 p-2"
         data-testid="alert-error"
       >
         <div
@@ -872,7 +872,7 @@ exports[`FinalisingThemesArchive > should match snapshot after loading 1`] = `
         >
           <svg
             aria-hidden="true"
-            class="fill-pink-700"
+            class="fill-error"
             height="1rem"
             viewBox="0 -960 960 960"
             width="1rem"
@@ -892,7 +892,7 @@ exports[`FinalisingThemesArchive > should match snapshot after loading 1`] = `
         <!---->
          
         <div
-          class="w-full text-pink-700"
+          class="w-full text-error"
         >
           Unexpected onboarding tour error
           <!---->
@@ -918,11 +918,11 @@ exports[`FinalisingThemesArchive > should match snapshot initially 1`] = `
       class="flex items-center justify-center"
     >
       <div
-        class="bg-pink-50 p-2 rounded-md"
+        class="bg-primary-light-95 p-2 rounded-md"
       >
         <svg
           aria-hidden="true"
-          class="fill-pink-700"
+          class="fill-primary"
           height="1.8rem"
           viewBox="0 -960 960 960"
           width="1.8rem"
@@ -947,7 +947,7 @@ exports[`FinalisingThemesArchive > should match snapshot initially 1`] = `
     >
       <!---->
       <h1
-        class="text-neutral-700 text-2xl"
+        class="text-text-dark-25 text-2xl"
       >
         <!---->
         Finalise Themes
@@ -958,7 +958,7 @@ exports[`FinalisingThemesArchive > should match snapshot initially 1`] = `
       <!---->
        
       <p
-        class="text-neutral-600 text-md"
+        class="text-text text-md"
       >
         Finalise themes to use for AI to map responses to
       </p>
@@ -995,11 +995,11 @@ exports[`FinalisingThemesArchive > should match snapshot initially 1`] = `
           class="flex items-center justify-center"
         >
           <div
-            class="bg-pink-50 p-2 rounded-md"
+            class="bg-primary-light-95 p-2 rounded-md"
           >
             <svg
               aria-hidden="true"
-              class="fill-pink-700"
+              class="fill-primary"
               height="1.3rem"
               viewBox="0 -960 960 960"
               width="1.3rem"
@@ -1023,7 +1023,7 @@ exports[`FinalisingThemesArchive > should match snapshot initially 1`] = `
         >
           <!---->
           <h2
-            class="text-neutral-700 text-lg"
+            class="text-text-dark-25 text-lg"
           >
             <!---->
             All consultation questions
@@ -1034,7 +1034,7 @@ exports[`FinalisingThemesArchive > should match snapshot initially 1`] = `
           <!---->
            
           <p
-            class="text-neutral-600 text-sm"
+            class="text-text text-sm"
           >
             Browse or search through all questions in this consultation.
           </p>
@@ -1055,7 +1055,7 @@ exports[`FinalisingThemesArchive > should match snapshot initially 1`] = `
     </div>
      
     <div
-      class="h-full my-4 p-4 rounded-2xl border border-gray-200 bg-neutral-50"
+      class="h-full my-4 p-4 rounded-2xl border border-text-light-80"
       data-testid="panel-component"
     >
       <!---->
@@ -1068,7 +1068,7 @@ exports[`FinalisingThemesArchive > should match snapshot initially 1`] = `
         >
           <svg
             aria-hidden="true"
-            class="fill-neutral-300"
+            class="fill-text-light-50"
             height="5rem"
             viewBox="0 -960 960 960"
             width="5rem"
@@ -1086,7 +1086,7 @@ exports[`FinalisingThemesArchive > should match snapshot initially 1`] = `
         <!---->
          
         <p
-          class="text-center text-neutral-500"
+          class="text-center text-text"
         >
           Loading questions...
         </p>
@@ -1101,11 +1101,11 @@ exports[`FinalisingThemesArchive > should match snapshot initially 1`] = `
   <div>
      
     <div
-      class="h-full my-4 p-4 rounded-2xl border border-gray-200"
+      class="h-full my-4 p-4 rounded-2xl border border-text-light-80"
       data-testid="panel-component"
     >
       <div
-        class="flex items-center justify-start gap-2 rounded-lg bg-pink-50 p-2"
+        class="flex items-center justify-start gap-2 rounded-lg bg-error-light-95 p-2"
         data-testid="alert-error"
       >
         <div
@@ -1113,7 +1113,7 @@ exports[`FinalisingThemesArchive > should match snapshot initially 1`] = `
         >
           <svg
             aria-hidden="true"
-            class="fill-pink-700"
+            class="fill-error"
             height="1rem"
             viewBox="0 -960 960 960"
             width="1rem"
@@ -1133,7 +1133,7 @@ exports[`FinalisingThemesArchive > should match snapshot initially 1`] = `
         <!---->
          
         <div
-          class="w-full text-pink-700"
+          class="w-full text-error"
         >
           Unexpected onboarding tour error
           <!---->
@@ -1159,11 +1159,11 @@ exports[`FinalisingThemesArchive > should match snapshot when a job is running 1
       class="flex items-center justify-center"
     >
       <div
-        class="bg-pink-50 p-2 rounded-md"
+        class="bg-primary-light-95 p-2 rounded-md"
       >
         <svg
           aria-hidden="true"
-          class="fill-pink-700"
+          class="fill-primary"
           height="1.8rem"
           viewBox="0 -960 960 960"
           width="1.8rem"
@@ -1188,7 +1188,7 @@ exports[`FinalisingThemesArchive > should match snapshot when a job is running 1
     >
       <!---->
       <h1
-        class="text-neutral-700 text-2xl"
+        class="text-text-dark-25 text-2xl"
       >
         <!---->
         Finalise Themes
@@ -1199,7 +1199,7 @@ exports[`FinalisingThemesArchive > should match snapshot when a job is running 1
       <!---->
        
       <p
-        class="text-neutral-600 text-md"
+        class="text-text text-md"
       >
         Finalise themes to use for AI to map responses to
       </p>
@@ -1236,11 +1236,11 @@ exports[`FinalisingThemesArchive > should match snapshot when a job is running 1
           class="flex items-center justify-center"
         >
           <div
-            class="bg-pink-50 p-2 rounded-md"
+            class="bg-primary-light-95 p-2 rounded-md"
           >
             <svg
               aria-hidden="true"
-              class="fill-pink-700"
+              class="fill-primary"
               height="1.3rem"
               viewBox="0 -960 960 960"
               width="1.3rem"
@@ -1264,7 +1264,7 @@ exports[`FinalisingThemesArchive > should match snapshot when a job is running 1
         >
           <!---->
           <h2
-            class="text-neutral-700 text-lg"
+            class="text-text-dark-25 text-lg"
           >
             <!---->
             All consultation questions
@@ -1275,7 +1275,7 @@ exports[`FinalisingThemesArchive > should match snapshot when a job is running 1
           <!---->
            
           <p
-            class="text-neutral-600 text-sm"
+            class="text-text text-sm"
           >
             Browse or search through all questions in this consultation.
           </p>
@@ -1296,7 +1296,7 @@ exports[`FinalisingThemesArchive > should match snapshot when a job is running 1
     </div>
      
     <div
-      class="h-full my-4 p-4 rounded-2xl border border-gray-200 bg-neutral-50"
+      class="h-full my-4 p-4 rounded-2xl border border-text-light-80"
       data-testid="panel-component"
     >
       <!---->
@@ -1309,7 +1309,7 @@ exports[`FinalisingThemesArchive > should match snapshot when a job is running 1
         >
           <svg
             aria-hidden="true"
-            class="fill-neutral-300"
+            class="fill-text-light-50"
             height="5rem"
             viewBox="0 -960 960 960"
             width="5rem"
@@ -1327,7 +1327,7 @@ exports[`FinalisingThemesArchive > should match snapshot when a job is running 1
         <!---->
          
         <p
-          class="text-center text-neutral-500"
+          class="text-center text-text"
         >
           Loading questions...
         </p>
@@ -1342,11 +1342,11 @@ exports[`FinalisingThemesArchive > should match snapshot when a job is running 1
   <div>
      
     <div
-      class="h-full my-4 p-4 rounded-2xl border border-gray-200"
+      class="h-full my-4 p-4 rounded-2xl border border-text-light-80"
       data-testid="panel-component"
     >
       <div
-        class="flex items-center justify-start gap-2 rounded-lg bg-pink-50 p-2"
+        class="flex items-center justify-start gap-2 rounded-lg bg-error-light-95 p-2"
         data-testid="alert-error"
       >
         <div
@@ -1354,7 +1354,7 @@ exports[`FinalisingThemesArchive > should match snapshot when a job is running 1
         >
           <svg
             aria-hidden="true"
-            class="fill-pink-700"
+            class="fill-error"
             height="1rem"
             viewBox="0 -960 960 960"
             width="1rem"
@@ -1374,7 +1374,7 @@ exports[`FinalisingThemesArchive > should match snapshot when a job is running 1
         <!---->
          
         <div
-          class="w-full text-pink-700"
+          class="w-full text-error"
         >
           Unexpected onboarding tour error
           <!---->

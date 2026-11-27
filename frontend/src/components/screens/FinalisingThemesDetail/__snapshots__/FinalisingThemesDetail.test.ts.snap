@@ -11,7 +11,7 @@ exports[`FinalisingThemesDetail > should match snapshot after loading 1`] = `
     <!---->
     <button
       aria-pressed="false"
-      class="text-sm cursor-pointer rounded-md py-1 px-2 border border-transparent transition-colors duration-300 self-start inline-flex gap-1 items-center hover:bg-gray-100 svelte-1d0mdzt"
+      class="text-sm cursor-pointer rounded-md py-1 px-2 border border-transparent hover:bg-text-light-80 transition-colors duration-300 self-start inline-flex gap-1 items-center hover:bg-text-light-80 svelte-1d0mdzt"
       data-testid="back-button"
       data-variant="ghost"
       role="button"
@@ -20,14 +20,14 @@ exports[`FinalisingThemesDetail > should match snapshot after loading 1`] = `
       <!---->
       <!---->
       <div
-        class="flex items-center gap-2 text-neutral-700"
+        class="flex items-center gap-2 text-text-dark-25"
       >
         <div
           class="rotate-180"
         >
           <svg
             aria-hidden="true"
-            class="fill-neutral-500"
+            class="fill-text"
             height="1rem"
             viewBox="0 -960 960 960"
             width="1rem"
@@ -60,11 +60,11 @@ exports[`FinalisingThemesDetail > should match snapshot after loading 1`] = `
       class="flex items-center justify-center"
     >
       <div
-        class="bg-pink-50 p-2 rounded-md"
+        class="bg-primary-light-95 p-2 rounded-md"
       >
         <svg
           aria-hidden="true"
-          class="fill-pink-700"
+          class="fill-primary"
           height="1.3rem"
           viewBox="0 -960 960 960"
           width="1.3rem"
@@ -89,7 +89,7 @@ exports[`FinalisingThemesDetail > should match snapshot after loading 1`] = `
     >
       <!---->
       <h1
-        class="text-neutral-700 text-xl"
+        class="text-text-dark-25 text-xl"
       >
         <!---->
         Finalise Themes
@@ -100,7 +100,7 @@ exports[`FinalisingThemesDetail > should match snapshot after loading 1`] = `
       <!---->
        
       <p
-        class="text-neutral-600 text-md"
+        class="text-text text-md"
       >
         Finalise themes to use for AI to assign responses to
       </p>
@@ -114,7 +114,7 @@ exports[`FinalisingThemesDetail > should match snapshot after loading 1`] = `
         <!---->
         <button
           aria-pressed="false"
-          class="text-xs cursor-pointer rounded-md py-0.5 px-1 border border-gray-300 bg-white transition-colors duration-300 self-start inline-flex gap-1 items-center hover:bg-gray-100 svelte-1d0mdzt"
+          class="text-xs cursor-pointer rounded-md py-0.5 px-1 border border-text-light-50 bg-white transition-colors duration-300 self-start inline-flex gap-1 items-center hover:bg-text-light-80 svelte-1d0mdzt"
           data-variant="default"
           role="button"
           tabindex="0"
@@ -146,14 +146,14 @@ exports[`FinalisingThemesDetail > should match snapshot after loading 1`] = `
   </section>
    
   <section
-    class="selected-section my-4 p-4 bg-pink-50/25 rounded-xl border border-pink-100 svelte-k1jrp"
+    class="selected-section my-4 p-4 rounded-xl border border-text-light-80 svelte-k1jrp"
   >
     <div
       class="mb-4"
       id="onboarding-steps-2-and-3"
     >
       <div
-        class="h-full my-4 p-4 rounded-2xl border border-pink-200 bg-pink-50"
+        class="h-full my-4 p-4 rounded-2xl border border-primary-light-80 bg-primary-light-95"
         data-testid="panel-component"
       >
         <div
@@ -184,7 +184,7 @@ exports[`FinalisingThemesDetail > should match snapshot after loading 1`] = `
             </h3>
              
             <div
-              class="flex justify-between items-center gap-2 rounded-md w-max py-0.5 px-2 text-xs bg-pink-100 text-primary border border-pink-300"
+              class="flex justify-between items-center gap-2 rounded-md w-max py-0.5 px-2 text-xs bg-primary-light-95 text-primary border border-primary-light-80"
             >
               1 selected
               <!---->
@@ -195,7 +195,7 @@ exports[`FinalisingThemesDetail > should match snapshot after loading 1`] = `
           <!---->
           <button
             aria-pressed="false"
-            class="text-sm cursor-pointer rounded-md py-1 px-2 border border-gray-300 bg-white transition-colors duration-300 self-start inline-flex gap-1 items-center hover:bg-gray-100 svelte-1d0mdzt"
+            class="text-sm cursor-pointer rounded-md py-1 px-2 border border-text-light-50 bg-white transition-colors duration-300 self-start inline-flex gap-1 items-center hover:bg-text-light-80 svelte-1d0mdzt"
             data-variant="default"
             role="button"
             tabindex="0"
@@ -216,7 +216,7 @@ exports[`FinalisingThemesDetail > should match snapshot after loading 1`] = `
         </div>
          
         <p
-          class="text-sm text-neutral-500"
+          class="text-sm text-text"
         >
           Manage your 1 selected theme for AI to assign responses to. Edit titles or descriptions, or add
             a new theme.
@@ -242,7 +242,7 @@ exports[`FinalisingThemesDetail > should match snapshot after loading 1`] = `
         >
           <div>
             <div
-              class="h-full my-4 p-4 rounded-2xl border border-gray-200"
+              class="h-full my-4 p-4 rounded-2xl border border-text-light-80"
               data-testid="panel-component"
             >
               <div
@@ -262,7 +262,7 @@ exports[`FinalisingThemesDetail > should match snapshot after loading 1`] = `
                   </header>
                    
                   <p
-                    class="my-4 text-sm text-neutral-700"
+                    class="my-4 text-sm text-text-dark-25"
                   >
                     Ideas for innovative packaging solutions.
                   </p>
@@ -272,7 +272,7 @@ exports[`FinalisingThemesDetail > should match snapshot after loading 1`] = `
                   />
                    
                   <small
-                    class="mb-4 block text-xs text-neutral-500"
+                    class="mb-4 block text-xs text-text"
                   >
                     Added
               &lt;FORMATTED_TIME_DELTA_TEXT&gt; ago by admin@example.com
@@ -284,7 +284,7 @@ exports[`FinalisingThemesDetail > should match snapshot after loading 1`] = `
                     <!---->
                     <button
                       aria-pressed="false"
-                      class="text-sm cursor-pointer rounded-md py-1 px-2 border border-gray-300 bg-white transition-colors duration-300 self-start inline-flex gap-1 items-center hover:bg-gray-100 svelte-1d0mdzt"
+                      class="text-sm cursor-pointer rounded-md py-1 px-2 border border-text-light-50 bg-white transition-colors duration-300 self-start inline-flex gap-1 items-center hover:bg-text-light-80 svelte-1d0mdzt"
                       data-testid="selected-theme-edit-button"
                       data-variant="default"
                       role="button"
@@ -295,7 +295,7 @@ exports[`FinalisingThemesDetail > should match snapshot after loading 1`] = `
                       <!---->
                       <svg
                         aria-hidden="true"
-                        class="fill-neutral-500"
+                        class="fill-text"
                         height="1rem"
                         viewBox="0 -960 960 960"
                         width="1rem"
@@ -319,7 +319,7 @@ exports[`FinalisingThemesDetail > should match snapshot after loading 1`] = `
                     <!---->
                     <button
                       aria-pressed="false"
-                      class="text-sm cursor-pointer rounded-md py-1 px-2 border border-gray-300 bg-white transition-colors duration-300 self-start inline-flex gap-1 items-center hover:bg-gray-100 svelte-1d0mdzt"
+                      class="text-sm cursor-pointer rounded-md py-1 px-2 border border-text-light-50 bg-white transition-colors duration-300 self-start inline-flex gap-1 items-center hover:bg-text-light-80 svelte-1d0mdzt"
                       data-variant="default"
                       role="button"
                       tabindex="0"
@@ -329,7 +329,7 @@ exports[`FinalisingThemesDetail > should match snapshot after loading 1`] = `
                       <!---->
                       <svg
                         aria-hidden="true"
-                        class="fill-neutral-500"
+                        class="fill-text"
                         height="1rem"
                         viewBox="0 -960 960 960"
                         width="1rem"
@@ -371,7 +371,7 @@ exports[`FinalisingThemesDetail > should match snapshot after loading 1`] = `
     <!---->
     <button
       aria-pressed="false"
-      class="w-full text-md cursor-pointer rounded-md py-1 px-2 border border-gray-300 bg-primary text-white transition-colors duration-300 self-start inline-flex gap-1 items-center hover:bg-gray-100 hover:border-primary hover:text-primary svelte-1d0mdzt"
+      class="w-full text-md cursor-pointer rounded-md py-1 px-2 border border-text-light-50 bg-primary text-white transition-colors duration-300 self-start inline-flex gap-1 items-center hover:bg-text-light-80 hover:border-primary hover:text-primary svelte-1d0mdzt"
       data-variant="primary"
       role="button"
       tabindex="0"
@@ -421,7 +421,7 @@ exports[`FinalisingThemesDetail > should match snapshot after loading 1`] = `
     class="relative w-full my-8 after:w-full after:border-b after:absolute after:left-0 after:right-0 after:bottom-1/2 after:-z-10 svelte-k1jrp"
   >
     <p
-      class="m-auto w-max bg-white px-4 text-sm text-neutral-500 svelte-k1jrp"
+      class="m-auto w-max bg-white px-4 text-sm text-text svelte-k1jrp"
     >
       Browse AI Generated Themes
     </p>
@@ -429,14 +429,14 @@ exports[`FinalisingThemesDetail > should match snapshot after loading 1`] = `
    
   <section>
     <div
-      class="h-full my-4 p-4 rounded-2xl border border-gray-200"
+      class="h-full my-4 p-4 rounded-2xl border border-text-light-80"
       data-testid="panel-component"
     >
       <div
         id="onboarding-step-1"
       >
         <div
-          class="h-full my-4 p-4 rounded-2xl border border-teal-200 bg-teal-50"
+          class="h-full my-4 p-4 rounded-2xl border border-success-light-80 bg-success-light-95"
           data-testid="panel-component"
         >
           <div
@@ -447,7 +447,7 @@ exports[`FinalisingThemesDetail > should match snapshot after loading 1`] = `
             >
               <svg
                 aria-hidden="true"
-                class="fill-secondary"
+                class="fill-success"
                 height="1rem"
                 viewBox="0 -960 960 960"
                 width="1rem"
@@ -467,7 +467,7 @@ exports[`FinalisingThemesDetail > should match snapshot after loading 1`] = `
               </h3>
                
               <div
-                class="flex justify-between items-center gap-2 rounded-md w-max py-0.5 px-2 text-xs text-secondary bg-teal-50 border border-teal-400"
+                class="flex justify-between items-center gap-2 rounded-md w-max py-0.5 px-2 text-xs text-success bg-success-light-95 border border-success-light-80"
               >
                 0 available
                 <!---->
@@ -483,7 +483,7 @@ exports[`FinalisingThemesDetail > should match snapshot after loading 1`] = `
           </div>
            
           <p
-            class="text-sm text-neutral-500"
+            class="text-sm text-text"
           >
             Browse themes found by the AI and click "Select" to add a theme to
             your list of selected themes for analysis.
@@ -505,11 +505,11 @@ exports[`FinalisingThemesDetail > should match snapshot after loading 1`] = `
   <div>
      
     <div
-      class="h-full my-4 p-4 rounded-2xl border border-gray-200"
+      class="h-full my-4 p-4 rounded-2xl border border-text-light-80"
       data-testid="panel-component"
     >
       <div
-        class="flex items-center justify-start gap-2 rounded-lg bg-pink-50 p-2"
+        class="flex items-center justify-start gap-2 rounded-lg bg-error-light-95 p-2"
         data-testid="alert-error"
       >
         <div
@@ -517,7 +517,7 @@ exports[`FinalisingThemesDetail > should match snapshot after loading 1`] = `
         >
           <svg
             aria-hidden="true"
-            class="fill-pink-700"
+            class="fill-error"
             height="1rem"
             viewBox="0 -960 960 960"
             width="1rem"
@@ -537,7 +537,7 @@ exports[`FinalisingThemesDetail > should match snapshot after loading 1`] = `
         <!---->
          
         <div
-          class="w-full text-pink-700"
+          class="w-full text-error"
         >
           Unexpected onboarding tour error
           <!---->
@@ -564,7 +564,7 @@ exports[`FinalisingThemesDetail > should match snapshot initially 1`] = `
     <!---->
     <button
       aria-pressed="false"
-      class="text-sm cursor-pointer rounded-md py-1 px-2 border border-transparent transition-colors duration-300 self-start inline-flex gap-1 items-center hover:bg-gray-100 svelte-1d0mdzt"
+      class="text-sm cursor-pointer rounded-md py-1 px-2 border border-transparent hover:bg-text-light-80 transition-colors duration-300 self-start inline-flex gap-1 items-center hover:bg-text-light-80 svelte-1d0mdzt"
       data-testid="back-button"
       data-variant="ghost"
       role="button"
@@ -573,14 +573,14 @@ exports[`FinalisingThemesDetail > should match snapshot initially 1`] = `
       <!---->
       <!---->
       <div
-        class="flex items-center gap-2 text-neutral-700"
+        class="flex items-center gap-2 text-text-dark-25"
       >
         <div
           class="rotate-180"
         >
           <svg
             aria-hidden="true"
-            class="fill-neutral-500"
+            class="fill-text"
             height="1rem"
             viewBox="0 -960 960 960"
             width="1rem"
@@ -613,11 +613,11 @@ exports[`FinalisingThemesDetail > should match snapshot initially 1`] = `
       class="flex items-center justify-center"
     >
       <div
-        class="bg-pink-50 p-2 rounded-md"
+        class="bg-primary-light-95 p-2 rounded-md"
       >
         <svg
           aria-hidden="true"
-          class="fill-pink-700"
+          class="fill-primary"
           height="1.3rem"
           viewBox="0 -960 960 960"
           width="1.3rem"
@@ -642,7 +642,7 @@ exports[`FinalisingThemesDetail > should match snapshot initially 1`] = `
     >
       <!---->
       <h1
-        class="text-neutral-700 text-xl"
+        class="text-text-dark-25 text-xl"
       >
         <!---->
         Finalise Themes
@@ -653,7 +653,7 @@ exports[`FinalisingThemesDetail > should match snapshot initially 1`] = `
       <!---->
        
       <p
-        class="text-neutral-600 text-md"
+        class="text-text text-md"
       >
         Finalise themes to use for AI to assign responses to
       </p>
@@ -667,7 +667,7 @@ exports[`FinalisingThemesDetail > should match snapshot initially 1`] = `
         <!---->
         <button
           aria-pressed="false"
-          class="text-xs cursor-pointer rounded-md py-0.5 px-1 border border-gray-300 bg-white transition-colors duration-300 self-start inline-flex gap-1 items-center hover:bg-gray-100 svelte-1d0mdzt"
+          class="text-xs cursor-pointer rounded-md py-0.5 px-1 border border-text-light-50 bg-white transition-colors duration-300 self-start inline-flex gap-1 items-center hover:bg-text-light-80 svelte-1d0mdzt"
           data-variant="default"
           role="button"
           tabindex="0"
@@ -699,14 +699,14 @@ exports[`FinalisingThemesDetail > should match snapshot initially 1`] = `
   </section>
    
   <section
-    class="selected-section my-4 p-4 bg-pink-50/25 rounded-xl border border-pink-100 svelte-k1jrp"
+    class="selected-section my-4 p-4 rounded-xl border border-text-light-80 svelte-k1jrp"
   >
     <div
       class="mb-4"
       id="onboarding-steps-2-and-3"
     >
       <div
-        class="h-full my-4 p-4 rounded-2xl border border-pink-200 bg-pink-50"
+        class="h-full my-4 p-4 rounded-2xl border border-primary-light-80 bg-primary-light-95"
         data-testid="panel-component"
       >
         <div
@@ -737,7 +737,7 @@ exports[`FinalisingThemesDetail > should match snapshot initially 1`] = `
             </h3>
              
             <div
-              class="flex justify-between items-center gap-2 rounded-md w-max py-0.5 px-2 text-xs bg-pink-100 text-primary border border-pink-300"
+              class="flex justify-between items-center gap-2 rounded-md w-max py-0.5 px-2 text-xs bg-primary-light-95 text-primary border border-primary-light-80"
             >
               0 selected
               <!---->
@@ -748,7 +748,7 @@ exports[`FinalisingThemesDetail > should match snapshot initially 1`] = `
           <!---->
           <button
             aria-pressed="false"
-            class="text-sm cursor-pointer rounded-md py-1 px-2 border border-gray-300 bg-white transition-colors duration-300 self-start inline-flex gap-1 items-center hover:bg-gray-100 svelte-1d0mdzt"
+            class="text-sm cursor-pointer rounded-md py-1 px-2 border border-text-light-50 bg-white transition-colors duration-300 self-start inline-flex gap-1 items-center hover:bg-text-light-80 svelte-1d0mdzt"
             data-variant="default"
             role="button"
             tabindex="0"
@@ -769,7 +769,7 @@ exports[`FinalisingThemesDetail > should match snapshot initially 1`] = `
         </div>
          
         <p
-          class="text-sm text-neutral-500"
+          class="text-sm text-text"
         >
           Finalise the themes for the AI to assign responses to. Choose from
             the AI found themes or add new.
@@ -795,7 +795,7 @@ exports[`FinalisingThemesDetail > should match snapshot initially 1`] = `
     <!---->
     <button
       aria-pressed="false"
-      class="w-full text-md cursor-pointer rounded-md py-1 px-2 border border-gray-300 bg-primary text-white transition-colors duration-300 self-start inline-flex gap-1 items-center hover:bg-gray-100 hover:border-primary hover:text-primary disabled disabled:bg-gray-200 disabled:text-gray-400 disabled:cursor-not-allowed disabled:hover:bg-gray-200 disabled:hover:border-gray-300 disabled:hover:text-gray-400 svelte-1d0mdzt"
+      class="w-full text-md cursor-pointer rounded-md py-1 px-2 border border-text-light-50 bg-primary text-white transition-colors duration-300 self-start inline-flex gap-1 items-center hover:bg-text-light-80 hover:border-primary hover:text-primary disabled disabled:bg-text-light-80 disabled:text-text disabled:cursor-not-allowed disabled:hover:bg-text-light-80 disabled:hover:border-text-light-50 disabled:hover:text-text svelte-1d0mdzt"
       data-variant="primary"
       disabled=""
       role="button"
@@ -846,7 +846,7 @@ exports[`FinalisingThemesDetail > should match snapshot initially 1`] = `
     class="relative w-full my-8 after:w-full after:border-b after:absolute after:left-0 after:right-0 after:bottom-1/2 after:-z-10 svelte-k1jrp"
   >
     <p
-      class="m-auto w-max bg-white px-4 text-sm text-neutral-500 svelte-k1jrp"
+      class="m-auto w-max bg-white px-4 text-sm text-text svelte-k1jrp"
     >
       Browse AI Generated Themes
     </p>
@@ -854,14 +854,14 @@ exports[`FinalisingThemesDetail > should match snapshot initially 1`] = `
    
   <section>
     <div
-      class="h-full my-4 p-4 rounded-2xl border border-gray-200"
+      class="h-full my-4 p-4 rounded-2xl border border-text-light-80"
       data-testid="panel-component"
     >
       <div
         id="onboarding-step-1"
       >
         <div
-          class="h-full my-4 p-4 rounded-2xl border border-teal-200 bg-teal-50"
+          class="h-full my-4 p-4 rounded-2xl border border-success-light-80 bg-success-light-95"
           data-testid="panel-component"
         >
           <div
@@ -872,7 +872,7 @@ exports[`FinalisingThemesDetail > should match snapshot initially 1`] = `
             >
               <svg
                 aria-hidden="true"
-                class="fill-secondary"
+                class="fill-success"
                 height="1rem"
                 viewBox="0 -960 960 960"
                 width="1rem"
@@ -892,7 +892,7 @@ exports[`FinalisingThemesDetail > should match snapshot initially 1`] = `
               </h3>
                
               <div
-                class="flex justify-between items-center gap-2 rounded-md w-max py-0.5 px-2 text-xs text-secondary bg-teal-50 border border-teal-400"
+                class="flex justify-between items-center gap-2 rounded-md w-max py-0.5 px-2 text-xs text-success bg-success-light-95 border border-success-light-80"
               >
                 0 available
                 <!---->
@@ -908,7 +908,7 @@ exports[`FinalisingThemesDetail > should match snapshot initially 1`] = `
           </div>
            
           <p
-            class="text-sm text-neutral-500"
+            class="text-sm text-text"
           >
             Browse themes found by the AI and click "Select" to add a theme to
             your list of selected themes for analysis.
@@ -930,11 +930,11 @@ exports[`FinalisingThemesDetail > should match snapshot initially 1`] = `
   <div>
      
     <div
-      class="h-full my-4 p-4 rounded-2xl border border-gray-200"
+      class="h-full my-4 p-4 rounded-2xl border border-text-light-80"
       data-testid="panel-component"
     >
       <div
-        class="flex items-center justify-start gap-2 rounded-lg bg-pink-50 p-2"
+        class="flex items-center justify-start gap-2 rounded-lg bg-error-light-95 p-2"
         data-testid="alert-error"
       >
         <div
@@ -942,7 +942,7 @@ exports[`FinalisingThemesDetail > should match snapshot initially 1`] = `
         >
           <svg
             aria-hidden="true"
-            class="fill-pink-700"
+            class="fill-error"
             height="1rem"
             viewBox="0 -960 960 960"
             width="1rem"
@@ -962,7 +962,7 @@ exports[`FinalisingThemesDetail > should match snapshot initially 1`] = `
         <!---->
          
         <div
-          class="w-full text-pink-700"
+          class="w-full text-error"
         >
           Unexpected onboarding tour error
           <!---->

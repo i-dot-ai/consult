@@ -34,7 +34,7 @@ exports[`ConsultationView > should match snapshot after loading 1`] = `
     >
       <!---->
       <h2
-        class="text-neutral-700 text-lg"
+        class="text-text-dark-25 text-lg"
       >
         <!---->
         <!---->
@@ -54,7 +54,7 @@ exports[`ConsultationView > should match snapshot after loading 1`] = `
         <!---->
         <button
           aria-pressed="false"
-          class="text-sm cursor-pointer rounded-md py-1 px-2 border border-gray-300 bg-neutral-100 transition-colors duration-300 self-start inline-flex gap-1 items-center hover:bg-gray-100 svelte-1d0mdzt"
+          class="text-sm cursor-pointer rounded-md py-1 px-2 border border-text-light-50 bg-text-light-95 transition-colors duration-300 self-start inline-flex gap-1 items-center hover:bg-text-light-80 svelte-1d0mdzt"
           data-variant="gray"
           role="button"
           tabindex="0"
@@ -66,7 +66,7 @@ exports[`ConsultationView > should match snapshot after loading 1`] = `
           >
             <svg
               aria-hidden="true"
-              class="fill-neutral-500"
+              class="fill-text"
               height="1rem"
               viewBox="0 -960 960 960"
               width="1rem"
@@ -93,7 +93,7 @@ exports[`ConsultationView > should match snapshot after loading 1`] = `
         <!---->
         <button
           aria-pressed="false"
-          class="text-md cursor-pointer rounded-md py-1 px-2 border border-red-700 bg-transparent text-red-700 transition-colors duration-300 self-start inline-flex gap-1 items-center hover:bg-red-800 hover:text-white svelte-1d0mdzt"
+          class="text-md cursor-pointer rounded-md py-1 px-2 border border-error bg-transparent text-error transition-colors duration-300 self-start inline-flex gap-1 items-center hover:bg-error hover:text-white svelte-1d0mdzt"
           data-variant="danger"
           role="button"
           tabindex="0"
@@ -105,7 +105,7 @@ exports[`ConsultationView > should match snapshot after loading 1`] = `
           >
             <svg
               aria-hidden="true"
-              class="fill-red-700"
+              class="fill-error-dark-25"
               height="1rem"
               viewBox="0 -960 960 960"
               width="1rem"
@@ -133,7 +133,7 @@ exports[`ConsultationView > should match snapshot after loading 1`] = `
     <!---->
      
     <p
-      class="text-neutral-500 text-sm mt-2"
+      class="text-text text-sm mt-2"
     >
       Created by an unknown user on 29/01/2026. Only you can see it so far.
       <!---->
@@ -142,7 +142,7 @@ exports[`ConsultationView > should match snapshot after loading 1`] = `
    
   <section>
     <div
-      class="h-full my-4 p-4 rounded-2xl border border-gray-200"
+      class="h-full my-4 p-4 rounded-2xl border border-text-light-80"
       data-testid="panel-component"
     >
       <div
@@ -152,7 +152,7 @@ exports[`ConsultationView > should match snapshot after loading 1`] = `
           class="mb-3"
         >
           <div
-            class="flex justify-between items-center gap-2 rounded-md w-max py-0.5 px-2 text-xs text-secondary bg-teal-50 border border-teal-400"
+            class="flex justify-between items-center gap-2 rounded-md w-max py-0.5 px-2 text-xs text-success bg-success-light-95 border border-success-light-80"
           >
             Analysis
             <!---->
@@ -161,7 +161,7 @@ exports[`ConsultationView > should match snapshot after loading 1`] = `
         </div>
          
         <p
-          class="text-neutral-700 text-sm"
+          class="text-text-dark-25 text-sm"
         >
           Every response is assigned to a theme. Check the assignments before you report.
         </p>
@@ -172,7 +172,7 @@ exports[`ConsultationView > should match snapshot after loading 1`] = `
           <!---->
           <a
             aria-pressed="false"
-            class="text-sm cursor-pointer rounded-md py-1 px-2 border border-gray-300 bg-primary text-white transition-colors duration-300 self-start inline-flex gap-1 items-center hover:bg-gray-100 hover:border-primary hover:text-primary svelte-1d0mdzt"
+            class="text-sm cursor-pointer rounded-md py-1 px-2 border border-text-light-50 bg-primary text-white transition-colors duration-300 self-start inline-flex gap-1 items-center hover:bg-text-light-80 hover:border-primary hover:text-primary svelte-1d0mdzt"
             data-variant="primary"
             disabled="false"
             href="/consultations/test-consultation/dashboard"
@@ -200,7 +200,7 @@ exports[`ConsultationView > should match snapshot after loading 1`] = `
   <section>
     <!---->
     <h3
-      class="text-neutral-700 text-md"
+      class="text-text-dark-25 text-md"
     >
       <!---->
       <!---->
@@ -242,7 +242,7 @@ exports[`ConsultationView > should match snapshot after loading 1`] = `
       <!---->
        
       <p
-        class="text-sm text-neutral-500"
+        class="text-sm text-text"
       >
         Add and remove people on this consultation
       </p>
@@ -273,7 +273,7 @@ exports[`ConsultationView > should match snapshot after loading 1`] = `
       <!---->
        
       <p
-        class="text-sm text-neutral-500"
+        class="text-sm text-text"
       >
         Every response, as it was uploaded
       </p>
@@ -323,14 +323,14 @@ exports[`ConsultationView > should match snapshot initially 1`] = `
     >
       <!---->
       <h2
-        class="text-neutral-700 text-lg"
+        class="text-text-dark-25 text-lg"
       >
         <!---->
         <!---->
         <!---->
         <span
           aria-hidden="true"
-          class="blink w-max select-none bg-neutral-200 text-neutral-200"
+          class="blink w-max select-none bg-text-light-80 text-text-light-80"
         >
           SKELETON SKELETON SKELETON 
         </span>
@@ -348,7 +348,7 @@ exports[`ConsultationView > should match snapshot initially 1`] = `
         <!---->
         <button
           aria-pressed="false"
-          class="text-sm cursor-pointer rounded-md py-1 px-2 border border-gray-300 bg-neutral-100 transition-colors duration-300 self-start inline-flex gap-1 items-center hover:bg-gray-100 svelte-1d0mdzt"
+          class="text-sm cursor-pointer rounded-md py-1 px-2 border border-text-light-50 bg-text-light-95 transition-colors duration-300 self-start inline-flex gap-1 items-center hover:bg-text-light-80 svelte-1d0mdzt"
           data-variant="gray"
           role="button"
           tabindex="0"
@@ -360,7 +360,7 @@ exports[`ConsultationView > should match snapshot initially 1`] = `
           >
             <svg
               aria-hidden="true"
-              class="fill-neutral-500"
+              class="fill-text"
               height="1rem"
               viewBox="0 -960 960 960"
               width="1rem"
@@ -391,11 +391,11 @@ exports[`ConsultationView > should match snapshot initially 1`] = `
     <!---->
      
     <p
-      class="text-neutral-500 text-sm mt-2"
+      class="text-text text-sm mt-2"
     >
       <span
         aria-hidden="true"
-        class="blink w-max select-none bg-neutral-200 text-neutral-200"
+        class="blink w-max select-none bg-text-light-80 text-text-light-80"
       >
         SKELETON SKELETON SKELETON SKELETON SKELETON SKELETON SKELETON 
       </span>
@@ -405,7 +405,7 @@ exports[`ConsultationView > should match snapshot initially 1`] = `
    
   <section>
     <div
-      class="h-full my-4 p-4 rounded-2xl border border-gray-200"
+      class="h-full my-4 p-4 rounded-2xl border border-text-light-80"
       data-testid="panel-component"
     >
       <div
@@ -415,7 +415,7 @@ exports[`ConsultationView > should match snapshot initially 1`] = `
           class="mb-3"
         >
           <div
-            class="flex justify-between items-center gap-2 rounded-md w-max py-0.5 px-2 text-xs bg-neutral-100 text-neutral-800"
+            class="flex justify-between items-center gap-2 rounded-md w-max py-0.5 px-2 text-xs bg-text-light-95 text-text-dark-25"
           >
             
             <!---->
@@ -424,7 +424,7 @@ exports[`ConsultationView > should match snapshot initially 1`] = `
         </div>
          
         <p
-          class="text-neutral-700 text-sm"
+          class="text-text-dark-25 text-sm"
         >
           
         </p>

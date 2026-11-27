@@ -3,13 +3,13 @@
 exports[`FileInput Component > should match snapshot 1`] = `
 <div>
   <label
-    class="flex flex-col items-center gap-2 p-4 border border-dashed border-neutral-300 hover:border-secondary rounded-lg transition-colors cursor-pointer text-md text-neutral-800"
+    class="flex flex-col items-center gap-2 p-4 border border-dashed border-text-light-50 hover:border-primary rounded-lg transition-colors cursor-pointer text-md text-text-dark-50"
     id="file-input"
   >
     <!---->
     <svg
       aria-hidden="true"
-      class="fill-neutral-400"
+      class="fill-text-light-50"
       height="3rem"
       viewBox="0 -960 960 960"
       width="3rem"
@@ -29,7 +29,7 @@ exports[`FileInput Component > should match snapshot 1`] = `
     </span>
      
     <small
-      class="text-neutral-500 text-xs"
+      class="text-text text-xs"
     >
       
     </small>
@@ -46,7 +46,7 @@ exports[`FileInput Component > should match snapshot 1`] = `
     />
      
     <ul
-      class="text-xs text-neutral-500"
+      class="text-xs text-text"
     >
       
     </ul>
@@ -63,7 +63,7 @@ exports[`FileInput Component > should match snapshot 1`] = `
       <!---->
       <button
         aria-pressed="false"
-        class="text-sm cursor-pointer rounded-md py-1 px-2 border border-gray-300 bg-white transition-colors duration-300 self-start inline-flex gap-1 items-center hover:bg-gray-100 svelte-1d0mdzt"
+        class="text-sm cursor-pointer rounded-md py-1 px-2 border border-text-light-50 bg-white transition-colors duration-300 self-start inline-flex gap-1 items-center hover:bg-text-light-80 svelte-1d0mdzt"
         data-variant="default"
         role="button"
         tabindex="0"

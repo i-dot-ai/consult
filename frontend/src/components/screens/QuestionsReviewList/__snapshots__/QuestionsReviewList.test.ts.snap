@@ -30,7 +30,7 @@ exports[`QuestionsReviewList > should match snapshot initially 1`] = `
         <!---->
         <button
           aria-pressed="false"
-          class="text-md cursor-pointer rounded-md py-1 px-2 border bg-transparent border border-primary text-primary transition-colors duration-300 self-start inline-flex gap-1 items-center hover:bg-gray-100 svelte-1d0mdzt"
+          class="text-md cursor-pointer rounded-md py-1 px-2 border bg-transparent border border-primary text-primary transition-colors duration-300 self-start inline-flex gap-1 items-center hover:bg-text-light-80 svelte-1d0mdzt"
           data-variant="outline"
           role="button"
           tabindex="0"
@@ -41,7 +41,7 @@ exports[`QuestionsReviewList > should match snapshot initially 1`] = `
           <!---->
           <svg
             aria-hidden="true"
-            class="fill-neutral-500"
+            class="fill-text"
             height="1rem"
             viewBox="0 -960 960 960"
             width="1rem"
@@ -91,7 +91,7 @@ exports[`QuestionsReviewList > should match snapshot initially 1`] = `
         <!---->
         <button
           aria-pressed="false"
-          class="text-md cursor-pointer rounded-md py-1 px-2 border bg-transparent border border-primary text-primary transition-colors duration-300 self-start inline-flex gap-1 items-center hover:bg-gray-100 svelte-1d0mdzt"
+          class="text-md cursor-pointer rounded-md py-1 px-2 border bg-transparent border border-primary text-primary transition-colors duration-300 self-start inline-flex gap-1 items-center hover:bg-text-light-80 svelte-1d0mdzt"
           data-variant="outline"
           role="button"
           tabindex="0"
@@ -102,7 +102,7 @@ exports[`QuestionsReviewList > should match snapshot initially 1`] = `
           <!---->
           <svg
             aria-hidden="true"
-            class="fill-neutral-500"
+            class="fill-text"
             height="1rem"
             viewBox="0 -960 960 960"
             width="1rem"
@@ -152,7 +152,7 @@ exports[`QuestionsReviewList > should match snapshot initially 1`] = `
         <!---->
         <button
           aria-pressed="false"
-          class="text-md cursor-pointer rounded-md py-1 px-2 border bg-transparent border border-primary text-primary transition-colors duration-300 self-start inline-flex gap-1 items-center hover:bg-gray-100 svelte-1d0mdzt"
+          class="text-md cursor-pointer rounded-md py-1 px-2 border bg-transparent border border-primary text-primary transition-colors duration-300 self-start inline-flex gap-1 items-center hover:bg-text-light-80 svelte-1d0mdzt"
           data-variant="outline"
           role="button"
           tabindex="0"
@@ -163,7 +163,7 @@ exports[`QuestionsReviewList > should match snapshot initially 1`] = `
           <!---->
           <svg
             aria-hidden="true"
-            class="fill-neutral-500"
+            class="fill-text"
             height="1rem"
             viewBox="0 -960 960 960"
             width="1rem"

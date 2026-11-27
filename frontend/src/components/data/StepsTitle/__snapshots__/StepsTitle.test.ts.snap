@@ -6,7 +6,7 @@ exports[`StepsTitle > should match snapshot 1`] = `
     class="flex gap-4"
   >
     <div
-      class="bg-secondary w-12 h-12 rounded-full flex justify-center items-center shrink-0"
+      class="bg-success w-12 h-12 rounded-full flex justify-center items-center shrink-0"
     >
       <svg
         aria-hidden="true"
@@ -30,7 +30,7 @@ exports[`StepsTitle > should match snapshot 1`] = `
     <div>
       <!---->
       <h1
-        class="text-neutral-700 text-xl"
+        class="text-text-dark-25 text-xl"
       >
         <!---->
         <!---->
@@ -50,23 +50,23 @@ exports[`StepsTitle > should match snapshot 1`] = `
         class="flex gap-2 items-center ml-1 mt-1.5 flex-wrap"
       >
         <div
-          class="rounded-full h-2 w-2 bg-secondary transition-colors"
+          class="rounded-full h-2 w-2 bg-success transition-colors"
           data-testid="dot-active"
         />
         <div
-          class="rounded-full h-2 w-2 bg-neutral-200 transition-colors"
+          class="rounded-full h-2 w-2 bg-text-light-80 transition-colors"
           data-testid="dot-inactive"
         />
         <div
-          class="rounded-full h-2 w-2 bg-neutral-200 transition-colors"
+          class="rounded-full h-2 w-2 bg-text-light-80 transition-colors"
           data-testid="dot-inactive"
         />
         <div
-          class="rounded-full h-2 w-2 bg-neutral-200 transition-colors"
+          class="rounded-full h-2 w-2 bg-text-light-80 transition-colors"
           data-testid="dot-inactive"
         />
         <div
-          class="rounded-full h-2 w-2 bg-neutral-200 transition-colors"
+          class="rounded-full h-2 w-2 bg-text-light-80 transition-colors"
           data-testid="dot-inactive"
         />
         

@@ -7,7 +7,7 @@ exports[`GeneratedThemeCard > should render 1`] = `
     style="--card-indent: 0rem;"
   >
     <div
-      class="h-full my-4 p-4 rounded-2xl border border-gray-200"
+      class="h-full my-4 p-4 rounded-2xl border border-text-light-80"
       data-testid="panel-component"
     >
       <article
@@ -37,7 +37,7 @@ exports[`GeneratedThemeCard > should render 1`] = `
           </div>
            
           <p
-            class="text-sm text-neutral-500"
+            class="text-sm text-text"
           >
             This is a test theme
           </p>
@@ -48,7 +48,7 @@ exports[`GeneratedThemeCard > should render 1`] = `
             <!---->
             <button
               aria-pressed="false"
-              class="text-sm cursor-pointer rounded-md py-1 px-2 border border-gray-300 bg-secondary text-white transition-colors duration-300 self-start inline-flex gap-1 items-center hover:bg-gray-100 hover:border-secondary hover:text-secondary svelte-1d0mdzt"
+              class="text-sm cursor-pointer rounded-md py-1 px-2 border border-text-light-50 bg-success text-white transition-colors duration-300 self-start inline-flex gap-1 items-center hover:bg-text-light-80 hover:border-success hover:text-success svelte-1d0mdzt"
               data-variant="approve"
               role="button"
               tabindex="0"
@@ -71,7 +71,7 @@ exports[`GeneratedThemeCard > should render 1`] = `
             <!---->
             <button
               aria-pressed="false"
-              class="text-sm cursor-pointer rounded-md py-1 px-2 border border-gray-300 bg-white transition-colors duration-300 self-start inline-flex gap-1 items-center hover:bg-gray-100 svelte-1d0mdzt"
+              class="text-sm cursor-pointer rounded-md py-1 px-2 border border-text-light-50 bg-white transition-colors duration-300 self-start inline-flex gap-1 items-center hover:bg-text-light-80 svelte-1d0mdzt"
               data-variant="default"
               role="button"
               tabindex="0"
@@ -79,11 +79,11 @@ exports[`GeneratedThemeCard > should render 1`] = `
               <!---->
               <!---->
               <div
-                class="flex items-center gap-1 text-secondary"
+                class="flex items-center gap-1 text-success"
               >
                 <svg
                   aria-hidden="true"
-                  class="fill-secondary"
+                  class="fill-success"
                   height="1rem"
                   viewBox="0 -960 960 960"
                   width="1rem"

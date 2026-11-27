@@ -10,7 +10,7 @@ exports[`UnderConstruction > should match snapshot 1`] = `
     >
       <svg
         aria-hidden="true"
-        class="fill-neutral-500"
+        class="fill-text"
         height="3rem"
         viewBox="0 -960 960 960"
         width="3rem"
@@ -28,7 +28,7 @@ exports[`UnderConstruction > should match snapshot 1`] = `
      
     <!---->
     <h2
-      class="text-neutral-700 text-lg"
+      class="text-text-dark-25 text-lg"
     >
       <!---->
       <!---->
@@ -41,7 +41,7 @@ exports[`UnderConstruction > should match snapshot 1`] = `
     <!---->
      
     <p
-      class="text-neutral-500"
+      class="text-text"
     >
       This functionality is currently under construction
     </p>
