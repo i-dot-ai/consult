@@ -61,7 +61,7 @@
 >
   {#if findThemes.query.isError}
     <div
-      class="rounded-md border border-red-200 bg-red-50 p-3 text-sm text-red-800"
+      class="rounded-md border border-error-light-80 bg-error-light-95 p-3 text-sm text-error-dark-25"
       transition:slide={{ duration: 200 }}
       role="alert"
     >
@@ -73,7 +73,7 @@
 
   {#if findThemes.query.isSuccess}
     <div
-      class="rounded-md border border-green-200 bg-green-50 p-3 text-sm text-green-800"
+      class="rounded-md border border-success-light-80 bg-succes-light-95 p-3 text-sm text-success-dark-25"
       transition:slide={{ duration: 200 }}
       role="status"
     >
