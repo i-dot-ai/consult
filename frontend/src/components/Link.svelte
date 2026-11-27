@@ -24,7 +24,7 @@
     variant === "block" && "block",
     variant === "block" && "rounded-xl",
     variant === "block" && "cursor-pointer",
-    variant === "block" && "hover:bg-gray-200",
+    variant === "block" && "hover:bg-text-light-80",
   ])}
   target={openNewTab ? "_blank" : undefined}
   href={variant === "inline" ? href : null}
