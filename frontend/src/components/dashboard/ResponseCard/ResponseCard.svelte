@@ -74,7 +74,7 @@
       "transition-all",
       "duration-300",
       editing &&
-        clsx(["outline-solid", "outline-4", "outline-secondary", "p-2"]),
+        clsx(["outline-solid", "outline-4", "outline-success", "p-2"]),
     ])}
   >
     <header
@@ -104,7 +104,7 @@
               <div class="blink">
                 <Tag>
                   <span
-                    class="select-none bg-neutral-100 text-xs text-neutral-100"
+                    class="select-none bg-text-light-95 text-xs text-text-light-95"
                     >skeleton</span
                   >
                 </Tag>
@@ -170,7 +170,7 @@
           title="Respondent ID"
           class={clsx([
             "whitespace-nowrap",
-            skeleton && "blink select-none bg-neutral-100 text-neutral-100",
+            skeleton && "blink select-none bg-text-light-95 text-text-light-95",
           ])}
         >
           {#if skeleton}
@@ -186,7 +186,7 @@
                     `?themefinder_id=${respondentDisplayId}&question_id=${questionId}`;
                 }}
               >
-                <MaterialIcon color="fill-neutral-500" size="0.8rem">
+                <MaterialIcon color="fill-text" size="0.8rem">
                   <Person />
                 </MaterialIcon>
 
@@ -201,8 +201,8 @@
     {#if skeleton}
       <p
         class={clsx([
-          "bg-neutral-100",
-          "text-neutral-100",
+          "bg-text-light-95",
+          "text-text-light-95",
           "select-none",
           "blink",
         ])}
@@ -227,7 +227,7 @@
 
     {#if themes && themes.length > 0 && !skeleton}
       <footer class={clsx(["flex", "items-center", "gap-1", "flex-wrap"])}>
-        <small class="text-neutral-500"> Themes: </small>
+        <small class="text-text"> Themes: </small>
         {#each themes as theme (theme.id)}
           <Button
             handleClick={() => themeFilters.update(theme.id)}
