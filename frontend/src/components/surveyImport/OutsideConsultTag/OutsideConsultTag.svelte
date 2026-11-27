@@ -6,7 +6,7 @@
 
 <Tag border={true}>
   <span class="flex items-center gap-1">
-    <MaterialIcon color="fill-neutral-500" size="0.8rem">
+    <MaterialIcon color="fill-text" size="0.8rem">
       <OpenInNew />
     </MaterialIcon>
     Happens outside Consult
