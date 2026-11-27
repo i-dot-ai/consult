@@ -68,19 +68,19 @@
           class={clsx([
             "rounded-full",
             "transition-colors",
-            "bg-neutral-100",
-            "group-hover:bg-secondary",
+            "bg-text-light-80",
+            "group-hover:bg-success",
             "p-2",
             "my-2",
           ])}
         >
-          <MaterialIcon color="fill-neutral-500">
+          <MaterialIcon color="fill-text">
             <Icon />
           </MaterialIcon>
         </div>
         <div>
           <h3 class="text-xs">{title}</h3>
-          <p class="text-xs text-neutral-500">{subtitle}</p>
+          <p class="text-xs text-text">{subtitle}</p>
         </div>
       </div>
     </Button>
@@ -89,14 +89,14 @@
 
 <div class="flex items-center justify-between gap-8 p-2">
   <div class="flex items-center gap-2">
-    <div class="rounded-full bg-secondary p-2">
+    <div class="rounded-full bg-success p-2">
       <MaterialIcon>
         <Help />
       </MaterialIcon>
     </div>
     <div>
       <h2 class="text-sm">Help & Support</h2>
-      <p class="text-xs text-neutral-500">Quick access to help resources</p>
+      <p class="text-xs text-text">Quick access to help resources</p>
     </div>
   </div>
 </div>
