@@ -37,7 +37,7 @@
         testId="back-button"
       >
         <div class="rotate-180">
-          <MaterialIcon color="fill-neutral-700">
+          <MaterialIcon color="fill-text-dark-25">
             <ArrowForward />
           </MaterialIcon>
         </div>
