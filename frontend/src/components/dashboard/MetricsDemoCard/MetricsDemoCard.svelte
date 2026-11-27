@@ -78,7 +78,7 @@
     {/each}
 
     {#if items.length > hideThreshold && consultationId}
-      <hr class="my-2 border-neutral-300" />
+      <hr class="my-2 border-text-light-50" />
 
       <Button
         size="xs"
@@ -89,7 +89,7 @@
         <div class="flex items-center justify-center gap-1">
           <span>View All {items.length}</span>
 
-          <MaterialIcon color="fill-neutral-500">
+          <MaterialIcon color="fill-text">
             <ArrowForward />
           </MaterialIcon>
         </div>
