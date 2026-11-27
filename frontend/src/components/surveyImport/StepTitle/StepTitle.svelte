@@ -33,16 +33,16 @@
 
 <div class="flex gap-4 items-center flex-wrap">
   <div
-    class="rounded-full border border-neutral-300 bg-neutral-100 w-12 h-12 flex justify-center items-center"
+    class="rounded-full border border-text-light-50 bg-text-light-95 w-12 h-12 flex justify-center items-center"
   >
     <div class="shrink-0">
-      <MaterialIcon color="fill-neutral-500" size="1.6rem">
+      <MaterialIcon color="fill-text" size="1.6rem">
         <Icon />
       </MaterialIcon>
     </div>
   </div>
   <div>
-    <small class="text-neutral-500"
+    <small class="text-text"
       >Step {clampStepNumberText(stepNo, maxStepNo)} of {maxStepNo}</small
     >
     <div class="flex gap-2 items-center flex-wrap">
