@@ -38,7 +38,7 @@
   }}
   handleConfirm={confirm}
 >
-  <p class="text-sm text-neutral-500">
+  <p class="text-sm text-text">
     {person.email} can no longer see {consultationTitle}. They can be added
     again.
   </p>
