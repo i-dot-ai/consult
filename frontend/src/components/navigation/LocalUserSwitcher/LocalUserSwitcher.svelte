@@ -23,15 +23,15 @@
 </script>
 
 <div
-  class="flex items-center gap-1 rounded-sm border border-amber-400 bg-amber-50 px-2 py-1 text-xs"
+  class="flex items-center gap-1 rounded-sm border border-warning bg-warning-light-95 px-2 py-1 text-xs"
 >
-  <span class="font-medium text-amber-800">Dev:</span>
+  <span class="font-medium text-warning-dark-50">Dev:</span>
   {#each USERS as user (user.email)}
     <button
-      class="rounded px-1.5 py-0.5 transition-colors {currentEmail ===
+      class="rounded cursor-pointer px-1.5 py-0.5 transition-colors {currentEmail ===
       user.email
-        ? 'bg-amber-700 font-medium text-white'
-        : 'text-amber-700 hover:bg-amber-100'}"
+        ? 'bg-warning font-medium text-white'
+        : 'text-warning-dark-25 hover:bg-warning-light-95'}"
       onclick={() => switchUser(user.email)}
     >
       {user.label}
