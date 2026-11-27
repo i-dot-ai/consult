@@ -51,7 +51,7 @@
   // Convert GOV.UK label classes to Tailwind equivalents
   let tailwindLabelClasses = $derived(
     clsx([
-      "mb-1 block text-base leading-5 text-neutral-900 md:text-lg md:leading-6",
+      "mb-1 block text-base leading-5 text-text-dark-50 md:text-lg md:leading-6",
       labelClasses?.includes("govuk-label--s") && "font-semibold",
       labelClasses?.includes("govuk-label--m") &&
         "text-lg font-semibold leading-tight md:text-2xl",
@@ -77,7 +77,7 @@
 
 <div
   class={clsx([
-    errorMessage && "mr-4 border-l-4 border-red-600 pl-3",
+    errorMessage && "mr-4 border-l-4 border-error pl-3",
     labelHorizontal && "flex items-center gap-4",
   ])}
 >
@@ -93,7 +93,7 @@
   {#if hint}
     <div
       id="{id}-hint"
-      class="mb-4 text-base leading-5 text-neutral-600 md:text-lg md:leading-6"
+      class="mb-4 text-base leading-5 text-text-dark-25 md:text-lg md:leading-6"
     >
       {hint}
     </div>
@@ -102,7 +102,7 @@
   {#if errorMessage}
     <p
       id="{id}-error"
-      class="mb-4 text-base font-bold leading-5 text-red-600 md:text-lg md:leading-6"
+      class="mb-4 text-base font-bold leading-5 text-error md:text-lg md:leading-6"
     >
       <span class="sr-only">Error:</span>
       {errorMessage}
@@ -111,10 +111,10 @@
 
   <select
     class={clsx([
-      "h-9 w-full rounded-xs border border-gray-300 bg-white p-1 text-neutral-700",
-      "focus:outline-2 focus:outline-yellow-300",
-      "disabled:cursor-not-allowed disabled:bg-neutral-100 disabled:text-neutral-600 disabled:opacity-50",
-      errorMessage && "border-red-600",
+      "h-9 w-full rounded-xs border border-text-light-50 bg-white p-1 text-text-dark-50",
+      "focus:outline-2 focus:outline-warning-light-50",
+      "disabled:cursor-not-allowed disabled:bg-text-light-95 disabled:text-text-dark-25 disabled:opacity-50",
+      errorMessage && "border-error",
     ])}
     {id}
     {name}
@@ -132,7 +132,7 @@
       <option
         value={typeof item.value === "string" ? item.value : item.label}
         selected={value === item.value}
-        class="bg-white text-neutral-900"
+        class="bg-white text-text-dark-50"
         data-testid={`${id}-option`}
       >
         {item.label}
