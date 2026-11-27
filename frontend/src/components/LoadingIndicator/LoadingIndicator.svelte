@@ -20,7 +20,7 @@
   ])}
   data-testid="loading-indicator"
 >
-  <MaterialIcon color="fill-neutral-300" {size}>
+  <MaterialIcon color="fill-text-light-50" {size}>
     <ProgressActivity />
   </MaterialIcon>
 </div>
