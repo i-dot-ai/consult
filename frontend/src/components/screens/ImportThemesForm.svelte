@@ -140,13 +140,13 @@
       type="text"
       bind:value={sourceConsultationId}
       placeholder="e.g. 4d1414d5-9300-447b-b788-50d0bef7e807"
-      class="rounded-sm border border-gray-300 px-3 py-2 text-sm"
+      class="rounded-sm border border-text-light-50 px-3 py-2 text-sm"
       required
     />
   </label>
 
   {#if "general" in errors}
-    <small class="text-sm text-red-500" transition:slide={{ duration: 300 }}>
+    <small class="text-sm text-error" transition:slide={{ duration: 300 }}>
       {errors.general}
     </small>
   {/if}
@@ -170,7 +170,7 @@
 
     {#if themesToImport.length > 0}
       <div class="rounded-sm border border-green-200 bg-green-50 p-3">
-        <p class="text-sm font-medium text-green-800">
+        <p class="text-sm font-medium text-success-dark-50">
           {themesToImport.reduce(
             (sum, q) => sum + (q.source_themes?.length || 0),
             0,
@@ -178,8 +178,8 @@
         </p>
       </div>
     {:else}
-      <div class="rounded-sm border border-amber-200 bg-amber-50 p-3">
-        <p class="text-sm font-medium text-amber-800">
+      <div class="rounded-sm border border-warning-light-80 bg-warning-light-25 p-3">
+        <p class="text-sm font-medium text-warning-dark-50">
           No finalised themes will be imported.
         </p>
       </div>
@@ -197,7 +197,7 @@
         </thead>
         <tbody>
           {#each preview.questions as question (question.question_number)}
-            <tr class="border-t hover:bg-gray-50">
+            <tr class="border-t hover:bg-text-light-95">
               <td class="py-2 pr-2">{question.question_number}</td>
               <td class="max-w-xs wrap-break-word py-2 pr-2"
                 >{question.question_text}</td
@@ -207,9 +207,9 @@
                   class={clsx([
                     "rounded-sm px-2 py-0.5 text-xs",
                     question.status === "will_import" &&
-                      "bg-green-100 text-green-800",
+                      "bg-green-100 text-success-dark-50",
                     question.status !== "will_import" &&
-                      "bg-red-100 text-red-800",
+                      "bg-error-light-95 text-error-dark-25",
                   ])}
                 >
                   {statusLabels[question.status] || question.status}
@@ -233,12 +233,12 @@
     </div>
 
     {#if preview.warnings.unmatched_source_questions.length > 0}
-      <div class="rounded-sm border border-amber-200 bg-amber-50 p-3">
-        <p class="text-sm font-medium text-amber-800">
+      <div class="rounded-sm border border-warning-light-80 bg-warning-light-25 p-3">
+        <p class="text-sm font-medium text-warning-dark-50">
           {preview.warnings.unmatched_source_questions.length} source question(s)
           have no match in target:
         </p>
-        <ul class="mt-1 list-inside list-disc text-sm text-amber-700">
+        <ul class="mt-1 list-inside list-disc text-sm text-warning-dark-25">
           {#each preview.warnings.unmatched_source_questions as q, i (i)}
             <li>{q}</li>
           {/each}
@@ -270,7 +270,7 @@
 {#if result}
   <div class="mt-6 flex flex-col gap-4">
     <div class="rounded-sm border border-green-200 bg-green-50 p-3">
-      <p class="text-sm font-medium text-green-800">
+      <p class="text-sm font-medium text-success-dark-50">
         Successfully imported {result.total_themes_imported} finalised theme(s) from
         <strong>{result.source_consultation.title}</strong>.
       </p>
@@ -287,7 +287,7 @@
         </thead>
         <tbody>
           {#each result.questions as question (question.question_number)}
-            <tr class="border-t hover:bg-gray-50">
+            <tr class="border-t hover:bg-text-light-95">
               <td class="py-2 pr-2">{question.question_number}</td>
               <td class="max-w-xs wrap-break-word py-2 pr-2"
                 >{question.question_text}</td
@@ -297,9 +297,9 @@
                   class={clsx([
                     "rounded-sm px-2 py-0.5 text-xs",
                     question.status === "will_import" &&
-                      "bg-green-100 text-green-800",
+                      "bg-success-light-95 text-success-dark-25",
                     question.status !== "will_import" &&
-                      "bg-red-100 text-red-800",
+                      "bg-error-light-95 text-error-dark-25",
                   ])}
                 >
                   {statusLabels[question.status] || question.status}
