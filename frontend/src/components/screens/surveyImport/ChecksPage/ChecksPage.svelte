@@ -117,7 +117,7 @@
 {#snippet callout(children: Snippet)}
   <div
     transition:slide
-    class="mt-3 rounded-lg border border-neutral-300 bg-neutral-100 px-4 py-3.5 text-sm leading-relaxed text-neutral-700"
+    class="mt-3 rounded-lg border border-text-light-50 bg-text-light-95 px-4 py-3.5 text-sm leading-relaxed text-text-dark-25"
   >
     {@render children()}
   </div>
@@ -131,25 +131,25 @@
   </p>
   <table class="text-sm">
     <thead>
-      <tr class="border-b border-neutral-300">
-        <th class="pb-1 pr-8 text-left font-normal text-neutral-500"
+      <tr class="border-b border-text-light-50">
+        <th class="pb-1 pr-8 text-left font-normal text-text"
           >Exported from</th
         >
-        <th class="pb-1 pr-8 text-left font-normal text-neutral-500"
+        <th class="pb-1 pr-8 text-left font-normal text-text"
           >Questions</th
         >
-        <th class="pb-1 text-left font-normal text-neutral-500"
+        <th class="pb-1 text-left font-normal text-text"
           >Responses start</th
         >
       </tr>
     </thead>
     <tbody>
-      <tr class="border-b border-neutral-200">
+      <tr class="border-b border-text-light-80">
         <td class="py-1.5 pr-8">Qualtrics</td>
         <td class="py-1.5 pr-8">Rows 1 to 3</td>
         <td class="py-1.5">Row 4</td>
       </tr>
-      <tr class="border-b border-neutral-200">
+      <tr class="border-b border-text-light-80">
         <td class="py-1.5 pr-8">Citizen Space</td>
         <td class="py-1.5 pr-8">Row 1</td>
         <td class="py-1.5">Row 2</td>
@@ -241,11 +241,11 @@ Addresses → delete, or keep the area name only</pre>
 {#snippet tickItem(label: string)}
   <div class="flex items-start gap-3 py-3">
     <div class="mt-0.5 shrink-0">
-      <MaterialIcon color="fill-secondary" size="1.1rem">
+      <MaterialIcon color="fill-success" size="1.1rem">
         <Check />
       </MaterialIcon>
     </div>
-    <span class="text-base leading-relaxed text-neutral-900">{label}</span>
+    <span class="text-base leading-relaxed text-text-dark-50">{label}</span>
   </div>
 {/snippet}
 
@@ -257,45 +257,45 @@ Addresses → delete, or keep the area name only</pre>
   isExternal={true}
 />
 
-<p class="mt-3.5 mb-6 text-base leading-relaxed text-neutral-500">
+<p class="mt-3.5 mb-6 text-base leading-relaxed text-text">
   Work through your file against this list before uploading. Reading the
   responses now is time well spent, because you'll start the analysis knowing
   what's in your data.
 </p>
 
 <div class="flex flex-col gap-5">
-  <div class="rounded-xl border border-neutral-300 bg-white p-7">
+  <div class="rounded-xl border border-text-light-50 bg-white p-7">
     <Title level={2}>
-      <span class="text-base font-medium text-neutral-900">Structure</span>
+      <span class="text-base font-medium text-text-dark-50">Structure</span>
     </Title>
-    <div class="mt-4 flex flex-col divide-y divide-neutral-200">
+    <div class="mt-4 flex flex-col divide-y divide-text-light-80">
       {#each structureChecks as check (check.id)}
         {@render checkItem(check)}
       {/each}
     </div>
   </div>
 
-  <div class="rounded-xl border border-neutral-300 bg-white p-7">
+  <div class="rounded-xl border border-text-light-50 bg-white p-7">
     <Title level={2}>
-      <span class="text-base font-medium text-neutral-900">Content</span>
+      <span class="text-base font-medium text-text-dark-50">Content</span>
     </Title>
-    <div class="mt-4 flex flex-col divide-y divide-neutral-200">
+    <div class="mt-4 flex flex-col divide-y divide-text-light-80">
       {#each contentChecks as check (check.id)}
         {@render checkItem(check)}
       {/each}
     </div>
   </div>
 
-  <div class="rounded-xl border border-neutral-300 bg-white p-7">
+  <div class="rounded-xl border border-text-light-50 bg-white p-7">
     <Title level={2}>
-      <span class="text-base font-medium text-neutral-900"
+      <span class="text-base font-medium text-text-dark-50"
         >Consult checks these when you upload</span
       >
     </Title>
-    <p class="mt-1 text-sm leading-relaxed text-neutral-500">
+    <p class="mt-1 text-sm leading-relaxed text-text">
       No need to check these yourself.
     </p>
-    <div class="mt-4 flex flex-col divide-y divide-neutral-200">
+    <div class="mt-4 flex flex-col divide-y divide-text-light-80">
       {#each TECHNICAL_CHECKS as check (check.id)}
         {@render tickItem(check.label)}
       {/each}
@@ -305,7 +305,7 @@ Addresses → delete, or keep the area name only</pre>
 
 <div class="mt-5 flex flex-col gap-3">
   <div
-    class="rounded-xl border border-neutral-300 bg-neutral-50 px-4 py-3.5 text-sm leading-relaxed"
+    class="rounded-xl border border-text-light-50 bg-text-light-95 px-4 py-3.5 text-sm leading-relaxed"
   >
     <div class="flex items-center gap-3">
       <Button
@@ -314,7 +314,7 @@ Addresses → delete, or keep the area name only</pre>
       >
         {allTicked ? "Untick" : "Tick"} everything
       </Button>
-      <p class="text-neutral-500">
+      <p class="text-text">
         Ticking is for your own tracking. Nothing is submitted, and you can
         continue without it.
       </p>
