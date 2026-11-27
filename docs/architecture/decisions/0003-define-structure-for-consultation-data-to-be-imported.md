@@ -6,6 +6,9 @@ Date: 2025-04-10
 
 Accepted
 
+Partially superseded by [0017](0017-two-stage-pipeline-re-architecture.md): the S3 data contract no longer applies
+to pipeline inputs and outputs once stage 1 of that re-architecture is complete.
+
 
 ## Context
 
