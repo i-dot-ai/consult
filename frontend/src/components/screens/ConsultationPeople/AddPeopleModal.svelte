@@ -68,7 +68,7 @@
   }}
   handleConfirm={submit}
 >
-  <p class="text-sm text-neutral-500">
+  <p class="text-sm text-text">
     They can see {consultationTitle} and work on it.
   </p>
 
@@ -101,6 +101,6 @@
   @reference "../../../styles/global.css";
 
   .emails-field :global(label) {
-    @apply text-sm font-medium text-neutral-900;
+    @apply text-sm font-medium text-text-dark-50;
   }
 </style>
