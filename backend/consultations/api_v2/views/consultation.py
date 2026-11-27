@@ -234,16 +234,10 @@ class ConsultationViewSet(
     )
     def find_themes(self, request, pk=None) -> Response:
         """
-        Submit AWS batch job to find themes for each free-text question.
+        Queue the worker job that finds themes for each free-text question.
 
-        The found themes are automatically saved to the database as candidate
-        themes when the job completes.
-        (See: lambda/import_candidate_themes/import_candidate_themes_handler.py)
-
-        Before submitting, derives has_free_text from question type, renders
-        the ThemeFinder inputs layout to S3 from the database (the mirror of
-        what scripts/setup_consultation.py used to upload), assigning a
-        consultation code first if the consultation doesn't have one yet.
+        The worker preserves the S3 input/output contract, imports candidate
+        themes into the database, and starts candidate-theme response mapping.
 
         Advances consultation to FINDING_THEMES stage
 

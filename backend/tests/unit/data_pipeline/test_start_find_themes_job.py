@@ -28,8 +28,9 @@ def test_start_find_themes_rolls_stage_back_when_batch_submit_fails():
     consultation = ConsultationFactory(stage=Consultation.Stage.FINDING_THEMES)
     with (
         patch("data_pipeline.jobs.export_consultation_inputs_to_s3", return_value=1),
-        patch("data_pipeline.jobs.batch.submit_job", side_effect=RuntimeError("batch down")),
-        pytest.raises(RuntimeError, match="batch down"),
+        patch("data_pipeline.jobs.run_find_themes", side_effect=RuntimeError("LLM unavailable")),
+        patch("data_pipeline.jobs.publish_find_themes_event"),
+        pytest.raises(RuntimeError, match="LLM unavailable"),
     ):
         start_find_themes(consultation.id, user_id=1)
 
@@ -42,16 +43,18 @@ def test_start_find_themes_happy_path_returns_code_and_keeps_stage():
     consultation = ConsultationFactory(stage=Consultation.Stage.FINDING_THEMES)
     with (
         patch("data_pipeline.jobs.export_consultation_inputs_to_s3", return_value=1) as export,
-        patch("data_pipeline.jobs.batch.submit_job") as submit,
+        patch("data_pipeline.jobs.run_find_themes", return_value="2026-11-25") as run,
+        patch("data_pipeline.jobs.complete_find_themes") as complete,
+        patch("data_pipeline.jobs.publish_find_themes_event"),
     ):
         result = start_find_themes(consultation.id, user_id=1)
 
     assert result == consultation.code
     export.assert_called_once_with(consultation, consultation.code)
-    submit.assert_called_once_with(
-        job_type="FIND_THEMES",
+    run.assert_called_once_with(consultation.code, consultation.model_name)
+    complete.assert_called_once_with(
         consultation_code=consultation.code,
-        consultation_name=consultation.title,
+        run_date="2026-11-25",
         user_id=1,
         model_name=consultation.model_name,
     )
@@ -67,12 +70,12 @@ def test_start_find_themes_skips_deleted_consultations():
 
     with (
         patch("data_pipeline.jobs.export_consultation_inputs_to_s3") as export,
-        patch("data_pipeline.jobs.batch.submit_job") as submit,
+        patch("data_pipeline.jobs.run_find_themes") as run,
     ):
         assert start_find_themes(consultation_id, user_id=1) == ""
 
     export.assert_not_called()
-    submit.assert_not_called()
+    run.assert_not_called()
 
 
 @pytest.mark.django_db
@@ -80,9 +83,9 @@ def test_start_find_themes_skips_when_stage_not_finding_themes():
     consultation = ConsultationFactory(stage=Consultation.Stage.SETUP)
     with (
         patch("data_pipeline.jobs.export_consultation_inputs_to_s3") as export,
-        patch("data_pipeline.jobs.batch.submit_job") as submit,
+        patch("data_pipeline.jobs.run_find_themes") as run,
     ):
         assert start_find_themes(consultation.id, user_id=1) == ""
 
     export.assert_not_called()
-    submit.assert_not_called()
+    run.assert_not_called()

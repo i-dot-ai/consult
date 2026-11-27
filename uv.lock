@@ -1,5 +1,5 @@
 version = 1
-revision = 5
+revision = 3
 requires-python = "==3.12.*"
 resolution-markers = [
     "sys_platform == 'win32'",
@@ -504,12 +504,14 @@ dependencies = [
     { name = "i-dot-ai-utilities", extra = ["auth", "otel-django"] },
     { name = "openai" },
     { name = "openpyxl" },
+    { name = "pandas" },
     { name = "pgvector" },
     { name = "psycopg" },
     { name = "pydantic" },
     { name = "pytest-random-order" },
     { name = "sentry-sdk", extra = ["django", "rq"] },
     { name = "themefinder" },
+    { name = "urllib3" },
     { name = "werkzeug" },
 ]
 
@@ -550,12 +552,14 @@ requires-dist = [
     { name = "i-dot-ai-utilities", extras = ["auth", "otel-django"], specifier = ">=0.7.1rc2,<0.8" },
     { name = "openai", specifier = ">=3.42.1" },
     { name = "openpyxl", specifier = ">=3.1.5" },
+    { name = "pandas", specifier = ">=2.2.2" },
     { name = "pgvector", specifier = ">=0.5.1" },
     { name = "psycopg", specifier = ">=3.3.6" },
     { name = "pydantic", specifier = ">=2.14.3" },
     { name = "pytest-random-order", specifier = ">=1.2.0" },
     { name = "sentry-sdk", extras = ["django", "redis", "rq"], specifier = ">=2.74.0" },
     { name = "themefinder", editable = "themefinder" },
+    { name = "urllib3", specifier = ">=2.0.0" },
     { name = "werkzeug", specifier = "==3.1.9" },
 ]
 

@@ -4,88 +4,140 @@ RQ job wrappers for data pipeline operations.
 These functions are designed to be executed asynchronously via RQ (Redis Queue).
 """
 
+from typing import Literal
 from uuid import UUID
 
-from botocore.exceptions import BotoCoreError, ClientError
 from django.conf import settings
+from django.db import transaction
+from rq import get_current_job
 
 from consultations.models import Consultation
 from data_pipeline import batch
+from data_pipeline.events import publish_find_themes_event
+from data_pipeline.find_themes import find_themes as run_find_themes
+from data_pipeline.sync.candidate_themes import (
+    export_candidate_themes_to_s3,
+    import_candidate_themes_from_s3,
+)
 from data_pipeline.sync.consultation_inputs import export_consultation_inputs_to_s3
+from logging_context import get_or_create_context_id
 from rq_context import job
 
 logger = settings.LOGGER
 
 
-@job("default", timeout=900)  # 15 minutes
-def start_find_themes(
-    consultation_id: UUID,
-    user_id: int,
-) -> str:
-    """Export consultation inputs to S3 and submit the find-themes Batch job."""
-    # user_id is passed through into Batch metadata for auditability, even if the user is deleted later.
-    try:
-        consultation = Consultation.objects.get(pk=consultation_id)
-    except Consultation.DoesNotExist:
-        logger.info(
-            "Consultation {consultation_id} no longer exists; skipping find-themes",
-            consultation_id=consultation_id,
+def reset_find_themes_after_worker_failure(rq_job, connection, exception_type, value, traceback):
+    """Recover state when RQ terminates the job before its own cleanup can run."""
+    consultation_id = rq_job.args[0]
+    Consultation.objects.filter(id=consultation_id, stage=Consultation.Stage.FINDING_THEMES).update(
+        stage=Consultation.Stage.SETUP, running_job=None
+    )
+
+
+def complete_find_themes(
+    consultation_code: str,
+    run_date: str,
+    user_id: int | str | None = None,
+    model_name: str | None = None,
+) -> None:
+    """Import discovered themes and start mapping without enqueueing another worker job."""
+    import_candidate_themes_from_s3(consultation_code, run_date)
+    consultation = Consultation.objects.get(code=consultation_code)
+    export_candidate_themes_to_s3(consultation)
+
+    # Discovery is durable before the separately managed mapping job is submitted.
+    consultation.stage = Consultation.Stage.FINALISING_THEMES
+    consultation.running_job = None
+    consultation.save(update_fields=["stage", "running_job"])
+
+    resolved_user_id = int(user_id) if user_id is not None else consultation.created_by_id
+    if resolved_user_id is None:
+        raise ValueError(
+            f"No user available to start candidate-theme mapping for '{consultation_code}'"
         )
-        return ""
+    resolved_model_name = model_name or consultation.model_name or Consultation.ModelName.GPT_41
+    batch.submit_job(
+        job_type="ASSIGN_THEMES",
+        consultation_code=consultation.code,
+        consultation_name=consultation.title,
+        user_id=resolved_user_id,
+        model_name=resolved_model_name,
+        assignment_target="candidate_themes",
+    )
 
-    if consultation.stage != Consultation.Stage.FINDING_THEMES:
-        logger.warning(
-            "Consultation {consultation_id} not in FINDING_THEMES; skipping find-themes",
-            consultation_id=consultation_id,
-            stage=consultation.stage,
-        )
-        return ""
-    logger.set_context_field("consultation_id", str(consultation.id))
 
-    consultation_code = consultation.code
+@job(
+    "default",
+    timeout=86400,
+    on_failure=reset_find_themes_after_worker_failure,
+)  # Theme discovery can run for several hours.
+def start_find_themes(consultation_id: UUID, user_id: int) -> str:
+    """Run theme discovery, persist its results, then start candidate-theme mapping."""
+    context_id = get_or_create_context_id()
+    rq_job = get_current_job()
+    job_id = rq_job.id if rq_job else None
+    consultation = None
+    consultation_code = "unknown"
 
-    def _rollback_stage(reason: str) -> None:
-        rerolled = Consultation.objects.filter(
-            pk=consultation.pk, stage=Consultation.Stage.FINDING_THEMES
-        ).update(stage=Consultation.Stage.SETUP)
-        if not rerolled:
-            logger.error(
-                "Stage rollback skipped after {reason} for consultation '{consultation_id}' "
-                "(stage already changed)",
-                reason=reason,
-                consultation_id=consultation.id,
-            )
-
-    try:
-        question_parts = export_consultation_inputs_to_s3(consultation, consultation_code)
-        logger.info(
-            "Mirrored {question_parts} question parts to s3 for consultation '{consultation_code}' "
-            "before find-themes kickoff",
-            question_parts=question_parts,
-            consultation_code=consultation_code,
-        )
-
-        batch.submit_job(
-            job_type="FIND_THEMES",
+    def publish(status: Literal["RUNNING", "SUCCEEDED", "FAILED"]) -> None:
+        if consultation is None:
+            return
+        publish_find_themes_event(
+            status=status,
             consultation_code=consultation_code,
             consultation_name=consultation.title,
             user_id=user_id,
-            model_name=consultation.model_name,
+            job_id=job_id,
+            context_id=context_id,
         )
-    except (ClientError, BotoCoreError):
-        _rollback_stage("AWS call failure")
-        raise
+
+    try:
+        try:
+            consultation = Consultation.objects.get(id=consultation_id)
+        except Consultation.DoesNotExist:
+            logger.info(
+                "Consultation {consultation_id} no longer exists; skipping find-themes",
+                consultation_id=consultation_id,
+            )
+            return ""
+        if consultation.stage != Consultation.Stage.FINDING_THEMES:
+            logger.warning(
+                "Consultation {consultation_id} not in FINDING_THEMES; skipping find-themes",
+                consultation_id=consultation_id,
+                stage=consultation.stage,
+            )
+            return ""
+        consultation_code = consultation.code
+        model_name = consultation.model_name or Consultation.ModelName.GPT_41
+        logger.set_context_field("consultation_id", str(consultation.id))
+        publish("RUNNING")
+        question_parts = export_consultation_inputs_to_s3(consultation, consultation_code)
+        logger.info(
+            "Mirrored {question_parts} question parts to s3 for consultation '{consultation_code}'",
+            question_parts=question_parts,
+            consultation_code=consultation_code,
+        )
+        run_date = run_find_themes(consultation_code, model_name)
+        complete_find_themes(
+            consultation_code=consultation_code,
+            run_date=run_date,
+            user_id=user_id,
+            model_name=model_name,
+        )
+        publish("SUCCEEDED")
+        return consultation_code
     except Exception:
-        _rollback_stage("unexpected error")
+        logger.exception(
+            "Find-themes worker job failed for consultation_id={consultation_id}",
+            consultation_id=consultation_id,
+        )
+        # Returning to setup gives users an explicit retry path after a failed worker job.
+        with transaction.atomic():
+            Consultation.objects.filter(
+                id=consultation_id, stage=Consultation.Stage.FINDING_THEMES
+            ).update(stage=Consultation.Stage.SETUP, running_job=None)
+        publish("FAILED")
         raise
-
-    logger.info(
-        "Find Themes job submitted for consultation {consultation_id} by user {user_id}",
-        consultation_id=consultation.id,
-        user_id=user_id,
-    )
-
-    return consultation_code
 
 
 @job("default", timeout=86400)  # 1 day
@@ -123,67 +175,12 @@ def import_candidate_themes(
     user_id: str | None = None,
     model_name: str | None = None,
 ) -> None:
-    """Import candidate themes from S3, then start assign-themes for candidate theme responses."""
-    from consultations.models import Consultation
-    from data_pipeline import batch
-    from data_pipeline.sync.candidate_themes import (
-        export_candidate_themes_to_s3,
-        import_candidate_themes_from_s3,
-    )
-
-    try:
-        import_candidate_themes_from_s3(
-            consultation_code=consultation_code,
-            timestamp=run_date,
-        )
-    except Exception:
-        logger.exception(
-            "import_candidate_themes_from_s3 failed for consultation_code={consultation_code}, "
-            "run_date={run_date}",
-            consultation_code=consultation_code,
-            run_date=run_date,
-        )
-        raise
-
-    # After importing candidate themes, automatically start assign-themes
-    # so users can review assigned responses during theme finalisation.
-    try:
-        consultation = Consultation.objects.get(code=consultation_code)
-    except Exception:
-        logger.exception(
-            "Failed to fetch consultation for consultation_code={consultation_code} "
-            "after importing candidate themes",
-            consultation_code=consultation_code,
-        )
-        raise
-
-    try:
-        consultation.stage = Consultation.Stage.FINALISING_THEMES
-        consultation.save(update_fields=["stage"])
-    except Exception:
-        logger.exception(
-            "Failed to update consultation stage for consultation_code={consultation_code} "
-            "after importing candidate themes",
-            consultation_code=consultation_code,
-        )
-        # Do not raise if fails as this is not a crucial step
-
-    try:
-        export_candidate_themes_to_s3(consultation)
-    except Exception:
-        logger.exception(
-            "export_candidate_themes_to_s3 failed for consultation_code={consultation_code}",
-            consultation_code=consultation_code,
-        )
-        raise
-
-    batch.submit_job(
-        job_type="ASSIGN_THEMES",
-        consultation_code=consultation.code,
-        consultation_name=consultation.title,
-        user_id=int(user_id) if user_id else consultation.created_by_id,
-        model_name=model_name or consultation.model_name,
-        assignment_target="candidate_themes",
+    """Admin recovery wrapper for completing an existing S3 find-themes run."""
+    complete_find_themes(
+        consultation_code=consultation_code,
+        run_date=run_date,
+        user_id=user_id,
+        model_name=model_name,
     )
 
 
