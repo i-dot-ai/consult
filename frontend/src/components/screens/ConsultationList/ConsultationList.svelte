@@ -167,10 +167,10 @@
   function getUserColor(id: number) {
     const SCALE_AMOUNT = 10000;
     const CLASSES = [
-      "bg-neutral-500",
-      "bg-neutral-300",
-      "bg-neutral-400",
-      "bg-neutral-700",
+      "bg-text",
+      "bg-text-light-25",
+      "bg-text-dark-25",
+      "bg-text-dark-50",
     ];
 
     const number = Number(id);
