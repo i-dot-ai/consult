@@ -224,7 +224,7 @@
                   >
                     <MaterialIcon
                       size="1.3rem"
-                      color={favourited ? "fill-yellow-500" : "fill-gray-500"}
+                      color={favourited ? "fill-warning" : "fill-text"}
                     >
                       <Star fill={favourited} />
                     </MaterialIcon>
