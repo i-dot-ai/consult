@@ -147,7 +147,7 @@
   };
 </script>
 
-<div class="rounded-xl border border-gray-200 bg-white p-6">
+<div class="rounded-xl border border-text-light-80 bg-white p-6">
   <form
     class={clsx(["flex", "flex-col", "gap-4"])}
     onsubmit={(e) => {
@@ -156,14 +156,14 @@
     }}
   >
     {#if "general" in errors}
-      <small class="text-sm text-red-500" transition:slide={{ duration: 300 }}>
+      <small class="text-sm text-error" transition:slide={{ duration: 300 }}>
         {errors.general}
       </small>
     {/if}
     <div class="space-y-3">
       {#each allThemes as theme (theme.id)}
         <div
-          class="rounded-lg border border-gray-100 p-3 transition-colors hover:bg-gray-50"
+          class="rounded-lg border border-text-light-80 p-3 transition-colors hover:bg-text-light-95"
         >
           <Checkbox
             id={theme.id!}
@@ -177,14 +177,14 @@
             onchange={setSelectedThemes}
           />
           {#if theme.description}
-            <div class="ml-6 mt-1 text-sm text-gray-600">
+            <div class="ml-6 mt-1 text-sm text-text">
               {theme.description}
             </div>
           {/if}
         </div>
       {/each}
     </div>
-    <div class="space-y-3 border-t border-gray-200 pt-4">
+    <div class="space-y-3 border-t border-text-light-80 pt-4">
       <Button
         type="submit"
         variant="primary"
