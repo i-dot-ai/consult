@@ -47,11 +47,11 @@
   </label>
 
   {#if hint}
-    <p id={`${id}-hint`} class="mt-1 text-sm text-neutral-500">{hint}</p>
+    <p id={`${id}-hint`} class="mt-1 text-sm text-text">{hint}</p>
   {/if}
 
   {#if errorMessage}
-    <p id={`${id}-error`} class="mt-1 text-sm font-bold text-red-600">
+    <p id={`${id}-error`} class="mt-1 text-sm font-bold text-error">
       {errorMessage}
     </p>
   {/if}
@@ -66,9 +66,9 @@
       "mt-1",
       "p-1",
       "border",
-      errorMessage ? "border-red-600" : "border-gray-300",
+      errorMessage ? "border-error" : "border-text-light-50",
       "rounded-xs",
-      "focus:outline-2 focus:outline-yellow-300",
+      "focus:outline-2 focus:outline-warning-light-50",
       "disabled:cursor-not-allowed disabled:opacity-50",
     ])}
     {placeholder}
