@@ -359,7 +359,7 @@
   >
     <div class="flex items-center justify-between gap-2">
       <div class="rotate-90">
-        <MaterialIcon color="fill-neutral-600">
+        <MaterialIcon color="fill-text-dark-25">
           <KeyboardArrowDown />
         </MaterialIcon>
       </div>
@@ -472,12 +472,12 @@
             <div slot="aside" class="flex flex-wrap items-center gap-2">
               {#if anyFilterApplied()}
                 <div
-                  class="flex items-center gap-2 rounded-md bg-neutral-100 px-3 py-1"
+                  class="flex items-center gap-2 rounded-md bg-text-light-80 px-3 py-1"
                 >
-                  <MaterialIcon size="1rem" color="fill-neutral-500">
+                  <MaterialIcon size="1rem" color="fill-text">
                     <FilterAlt />
                   </MaterialIcon>
-                  <span class="text-sm text-neutral-600">Filtered</span>
+                  <span class="text-sm text-text-dark-25">Filtered</span>
                   <Button
                     size="xs"
                     handleClick={() => {
@@ -527,7 +527,7 @@
             >
               {#snippet label()}
                 <div class="flex items-center gap-2">
-                  <MaterialIcon size="1.1rem" color="fill-teal-600">
+                  <MaterialIcon size="1.1rem" color="fill-success">
                     <Visibility />
                   </MaterialIcon>
                   <span class="text-sm">Unread</span>
@@ -646,7 +646,7 @@
               </div>
 
               {#if responses.length > 0}
-                <p class="mt-2 text-center text-sm text-neutral-500">
+                <p class="mt-2 text-center text-sm text-text">
                   {#if !hasMorePages}
                     Showing all {responses.length} responses.
                   {:else if responseTotalCount !== null}
