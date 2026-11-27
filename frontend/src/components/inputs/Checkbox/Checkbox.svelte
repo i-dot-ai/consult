@@ -40,7 +40,7 @@
   // Convert GOV.UK label classes to Tailwind equivalents
   let tailwindLabelClasses = $derived(
     clsx([
-      "text-base leading-5 text-neutral-900 md:text-lg md:leading-6",
+      "text-base leading-5 text-text-dark-50 md:text-lg md:leading-6",
       labelClasses?.includes("govuk-label--s") && "font-semibold",
       labelClasses?.includes("govuk-label--m") &&
         "text-lg font-semibold leading-tight md:text-2xl",
@@ -59,11 +59,11 @@
   }
 </script>
 
-<div class={clsx([errorMessage && "mr-4 border-l-4 border-red-600 pl-3"])}>
+<div class={clsx([errorMessage && "mr-4 border-l-4 border-error pl-3"])}>
   {#if hint}
     <div
       id="{id}-hint"
-      class="mb-4 text-base leading-5 text-neutral-600 md:text-lg md:leading-6"
+      class="mb-4 text-base leading-5 text-text-dark-25 md:text-lg md:leading-6"
     >
       {hint}
     </div>
@@ -72,7 +72,7 @@
   {#if errorMessage}
     <p
       id="{id}-error"
-      class="mb-4 text-base font-bold leading-5 text-red-600 md:text-lg md:leading-6"
+      class="mb-4 text-base font-bold leading-5 text-error md:text-lg md:leading-6"
     >
       <span class="sr-only">Error:</span>
       {errorMessage}
@@ -83,8 +83,8 @@
     <input
       type="checkbox"
       class={clsx([
-        "mt-0.5 rounded-sm border border-neutral-300 bg-white text-neutral-900",
-        "focus:border-transparent focus:outline-hidden focus:ring-2 focus:ring-yellow-400",
+        "mt-0.5 rounded-sm border border-text-light-50 bg-white text-text-dark-50",
+        "focus:border-transparent focus:outline-hidden focus:ring-2 focus:ring-warning",
         "shrink-0 disabled:cursor-not-allowed disabled:opacity-50",
         "checked:border-primary checked:bg-primary",
         "cursor-pointer",
@@ -92,7 +92,7 @@
         size === "sm" && "h-4 w-4",
         size === "md" && "h-5 w-5",
         size === "lg" && "h-6 w-6",
-        errorMessage && "border-red-600",
+        errorMessage && "border-error",
       ])}
       {id}
       {name}
