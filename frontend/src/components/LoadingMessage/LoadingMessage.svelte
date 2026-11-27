@@ -12,7 +12,7 @@
 
 <div transition:slide class="my-8">
   <LoadingIndicator size="5rem" />
-  <p class="text-center text-neutral-500">
+  <p class="text-center text-text">
     {message || "Loading..."}
   </p>
 </div>
