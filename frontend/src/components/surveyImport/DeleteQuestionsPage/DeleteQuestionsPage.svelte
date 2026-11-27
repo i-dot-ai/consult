@@ -115,7 +115,7 @@
 
 <StepTitle stepNo={4} maxStepNo={6} title="Delete questions" Icon={Delete} />
 
-<p class="mt-3.5 mb-[26px] text-[15px] leading-relaxed text-neutral-500">
+<p class="mt-3.5 mb-[26px] text-[15px] leading-relaxed text-text">
   Consult reads every column in the file as a question. Delete any that are not
   questions, such as response IDs or dates. If every one is a question,
   continue.
@@ -137,8 +137,8 @@
   </div>
 {/if}
 
-<div class="rounded-xl border border-neutral-300 bg-white">
-  <div class="px-7 py-4 text-[15px] text-neutral-500">
+<div class="rounded-xl border border-text-light-50 bg-white">
+  <div class="px-7 py-4 text-[15px] text-text">
     {#if questionsQuery.query.isPending}
       Loading questions...
     {:else if questionsQuery.query.isError}
@@ -151,9 +151,9 @@
 
   {#if selectedIds.size > 0}
     <div
-      class="mx-7 mb-4 flex items-center gap-4 rounded-lg border border-neutral-300 bg-neutral-50 px-4 py-3"
+      class="mx-7 mb-4 flex items-center gap-4 rounded-lg border border-text-light-50 bg-text-light-95 px-4 py-3"
     >
-      <span class="text-[15px] font-medium text-neutral-900">
+      <span class="text-[15px] font-medium text-text-dark-50">
         {selectedIds.size} selected
       </span>
       <Button
@@ -170,9 +170,9 @@
   {/if}
 
   {#if !questionsQuery.query.isPending && !questionsQuery.query.isError}
-    <div class="border-t border-neutral-200">
+    <div class="border-t border-text-light-80">
       <div
-        class="grid grid-cols-[3rem_4rem_1fr] px-7 py-2 text-sm text-neutral-500"
+        class="grid grid-cols-[3rem_4rem_1fr] px-7 py-2 text-sm text-text"
       >
         <span></span>
         <span>No.</span>
@@ -180,7 +180,7 @@
       </div>
 
       {#each questions as question, i (question.id)}
-        <div class="border-t border-neutral-200">
+        <div class="border-t border-text-light-80">
           <div class="grid grid-cols-[3rem_4rem_1fr] items-start px-7 py-4">
             <div class="pt-0.5">
               <Checkbox
@@ -191,9 +191,9 @@
                 onchange={(checked) => toggleSelected(question.id, checked)}
               />
             </div>
-            <span class="text-[15px] text-neutral-500">Q{i + 1}</span>
+            <span class="text-[15px] text-text">Q{i + 1}</span>
             <div>
-              <p class="text-[15px] text-neutral-900">
+              <p class="text-[15px] text-text-dark-50">
                 {question.question_text}
               </p>
               <div class="mt-2">
@@ -213,7 +213,7 @@
               {#if expandedIds.has(question.id)}
                 {@const sample = freeTextSamples.get(question.id)}
                 <div
-                  class="mt-3 rounded-lg bg-neutral-100 p-3 text-sm text-neutral-500"
+                  class="mt-3 rounded-lg bg-text-light-95 p-3 text-sm text-text"
                 >
                   {#if question.has_free_text && !question.has_multiple_choice}
                     {#if freeTextFailed.has(question.id)}
@@ -229,7 +229,7 @@
                       </p>
                       {#each sample.answers as text, i (i)}
                         <p
-                          class="leading-relaxed text-neutral-900 not-last:mb-2"
+                          class="leading-relaxed text-text-dark-50 not-last:mb-2"
                         >
                           {text}
                         </p>
@@ -245,7 +245,7 @@
                       answers to this question
                     </p>
                     {#each sample as answer (answer.id)}
-                      <p class="leading-relaxed text-neutral-900 not-last:mb-2">
+                      <p class="leading-relaxed text-text-dark-50 not-last:mb-2">
                         {answer.text}
                       </p>
                     {/each}
@@ -285,16 +285,16 @@
   confirmDisabled={deleting}
   handleConfirm={handleConfirmDelete}
 >
-  <p class="mb-4 text-[15px] leading-relaxed text-neutral-500">
+  <p class="mb-4 text-[15px] leading-relaxed text-text">
     Deleting removes the questions and their answers from Consult. This cannot
     be undone.
   </p>
   <div
-    class="mb-4 max-h-48 overflow-y-auto rounded-lg border border-neutral-200 bg-neutral-50 px-4 py-3"
+    class="mb-4 max-h-48 overflow-y-auto rounded-lg border border-text-light-80 bg-text-light-95 px-4 py-3"
   >
     {#each selectedQuestions as q (q.id)}
-      <p class="py-1.5 text-[15px] text-neutral-900">
-        <span class="text-neutral-500">Q{questionIndexMap.get(q.id)}</span>
+      <p class="py-1.5 text-[15px] text-text-dark-50">
+        <span class="text-text">Q{questionIndexMap.get(q.id)}</span>
         {q.question_text}
       </p>
     {/each}
