@@ -69,16 +69,16 @@
   <textarea
     id="emailsInput"
     rows="3"
-    class="rounded-sm border border-gray-300 px-3 py-2"
+    class="rounded-sm border border-text-light-50 px-3 py-2"
     placeholder="Enter one or more email addresses, separated by comma, space, or newline."
     bind:value={emailsInput}
     disabled={loading}></textarea>
   {#if error}
     {#if typeof error === "string"}
-      <p class="text-sm text-red-500">{`Error: ${error}`}</p>
+      <p class="text-sm text-error">{`Error: ${error}`}</p>
     {:else}
       {#each error as err, i (i)}
-        <p class="text-sm text-red-500">
+        <p class="text-sm text-error">
           {`Error for ${err.email}: ${err.error}`}
         </p>
       {/each}
@@ -90,7 +90,7 @@
   </div>
 
   <div class="mt-4">
-    <a href={Routes.SupportUsers} class="text-gray-700 underline"
+    <a href={Routes.SupportUsers} class="text-text-dark-25 underline"
       >← Back to users</a
     >
   </div>
