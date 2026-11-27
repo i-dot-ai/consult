@@ -161,12 +161,12 @@
     {:else if isDemoDataEmpty()}
       <div>
         <div class="flex justify-center mt-12 mb-4">
-          <MaterialIcon color="fill-neutral-300" size="3rem">
+          <MaterialIcon color="fill-text-light-50" size="3rem">
             <Search />
           </MaterialIcon>
         </div>
 
-        <p class="text-neutral-500 text-center mb-12">No demographics found</p>
+        <p class="text-text text-center mb-12">No demographics found</p>
       </div>
     {:else}
       <div class="mb-4 grid grid-cols-12 gap-4">
