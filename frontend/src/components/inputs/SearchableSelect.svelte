@@ -76,14 +76,14 @@
 
 <div class="flex flex-col gap-1">
   <label use:melt={$meltLabel} class={hideLabel ? "sr-only" : undefined}>
-    <span class="text-sm font-medium text-neutral-900">
+    <span class="text-sm font-medium text-text-dark-50">
       {label}
     </span>
   </label>
 
   <div class="relative">
     <div class="absolute left-2 top-1/2 -translate-y-1/2">
-      <MaterialIcon color="fill-neutral-400">
+      <MaterialIcon color="fill-text-light-25">
         <Search />
       </MaterialIcon>
     </div>
@@ -101,7 +101,7 @@
         "pr-12",
         "text-black",
         "border",
-        "border-neutral-300",
+        "border-text-light-50",
         "pl-8",
       ])}
       {placeholder}
@@ -114,14 +114,14 @@
           "top-1/2",
           "z-10",
           "-translate-y-1/2",
-          "text-neutral-900",
+          "text-text-dark-50",
           "transition-transform",
           "-rotate-90",
           "pointer-events-none",
           $open && "rotate-0",
         ])}
       >
-        <MaterialIcon color="fill-neutral-700">
+        <MaterialIcon color="fill-text-dark-25">
           <KeyboardArrowDown />
         </MaterialIcon>
       </div>
@@ -169,16 +169,16 @@
             "py-2",
             "pl-4",
             "pr-4",
-            "hover:bg-neutral-100",
-            "data-highlighted:bg-neutral-200",
-            "data-highlighted:text-neutral-900",
+            "hover:bg-text-light-95",
+            "data-highlighted:bg-text-light-80",
+            "data-highlighted:text-text-dark-50",
             "data-disabled:opacity-50",
           ])}
           data-testid="searchable-select-option"
         >
           {#if selectedValues.includes(option.value)}
-            <div class="check absolute left-2 top-1/2 z-10 text-neutral-900">
-              <MaterialIcon color="fill-neutral-700">
+            <div class="check absolute left-2 top-1/2 z-10 text-text-dark-50">
+              <MaterialIcon color="fill-text-dark-25">
                 <Check />
               </MaterialIcon>
             </div>
@@ -207,7 +207,7 @@
   @reference "../../styles/global.css";
 
   .check {
-    @apply absolute left-2 top-1/2 text-neutral-500;
+    @apply absolute left-2 top-1/2 text-text;
     translate: 0 calc(-50% + 1px);
   }
 </style>
