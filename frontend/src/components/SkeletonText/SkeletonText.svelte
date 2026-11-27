@@ -7,7 +7,7 @@
 </script>
 
 <span
-  class="blink w-max select-none bg-neutral-200 text-neutral-200"
+  class="blink w-max select-none bg-text-light-80 text-text-light-80"
   aria-hidden="true"
 >
   {"SKELETON ".repeat(length)}
