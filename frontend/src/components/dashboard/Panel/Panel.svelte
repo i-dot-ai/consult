@@ -49,7 +49,7 @@
         variant === "approve" && "bg-success-light-95",
         variant === "approve-dark" && "bg-text-light-95",
         variant === "white" && "bg-white",
-        variant === "gray" && "bg-neutral-100",
+        variant === "gray" && "bg-text-light-95",
       ]),
   ])}
 >
