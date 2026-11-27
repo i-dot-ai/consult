@@ -215,7 +215,7 @@
 <section class="flex flex-wrap items-start justify-between gap-4">
   <div>
     <Title level={2} text="Consultations" />
-    <p class="text-neutral-500 text-sm">
+    <p class="text-text text-sm">
       {#if consultations.query.isPending}
         Loading consultations...
       {:else}
@@ -251,7 +251,7 @@
           </span>
 
           <Button variant="ghost" handleClick={() => removeAlert(alert)}>
-            <MaterialIcon color="fill-neutral-500">
+            <MaterialIcon color="fill-text">
               <Close />
             </MaterialIcon>
           </Button>
@@ -265,7 +265,7 @@
   <Panel variant="default">
     <div class="my-12 flex flex-col items-center gap-4">
       <p class="text-lg text-center mb-2">You have no consultations yet</p>
-      <p class="text-sm text-neutral-500 text-center">
+      <p class="text-sm text-text text-center">
         Add a consultation, then upload the responses.
       </p>
       {#if enableV2}
@@ -385,7 +385,7 @@
           {:else if content === userData?.email}
             <span>You</span>
           {:else}
-            <span class="text-neutral-500">{content}</span>
+            <span class="text-text">{content}</span>
           {/if}
         {:else if column.key === "team"}
           {@const users = content as Consultation["users"]}
@@ -440,7 +440,7 @@
                   deleteConsultationId = id;
                 }}
               >
-                <MaterialIcon color="fill-neutral-500">
+                <MaterialIcon color="fill-text">
                   <Delete />
                 </MaterialIcon>
 
