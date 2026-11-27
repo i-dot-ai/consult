@@ -54,7 +54,7 @@
     <Accordion variant="gray">
       {#snippet title()}
         <div class="flex items-center gap-2">
-          <MaterialIcon color="fill-neutral-500">
+          <MaterialIcon color="fill-text">
             <Tip />
           </MaterialIcon>
           Creating Effective Themes
