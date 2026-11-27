@@ -61,10 +61,10 @@
       <div
         class={clsx([
           "rounded-full",
-          "bg-secondary",
+          "bg-success",
           "p-2",
           "transition-all",
-          "hover:bg-teal-500",
+          "hover:bg-success",
           "hover:p-2.5",
         ])}
       >
@@ -101,7 +101,7 @@
 
     <div class="absolute right-0 top-0 m-4">
       <Button variant="ghost" handleClick={() => (isOpen = false)}>
-        <MaterialIcon color="fill-neutral-500">
+        <MaterialIcon color="fill-text">
           <Close />
         </MaterialIcon>
       </Button>
