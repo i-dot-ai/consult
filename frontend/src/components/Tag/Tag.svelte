@@ -36,7 +36,7 @@
         "text-text-dark-25",
         border && "border border-text-light-50",
       ]),
-    variant === "dark" && clsx(["bg-neutral-200", "text-neutral-800"]),
+    variant === "dark" && clsx(["bg-text-light-80", "text-text-dark-25"]),
     variant === "primary" && clsx(["bg-primary", "text-white"]),
     variant === "primary-light" &&
       clsx(["bg-primary-light-95", "text-primary", "border border-primary-light-80"]),
