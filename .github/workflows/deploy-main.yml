@@ -55,16 +55,16 @@ jobs:
     with:
       environment: preprod
 
-  prod-infra:
-    needs: [preprod-app]
-    uses: ./.github/workflows/release-infra.yml
-    secrets: inherit
-    with:
-      environment: prod
+  # prod-infra:
+  #   needs: [preprod-app]
+  #   uses: ./.github/workflows/release-infra.yml
+  #   secrets: inherit
+  #   with:
+  #     environment: prod
 
-  prod-app:
-    needs: [prod-infra]
-    uses: ./.github/workflows/release-app.yml
-    secrets: inherit
-    with:
-      environment: prod
+  # prod-app:
+  #   needs: [prod-infra]
+  #   uses: ./.github/workflows/release-app.yml
+  #   secrets: inherit
+  #   with:
+  #     environment: prod
