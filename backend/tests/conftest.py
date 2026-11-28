@@ -11,7 +11,6 @@ import factories
 from consultations.models import (
     Consultation,
     DemographicOption,
-    MultiChoiceAnswer,
     Question,
     Respondent,
     Response,
@@ -22,7 +21,6 @@ from consultations.models import (
 from factories import (
     CandidateThemeFactory,
     ConsultationFactory,
-    MultiChoiceAnswerFactory,
     QuestionFactory,
     RespondentFactory,
     ResponseFactory,
@@ -105,49 +103,33 @@ def free_text_question(consultation):
 def multi_choice_question(consultation):
     question = QuestionFactory(
         consultation=consultation,
+        type=Question.QuestionType.CLOSED,
         has_free_text=False,
         has_multiple_choice=True,
         number=2,
-        type=Question.QuestionType.CLOSED,
     )
-    for answer in ["red", "blue", "green"]:
-        MultiChoiceAnswerFactory.create(question=question, text=answer)
     yield question
     question.delete()
 
 
 @pytest.fixture
 def multi_choice_responses(multi_choice_question):
-    red = multi_choice_question.multichoiceanswer_set.get(
-        question=multi_choice_question, text="red"
-    )
-    blue = multi_choice_question.multichoiceanswer_set.get(
-        question=multi_choice_question, text="blue"
-    )
-
+    """Two respondents: the first selected red and blue, the second red only."""
     respondent_1 = RespondentFactory(consultation=multi_choice_question.consultation)
-    response_1 = Response.objects.create(
-        respondent=respondent_1, question=multi_choice_question, text="red"
-    )
-    response_1.chosen_options.add(red)
-    response_1.chosen_options.add(blue)
-    response_1.save()
-
     respondent_2 = RespondentFactory(consultation=multi_choice_question.consultation)
-    response_2 = Response.objects.create(
-        respondent=respondent_2, question=multi_choice_question, text="red"
+    rows = Response.objects.bulk_create(
+        Response(respondent=respondent, question=multi_choice_question, text=option)
+        for respondent, option in (
+            (respondent_1, "red"),
+            (respondent_1, "blue"),
+            (respondent_2, "red"),
+        )
     )
-    response_2.chosen_options.add(red)
-    response_2.save()
-
-    # Update denormalised counts
-    MultiChoiceAnswer.update_response_counts(multi_choice_question)
     multi_choice_question.update_response_counts()
 
     yield respondent_1
 
-    response_1.delete()
-    response_2.delete()
+    Response.objects.filter(id__in=[row.id for row in rows]).delete()
 
 
 @pytest.fixture()

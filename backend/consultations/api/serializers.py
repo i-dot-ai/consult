@@ -5,11 +5,14 @@ from rest_framework import serializers
 from rest_framework.exceptions import ValidationError
 
 from authentication.models import User
+from consultations.answer_serializers import (
+    AnswerCountsMixin,
+    SelectedAnswersMixin,
+)
 from consultations.models import (
     CandidateTheme,
     CandidateThemeResponse,
     Consultation,
-    MultiChoiceAnswer,
     Question,
     Respondent,
     Response,
@@ -43,27 +46,9 @@ class UserSerializer(serializers.ModelSerializer):
         return value
 
 
-class MultiChoiceAnswerSerializer(serializers.ModelSerializer):
-    id = serializers.UUIDField(read_only=True)
-
-    response_count = serializers.SerializerMethodField()
-
-    def get_response_count(self, obj) -> int:
-        # When filters are applied, the view annotates a dynamic count
-        if hasattr(obj, "prefetched_response_count"):
-            return obj.prefetched_response_count
-        return obj.response_count
-
-    class Meta:
-        model = MultiChoiceAnswer
-        fields: ClassVar[list] = ["id", "text", "response_count"]
-
-
-class QuestionSerializer(serializers.HyperlinkedModelSerializer):
+class QuestionSerializer(AnswerCountsMixin, serializers.HyperlinkedModelSerializer):
     question_text = serializers.CharField(source="text")
-    multiple_choice_answer = MultiChoiceAnswerSerializer(
-        many=True, source="multichoiceanswer_set", read_only=True
-    )
+    multiple_choice_answer = serializers.SerializerMethodField()
     proportion_of_audited_answers = serializers.SerializerMethodField()
 
     def get_proportion_of_audited_answers(self, obj) -> float:
@@ -258,7 +243,7 @@ class RespondentSerializer(serializers.ModelSerializer):
         fields: ClassVar[list] = ["id", "themefinder_id", "demographics", "name"]
 
 
-class ResponseSerializer(serializers.ModelSerializer):
+class ResponseSerializer(SelectedAnswersMixin, serializers.ModelSerializer):
     identifier = serializers.CharField(source="respondent.themefinder_id", read_only=True)
     respondent_id = serializers.UUIDField(source="respondent.id", read_only=True)
     respondent = RespondentSerializer(read_only=True)
@@ -267,9 +252,7 @@ class ResponseSerializer(serializers.ModelSerializer):
     themes = ResponseAnnotationThemeSerializer(
         source="annotation.responseannotationtheme_set", many=True
     )
-    multiple_choice_answer = serializers.SlugRelatedField(
-        source="chosen_options", slug_field="text", many=True, read_only=True
-    )
+    multiple_choice_answer = serializers.SerializerMethodField()
     evidenceRich = serializers.BooleanField(source="annotation.evidence_rich", default=False)
     sentiment = serializers.CharField(source="annotation.sentiment")
     human_reviewed = serializers.BooleanField(source="annotation.human_reviewed")
