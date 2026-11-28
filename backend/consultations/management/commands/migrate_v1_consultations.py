@@ -4,7 +4,6 @@ from django.conf import settings
 from django.core.management.base import BaseCommand, CommandError
 
 from consultations.models import Consultation
-from consultations.services.legacy_answers import count_unmatched_legacy_answers
 from consultations.services.migrate_v1_to_v2 import (
     audit_consultation,
     migrate_consultation_to_v2,
@@ -16,9 +15,8 @@ logger = settings.LOGGER
 class Command(BaseCommand):
     help = (
         "Run the v1 to v2 migration for every consultation that has not been migrated, "
-        "one transaction each, and report selected options that have no Response row. "
-        "With --dry-run nothing is written and the exit code is non-zero while any "
-        "consultation is unmigrated or any selected option is unmatched."
+        "one transaction each. With --dry-run nothing is written and the exit code is "
+        "non-zero while any consultation is unmigrated."
     )
 
     def add_arguments(self, parser):
@@ -75,22 +73,16 @@ class Command(BaseCommand):
 
     def report(self, consultations):
         unmigrated = 0
-        unmatched_total = 0
         for consultation in consultations:
-            unmatched = count_unmatched_legacy_answers(consultation)
-            unmatched_total += unmatched
             if consultation.migrated_at is None:
                 unmigrated += 1
             self.stdout.write(
-                f"{consultation.id} ({consultation.title}): "
-                f"migrated_at={consultation.migrated_at}, unmatched selected options={unmatched}"
+                f"{consultation.id} ({consultation.title}): migrated_at={consultation.migrated_at}"
             )
             for key, value in audit_consultation(consultation).items():
                 if value:
                     self.stdout.write(f"  {key}: {value}")
 
-        self.stdout.write(
-            f"{unmigrated} consultations unmigrated, {unmatched_total} selected options unmatched"
-        )
-        if unmigrated or unmatched_total:
-            raise CommandError("Legacy multiple-choice data remains; nothing was changed")
+        self.stdout.write(f"{unmigrated} consultations unmigrated")
+        if unmigrated:
+            raise CommandError("Unmigrated consultations remain; nothing was changed")

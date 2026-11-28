@@ -216,3 +216,122 @@ def test_0069_alter_demographicoption_field_value(migrator):
     NewDemographicOption = new_state.apps.get_model("consultations", "DemographicOption")
     for name, _, new_value in test_values:
         assert NewDemographicOption.objects.get(field_name=name).field_value == new_value
+
+
+def _legacy_consultation_before_0115(old_state):
+    """A closed question, a hybrid split into an open question and its closed sibling, and
+    one respondent whose selected options still live in the legacy tables."""
+    Consultation = old_state.apps.get_model("consultations", "Consultation")
+    Question = old_state.apps.get_model("consultations", "Question")
+    Respondent = old_state.apps.get_model("consultations", "Respondent")
+    Response = old_state.apps.get_model("consultations", "Response")
+    MultiChoiceAnswer = old_state.apps.get_model("consultations", "MultiChoiceAnswer")
+    SelectedOption = old_state.apps.get_model("consultations", "Response_chosen_options")
+
+    consultation = Consultation.objects.create(title="Legacy")
+    closed_question = Question.objects.create(
+        consultation=consultation, text="Agree?", number=1, type="closed"
+    )
+    sibling = Question.objects.create(
+        consultation=consultation, text="Why? (option)", number=3, type="closed"
+    )
+    open_question = Question.objects.create(
+        consultation=consultation, text="Why?", number=2, type="open", closed_question=sibling
+    )
+    respondent = Respondent.objects.create(consultation=consultation)
+
+    def select(question, option_texts, already_converted=()):
+        response = Response.objects.create(question=question, respondent=respondent)
+        for text in option_texts:
+            option = MultiChoiceAnswer.objects.create(question=question, text=text)
+            SelectedOption.objects.create(response=response, multichoiceanswer=option)
+        for text in already_converted:
+            Response.objects.create(
+                question=question if question.type == "closed" else sibling,
+                respondent=respondent,
+                text=text,
+            )
+
+    select(closed_question, ["Yes", "No"], already_converted=["Yes"])
+    select(open_question, ["Maybe"])
+    return consultation, respondent, closed_question, sibling
+
+
+@pytest.mark.django_db()
+def test_0115_carries_selected_options_to_rows_before_dropping_the_tables(migrator):
+    old_state = migrator.apply_initial_migration(
+        ("consultations", "0114_consultation_is_v1_and_migrated_at")
+    )
+    _, respondent, closed_question, sibling = _legacy_consultation_before_0115(old_state)
+
+    new_state = migrator.apply_tested_migration(("consultations", "0115_remove_multichoiceanswer"))
+
+    Response = new_state.apps.get_model("consultations", "Response")
+    rows = Response.objects.filter(respondent_id=respondent.id, text__isnull=False)
+    assert sorted(rows.values_list("question_id", "text")) == sorted(
+        [(closed_question.id, "Yes"), (closed_question.id, "No"), (sibling.id, "Maybe")]
+    )
+    assert not hasattr(Response, "chosen_options")
+
+    Question = new_state.apps.get_model("consultations", "Question")
+    counts = {
+        question.number: (question.total_response_count, question.multi_choice_response_count)
+        for question in Question.objects.all()
+    }
+    assert counts == {1: (1, 1), 2: (1, 1), 3: (1, 1)}
+
+    migrator.reset()
+
+
+@pytest.mark.django_db()
+def test_0115_skips_a_selected_option_with_no_text(migrator):
+    old_state = migrator.apply_initial_migration(
+        ("consultations", "0114_consultation_is_v1_and_migrated_at")
+    )
+    _, respondent, closed_question, _ = _legacy_consultation_before_0115(old_state)
+    Response = old_state.apps.get_model("consultations", "Response")
+    MultiChoiceAnswer = old_state.apps.get_model("consultations", "MultiChoiceAnswer")
+    SelectedOption = old_state.apps.get_model("consultations", "Response_chosen_options")
+    legacy_response = Response.objects.get(
+        question_id=closed_question.id, respondent_id=respondent.id, text__isnull=True
+    )
+    SelectedOption.objects.create(
+        response=legacy_response,
+        multichoiceanswer=MultiChoiceAnswer.objects.create(question=closed_question, text=""),
+    )
+
+    new_state = migrator.apply_tested_migration(("consultations", "0115_remove_multichoiceanswer"))
+
+    Response = new_state.apps.get_model("consultations", "Response")
+    assert sorted(
+        Response.objects.filter(question_id=closed_question.id, text__isnull=False).values_list(
+            "text", flat=True
+        )
+    ) == ["No", "Yes"]
+
+    migrator.reset()
+
+
+@pytest.mark.django_db()
+def test_0115_refuses_selected_options_with_no_closed_question_to_hold_them(migrator):
+    old_state = migrator.apply_initial_migration(
+        ("consultations", "0114_consultation_is_v1_and_migrated_at")
+    )
+    consultation, respondent, _, _ = _legacy_consultation_before_0115(old_state)
+    Question = old_state.apps.get_model("consultations", "Question")
+    Response = old_state.apps.get_model("consultations", "Response")
+    MultiChoiceAnswer = old_state.apps.get_model("consultations", "MultiChoiceAnswer")
+    SelectedOption = old_state.apps.get_model("consultations", "Response_chosen_options")
+    untyped = Question.objects.create(consultation=consultation, text="Untyped", number=9)
+    response = Response.objects.create(question=untyped, respondent=respondent)
+    SelectedOption.objects.create(
+        response=response,
+        multichoiceanswer=MultiChoiceAnswer.objects.create(question=untyped, text="Odd"),
+    )
+
+    with pytest.raises(RuntimeError, match="1 selected options sit on questions"):
+        migrator.apply_tested_migration(("consultations", "0115_remove_multichoiceanswer"))
+
+    # reset replays 0115, which only passes once the orphan is gone
+    untyped.delete()
+    migrator.reset()

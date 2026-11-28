@@ -4,10 +4,9 @@ from unittest.mock import patch
 import pytest
 from django.core.management import CommandError, call_command
 
-from consultations.models import Consultation, Response
-from consultations.services.legacy_answers import count_unmatched_legacy_answers
+from consultations.models import Consultation, Question
 from consultations.services.migrate_v1_to_v2 import migrate_consultation_to_v2
-from factories import ConsultationFactory
+from factories import ConsultationFactory, QuestionFactory, RespondentFactory, ResponseFactory
 
 pytestmark = pytest.mark.django_db
 
@@ -18,8 +17,19 @@ def _run(*args):
     return output.getvalue()
 
 
-def test_unmatched_count_is_every_selected_option_before_migration(legacy_consultation):
-    assert count_unmatched_legacy_answers(legacy_consultation) == 3
+@pytest.fixture
+def legacy_consultation():
+    consultation = ConsultationFactory(is_v1=True)
+    question = QuestionFactory(consultation=consultation, has_free_text=True, number=1)
+    QuestionFactory(
+        consultation=consultation, has_free_text=True, has_multiple_choice=True, number=2
+    )
+    ResponseFactory(
+        question=question,
+        respondent=RespondentFactory(consultation=consultation),
+        free_text="Hello",
+    )
+    return consultation
 
 
 def test_dry_run_reports_and_exits_non_zero_without_writing(legacy_consultation):
@@ -28,7 +38,9 @@ def test_dry_run_reports_and_exits_non_zero_without_writing(legacy_consultation)
 
     legacy_consultation.refresh_from_db()
     assert legacy_consultation.migrated_at is None
-    assert Response.objects.filter(question__consultation=legacy_consultation).count() == 2
+    assert (
+        Question.objects.filter(consultation=legacy_consultation, type__isnull=False).count() == 0
+    )
 
 
 def test_migrates_every_unmigrated_consultation(legacy_consultation):
@@ -36,7 +48,8 @@ def test_migrates_every_unmigrated_consultation(legacy_consultation):
 
     legacy_consultation.refresh_from_db()
     assert legacy_consultation.migrated_at is not None
-    assert count_unmatched_legacy_answers(legacy_consultation) == 0
+    assert Question.objects.filter(consultation=legacy_consultation, type__isnull=True).count() == 0
+    assert Question.objects.filter(consultation=legacy_consultation, type="closed").count() == 1
     assert "1 migrated, 0 failed" in output
 
 
@@ -45,20 +58,18 @@ def test_dry_run_is_quiet_once_everything_is_migrated(legacy_consultation):
 
     output = _run("--dry-run")
 
-    assert "0 consultations unmigrated, 0 selected options unmatched" in output
+    assert "0 consultations unmigrated" in output
 
 
 def test_rerun_is_a_no_op(legacy_consultation):
     _run()
-    rows_after_first_run = Response.objects.filter(
-        question__consultation=legacy_consultation
-    ).count()
+    legacy_consultation.refresh_from_db()
+    migrated_at = legacy_consultation.migrated_at
 
     _run()
 
-    assert Response.objects.filter(question__consultation=legacy_consultation).count() == (
-        rows_after_first_run
-    )
+    legacy_consultation.refresh_from_db()
+    assert legacy_consultation.migrated_at == migrated_at
 
 
 def test_one_failure_does_not_stop_the_rest(legacy_consultation):

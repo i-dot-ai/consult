@@ -175,7 +175,6 @@ def delete_consultation_job(consultation_id: UUID):
 
         delete_response_related_table("consultations_candidatethemeresponse", consultation_id)
         delete_response_related_table("consultations_responseannotation", consultation_id)
-        delete_response_related_table("consultations_response_chosen_options", consultation_id)
         delete_response_related_table("consultations_responsereadby", consultation_id)
 
         logger.info("Deleting responses...")
@@ -183,7 +182,6 @@ def delete_consultation_job(consultation_id: UUID):
 
         delete_question_related_table("consultations_candidatetheme", consultation_id)
         delete_question_related_table("consultations_selectedtheme", consultation_id)
-        delete_question_related_table("consultations_multichoiceanswer", consultation_id)
 
         delete_respondent_related_table("consultations_respondent_demographics", consultation_id)
 

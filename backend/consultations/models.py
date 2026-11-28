@@ -213,11 +213,6 @@ class Question(UUIDPrimaryKeyModel, TimeStampedModel):
     )
 
     @property
-    def multiple_choice_options(self) -> list:
-        """List of options when has_multiple_choice=True"""
-        return list(self.multichoiceanswer_set.all())
-
-    @property
     def is_chartable(self) -> bool:
         return self.type in (self.QuestionType.CLOSED, self.QuestionType.DEMOGRAPHIC)
 
@@ -389,7 +384,6 @@ class Response(UUIDPrimaryKeyModel, TimeStampedModel):
 
     # Response content
     free_text = models.TextField(null=True, blank=True)  # Free text response
-    chosen_options = models.ManyToManyField("MultiChoiceAnswer", blank=True)
     embedding = VectorField(dimensions=settings.EMBEDDING_DIMENSION, null=True, blank=True)
     search_vector = SearchVectorField(null=True, blank=True)
     read_by = models.ManyToManyField(User, through="ResponseReadBy", blank=True)
@@ -686,25 +680,6 @@ class ResponseAnnotation(UUIDPrimaryKeyModel, TimeStampedModel):
             )
 
         super().save(*args, **kwargs)
-
-
-class MultiChoiceAnswer(UUIDPrimaryKeyModel, TimeStampedModel):  # type: ignore[misc]
-    """a possible answer to a multi choice question"""
-
-    question = models.ForeignKey(Question, on_delete=models.CASCADE)
-    text = models.TextField()
-    response_count = models.IntegerField(default=0)
-
-    @classmethod
-    def update_response_counts(cls, question):
-        """Update response_count for all answers belonging to a question."""
-        answers = list(cls.objects.filter(question=question).annotate(_count=Count("response")))
-        for answer in answers:
-            answer.response_count = answer._count
-        cls.objects.bulk_update(answers, ["response_count"])
-
-    def __str__(self):
-        return f"{self.question.number} = {self.text}"
 
 
 class FileUpload(UUIDPrimaryKeyModel, TimeStampedModel):  # type: ignore[misc]

@@ -3,7 +3,6 @@ from django.urls import reverse
 
 from factories import (
     ConsultationFactory,
-    MultiChoiceAnswerFactory,
     QuestionFactory,
     RespondentFactory,
     ResponseFactory,
@@ -105,12 +104,8 @@ def test_v2_response_list_includes_multiple_choice_answers(
     client, consultation, non_staff_user_token
 ):
     question = QuestionFactory(consultation=consultation, type="closed")
-    MultiChoiceAnswerFactory(question=question, text="Yes")
-    answer = question.multichoiceanswer_set.first()
     respondent = RespondentFactory(consultation=consultation)
-    response = ResponseFactory(question=question, respondent=respondent, text="Yes")
-    response.chosen_options.add(answer)
-    response.save()
+    ResponseFactory(question=question, respondent=respondent, text="Yes", free_text=None)
 
     response = _get(client, _list_url(consultation, question), non_staff_user_token)
 

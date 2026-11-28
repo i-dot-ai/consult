@@ -136,8 +136,6 @@ _MIGRATION_AUDIT_LABELS = {
     "questions_closed_only": "Questions that will become closed questions",
     "questions_hybrid": "Hybrid questions that will be split into an open question and a closed sibling",
     "questions_without_flags": "Questions with neither flag (left untyped for manual review)",
-    "multiple_choice_links": "Selected options that will become individual response rows",
-    "multi_choice_answers": "Multiple-choice option records (kept for v1 consumers)",
     "demographic_options": "Demographic records that will become demographic questions and responses",
     "respondent_demographic_links": "Respondent demographic links (kept for v1 consumers)",
     "missing_data_source": "This consultation is missing a survey provider",

@@ -9,7 +9,6 @@ from authentication.models import User
 from consultations.models import (
     Consultation,
     DemographicOption,
-    MultiChoiceAnswer,
     Question,
     Response,
 )
@@ -70,7 +69,6 @@ class TestPrepareEnvironment:
         generated = Consultation.objects.exclude(id=setup.id)
         assert not Question.objects.filter(consultation__in=generated, type__isnull=True).exists()
         assert Response.objects.filter(question__consultation__in=generated, text__isnull=False).exists()
-        assert not MultiChoiceAnswer.objects.filter(question__consultation__in=generated).exists()
         assert not DemographicOption.objects.filter(consultation__in=generated).exists()
 
     @pytest.mark.django_db(transaction=True)

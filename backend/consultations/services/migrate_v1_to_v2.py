@@ -13,13 +13,11 @@ Steps, each written to be idempotent and wrapped in a single transaction:
    through the V2 provider-selection flow and are marked V2; the rest are V1
 1. ``_fill_response_text`` copy free_text -> text
 2. ``_backfill_question_types`` flag pair -> Question.type
-3. ``_convert_multiple_choice_to_responses`` chosen options -> one response
-   row per selected option on closed questions
-4. ``_convert_demographics`` demographic table -> demographic questions
-5. ``_backfill_data_source`` default the data source to CitizenSpace
-6. ``_refresh_denormalised_counts`` recalculate response/answer counts
-7. ``_assign_stage`` advance the stage to match the artifacts on record
-8. ``_update_survey_import_status`` mark the setup concluded where provable
+3. ``_convert_demographics`` demographic table -> demographic questions
+4. ``_backfill_data_source`` default the data source to CitizenSpace
+5. ``_refresh_denormalised_counts`` recalculate response/answer counts
+6. ``_assign_stage`` advance the stage to match the artifacts on record
+7. ``_update_survey_import_status`` mark the setup concluded where provable
 """
 
 from typing import Any
@@ -34,7 +32,6 @@ from consultations.models import (
     CandidateTheme,
     Consultation,
     DemographicOption,
-    MultiChoiceAnswer,
     Question,
     Respondent,
     Response,
@@ -74,12 +71,6 @@ def audit_consultation(consultation: Consultation) -> dict[str, int]:
         "questions_without_flags": questions.filter(
             has_free_text=False, has_multiple_choice=False, type__isnull=True
         ).count(),
-        "multiple_choice_links": Response.chosen_options.through.objects.filter(
-            response__question__consultation=consultation
-        ).count(),
-        "multi_choice_answers": MultiChoiceAnswer.objects.filter(
-            question__consultation=consultation
-        ).count(),
         "demographic_options": DemographicOption.objects.filter(consultation=consultation).count(),
         "respondent_demographic_links": Respondent.demographics.through.objects.filter(
             respondent__consultation=consultation
@@ -116,7 +107,6 @@ def migrate_consultation_to_v2(consultation: Consultation) -> Consultation:
 
     _fill_response_text(consultation)
     _backfill_question_types(consultation)
-    _convert_multiple_choice_to_responses(consultation)
     _convert_demographics(consultation)
     _backfill_data_source(consultation)
     _refresh_denormalised_counts(consultation)
@@ -190,7 +180,7 @@ def _backfill_question_types(consultation: Consultation) -> None:
                                      one (keeps id, number, text,
                                      annotations and embeddings) and a new
                                      sibling CLOSED question is created to
-                                     hold the options; the original's
+                                     hold the closed answers; the original's
                                      closed_question FK points at the
                                      sibling (the open question holds the
                                      FK; see api_v2/serializers.py rules)
@@ -236,19 +226,12 @@ def _set_question_type(question: Question, question_type: Any) -> None:
 def _split_hybrid_question(question: Question, number: int) -> Question:
     """Promote the original question to OPEN and create its CLOSED sibling.
 
-    The sibling inherits the question wording and option values and is
-    appended at the end of the question order (numbers are ints, so it
-    cannot slot in beside the original). The caller threads the next free
-    question number so a consultation with many hybrids does not pay a
-    max(number) query per sibling.
+    The sibling inherits the question wording and is appended at the end of
+    the question order (numbers are ints, so it cannot slot in beside the
+    original). The caller threads the next free question number so a
+    consultation with many hybrids does not pay a max(number) query per sibling.
     """
     consultation = question.consultation
-    option_texts = list(question.multichoiceanswer_set.values_list("text", flat=True))
-    if not option_texts:
-        logger.warning(
-            "Hybrid question {question_id} has no multi-choice options to inherit",
-            question_id=question.id,
-        )
     closed_question = Question(
         consultation=consultation,
         text=question.text,
@@ -259,110 +242,12 @@ def _split_hybrid_question(question: Question, number: int) -> Question:
         status=Question.ThemeStatus.CONFIGURED,
     )
     closed_question.save()
-    MultiChoiceAnswer.objects.bulk_create(
-        [MultiChoiceAnswer(question=closed_question, text=text) for text in option_texts]
-    )
 
     question.type = Question.QuestionType.OPEN
     question.status = Question.ThemeStatus.CONFIGURED
     question.closed_question = closed_question
     question.save(update_fields=["type", "status", "closed_question"])
     return closed_question
-
-
-def option_target_question_id(question: Question) -> UUID | None:
-    """The question whose Response rows hold a question's selected options: itself when
-    closed, its closed sibling when open, nothing otherwise."""
-    if question.type == Question.QuestionType.CLOSED:
-        return question.id
-    if question.type == Question.QuestionType.OPEN:
-        return question.closed_question_id
-    return None
-
-
-def _convert_multiple_choice_to_responses(consultation: Consultation) -> None:
-    """Turn selected options into one Response row per selected option.
-
-    For every v1 response carrying chosen_options, create one Response row
-    per selected option with text = the option text. Rows land on the
-    question that became CLOSED: the question itself for closed-only
-    questions, or the closed sibling for hybrids (the original question
-    became OPEN in _backfill_question_types). The original row stays
-    untouched as the respondent's free-text row, and chosen_options stays
-    populated until V1 consumers move off it, so a respondent who chose no
-    options simply gets no new rows.
-
-    Dedupes on (question, respondent, text), so re-runs can never duplicate
-    rows. bulk_create does not fire the search-vector signal, which is what
-    we want: option rows carry no embedding or search vector.
-    """
-    questions = {question.id: question for question in consultation.question_set.all()}
-
-    def target_question_id(source_question_id):
-        target_id = option_target_question_id(questions[source_question_id])
-        if target_id is None:
-            logger.warning(
-                "Skipping chosen options on question {question_id}: it has no V2 question to "
-                "receive them",
-                question_id=source_question_id,
-            )
-        return target_id
-
-    # Option rows only ever land on closed questions, so the dedupe set can
-    # ignore every other response in the consultation.
-    existing_pairs = set(
-        Response.objects.filter(
-            question__consultation=consultation, question__type=Question.QuestionType.CLOSED
-        ).values_list("question_id", "respondent_id", "text")
-    )
-
-    links = (
-        Response.chosen_options.through.objects.filter(
-            response__question__consultation=consultation
-        )
-        .select_related("response", "multichoiceanswer")
-        .only(
-            "response__question_id",
-            "response__respondent_id",
-            "multichoiceanswer__text",
-        )
-        .iterator(chunk_size=_RESPONSE_ROW_BATCH_SIZE)
-    )
-
-    # Rows stream in and flush to the database every batch, so memory stays
-    # bounded for consultations with millions of option links.
-    created = 0
-    batch: list[Response] = []
-    for link in links:
-        target_id = target_question_id(link.response.question_id)
-        option_text = link.multichoiceanswer.text
-        if target_id is None or not option_text:
-            continue
-        candidate = (target_id, link.response.respondent_id, option_text)
-        if candidate in existing_pairs:
-            continue
-        existing_pairs.add(candidate)
-        batch.append(
-            Response(
-                question_id=target_id,
-                respondent_id=link.response.respondent_id,
-                text=option_text,
-            )
-        )
-        if len(batch) == _RESPONSE_ROW_BATCH_SIZE:
-            Response.objects.bulk_create(batch, batch_size=_RESPONSE_ROW_BATCH_SIZE)
-            created += len(batch)
-            batch = []
-
-    if batch:
-        Response.objects.bulk_create(batch, batch_size=_RESPONSE_ROW_BATCH_SIZE)
-        created += len(batch)
-    if created:
-        logger.info(
-            "Created {response_rows} option response rows for consultation {consultation_id}",
-            response_rows=created,
-            consultation_id=consultation.id,
-        )
 
 
 def _convert_demographics(consultation: Consultation) -> None:
@@ -393,7 +278,9 @@ def _convert_demographics(consultation: Consultation) -> None:
     def question_for(field_name: str) -> Question:
         if field_name not in demographic_questions:
             next_number = (
-                consultation.question_set.order_by("-number").values_list("number", flat=True).first()
+                consultation.question_set.order_by("-number")
+                .values_list("number", flat=True)
+                .first()
                 or 0
             )
             question, _ = Question.objects.get_or_create(
@@ -475,24 +362,16 @@ def _backfill_data_source(consultation: Consultation) -> None:
     provider keep it, and freshly classified V1 consultations get
     CitizenSpace (to be revisited later, see PRO-980).
     """
-    consultation.data_source = (
-        consultation.data_source or Consultation.DataSource.CITIZEN_SPACE
-    )
+    consultation.data_source = consultation.data_source or Consultation.DataSource.CITIZEN_SPACE
     consultation.save(update_fields=["data_source"])
 
 
 def _refresh_denormalised_counts(consultation: Consultation) -> None:
-    """Recalculate the denormalised response counts after rows are moved.
+    """Recalculate the denormalised response counts once the questions are typed.
 
-    Original questions keep their v1 semantics: free_text and chosen_options
-    stay populated (decision: keep all), so Question.update_response_counts
-    and MultiChoiceAnswer.update_response_counts reproduce the same numbers
-    as before the migration.
-
-    New closed siblings (created by _split_hybrid_question) have no v1
-    representation of their answers: their counts are derived from the
-    per-option Response rows, counting distinct respondents — the same thing
-    the v2 list endpoint and demographics aggregation read.
+    New closed siblings (created by _split_hybrid_question) derive their counts
+    from the answer rows, counting distinct respondents, the same
+    thing the v2 list endpoint and demographics aggregation read.
     """
     questions = list(consultation.question_set.all())
     sibling_ids = {
@@ -515,8 +394,6 @@ def _refresh_denormalised_counts(consultation: Consultation) -> None:
             )
         else:
             question.update_response_counts()
-        if question.multichoiceanswer_set.exists():
-            MultiChoiceAnswer.update_response_counts(question)
 
 
 def _assign_stage(consultation: Consultation) -> None:
@@ -574,8 +451,8 @@ def _update_survey_import_status(consultation: Consultation) -> None:
     update_survey_import_status_for_questions(consultation)
 
 
-# Migrations of the largest consultations take hours (millions of option and
-# demographic response rows), so the timeout is deliberately generous. The
+# Migrations of the largest consultations take hours (millions of demographic
+# response rows), so the timeout is deliberately generous. The
 # job is idempotent and fully transactional: on timeout the transaction rolls
 # back and the job can simply be re-run.
 @job("default", timeout=14400)

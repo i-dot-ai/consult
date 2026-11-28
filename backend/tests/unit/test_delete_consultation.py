@@ -8,7 +8,6 @@ from consultations.models import (
     CandidateThemeResponse,
     Consultation,
     DemographicOption,
-    MultiChoiceAnswer,
     Question,
     Respondent,
     Response,
@@ -108,13 +107,8 @@ def test_delete_consultation_cascading():
         has_free_text=False,
         has_multiple_choice=True,
     )
-    red = MultiChoiceAnswer.objects.create(question=multiple_choice_question, text="red")
-    green = MultiChoiceAnswer.objects.create(question=multiple_choice_question, text="green")
-    blue = MultiChoiceAnswer.objects.create(question=multiple_choice_question, text="blue")
-    response3 = Response.objects.create(respondent=respondent1, question=multiple_choice_question)
-    response3.chosen_options.set([red, green])
-    response4 = Response.objects.create(respondent=respondent2, question=multiple_choice_question)
-    response4.chosen_options.set([blue])
+    Response.objects.create(respondent=respondent1, question=multiple_choice_question, text="red")
+    Response.objects.create(respondent=respondent2, question=multiple_choice_question, text="blue")
 
     # Verify all objects exist
     assert Consultation.objects.count() == 1
@@ -125,7 +119,6 @@ def test_delete_consultation_cascading():
     assert ResponseAnnotation.objects.count() == 2
     assert CandidateTheme.objects.count() == 1
     assert CandidateThemeResponse.objects.count() == 2
-    assert MultiChoiceAnswer.objects.count() == 3
 
     # Delete the consultation
     delete_consultation_job(consultation.id)
@@ -139,7 +132,6 @@ def test_delete_consultation_cascading():
     assert ResponseAnnotation.objects.count() == 0
     assert CandidateTheme.objects.count() == 0
     assert CandidateThemeResponse.objects.count() == 0
-    assert MultiChoiceAnswer.objects.count() == 0
 
 
 @pytest.mark.django_db
