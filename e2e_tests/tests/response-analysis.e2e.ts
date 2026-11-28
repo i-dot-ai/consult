@@ -158,7 +158,8 @@ test.describe('Response Analysis Page', () => {
 
     await expect(getFreeTextResponses(page).first()).toBeVisible();
     const totalCount = await getFreeTextResponses(page).count();
-    const options = ['Yes', 'No', "Don't know", 'No answer'];
+    // Only options somebody selected are listed
+    const options = ['Yes', 'No', "Don't know"];
 
     for (const option of options) {
       // Multichoice options may be overlapping so we cannot assume that other options will be zero

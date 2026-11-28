@@ -254,62 +254,6 @@ exports[`ConsultationAnalysis > should match snapshot after loading 1`] = `
                   <span
                     class="text-sm text-primary"
                   >
-                    Q1
-                  </span>
-                   
-                  <h3
-                    class="text-xs"
-                  >
-                    Do you agree with the proposal to align the flavour categories of chocolate bars as outlined in the draft guidelines of the Chocolate Bar Regulation for the United Kingdom?
-                  </h3>
-                </div>
-                 
-                <div
-                  class="flex flex-row-reverse justify-center items-center gap-4 flex-wrap-reverse"
-                >
-                  <div
-                    id="legend-id1"
-                  />
-                   
-                  <div
-                    class="h-24"
-                  >
-                    <div
-                      class="h-full w-full"
-                    >
-                      <canvas
-                        class="h-full"
-                        data-testid="chart-canvas"
-                      />
-                    </div>
-                    <!---->
-                  </div>
-                </div>
-              </div>
-              <!---->
-            </div>
-            <!---->
-          </div>
-        </div>
-        <div
-          class="col-span-12 mt-4 sm:col-span-6 lg:col-span-4"
-        >
-          <div
-            class="h-full w-full"
-          >
-            <div
-              class="h-full my-4 p-4 rounded-2xl border border-gray-200 bg-neutral-50"
-              data-testid="panel-component"
-            >
-              <div
-                class="flex h-full flex-col justify-start"
-              >
-                <div
-                  class="mb-4 flex items-start gap-4"
-                >
-                  <span
-                    class="text-sm text-primary"
-                  >
                     Q2
                   </span>
                    

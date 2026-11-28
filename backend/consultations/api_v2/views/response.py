@@ -22,6 +22,7 @@ from consultations.api_v2.serializers import (
     ResponseThemeInformationSerializer,
     ThemeSerializer,
 )
+from consultations.services.closed_answers import closed_answer_rows
 
 # Upper bound on how many responses a single bulk mark-read request may carry.
 # This matches the maximum page size so a full page can always be marked at once,
@@ -52,28 +53,17 @@ class ResponseViewSet(ModelViewSet):
             if self.action == "list":
                 queryset = queryset.filter(ANSWERED_TEXT_FILTER)
 
-        # Demographic answers are v2 responses on demographic-type questions of
-        # this consultation; the serializer reads them from this prefetch.
-        demographic_responses = (
-            models.Response.objects.filter(
-                question__type=models.Question.QuestionType.DEMOGRAPHIC,
-                question__consultation_id=consultation_uuid,
-            )
-            .filter(ANSWERED_TEXT_FILTER)
-            .select_related("question")
-        )
-
         # Optimize queryset with select_related and prefetch_related
         queryset = queryset.select_related(
             "respondent",
             "annotation",
             "question",
         ).prefetch_related(
-            "chosen_options",
+            # One prefetch serves the selected answers and the demographic data alike
             Prefetch(
                 "respondent__response_set",
-                queryset=demographic_responses,
-                to_attr="prefetched_demographic_responses",
+                queryset=closed_answer_rows(consultation_uuid),
+                to_attr="prefetched_closed_answers",
             ),
             "annotation__responseannotationtheme_set__assigned_by",
             "annotation__responseannotationtheme_set",
@@ -108,9 +98,9 @@ class ResponseViewSet(ModelViewSet):
         # Apply additional FilterSet filtering (including themeFilters)
         filterset = ResponseFilter(self.request.GET, queryset=queryset, request=self.request)
         filtered_queryset = filterset.qs
-        # Only use .distinct() when filters that JOIN through M2M are active —
-        # these can produce duplicate rows.
-        if self.request.GET.get("themeFilters") or self.request.GET.get("multiple_choice_answer"):
+        # themeFilters joins through the annotation themes and can duplicate rows; the answer
+        # and demographic filters narrow by subquery and never do.
+        if self.request.GET.get("themeFilters"):
             filtered_queryset = filtered_queryset.distinct()
         # Stable ordering is required for cursor-based pagination to be consistent
         # across pages. Without it PostgreSQL may return the same row on multiple
@@ -118,7 +108,12 @@ class ResponseViewSet(ModelViewSet):
         # this with .order_by("distance") when applied.
         return filtered_queryset.order_by("id")
 
-    @action(detail=False, methods=["get"], url_path="demographic-options", url_name="demographic-options")
+    @action(
+        detail=False,
+        methods=["get"],
+        url_path="demographic-options",
+        url_name="demographic-options",
+    )
     def demographic_options(self, request, consultation_pk=None, **kwargs):
         """Aggregate v2 demographic answers for the filter sidebar.
 
@@ -130,9 +125,9 @@ class ResponseViewSet(ModelViewSet):
         """
         consultation_uuid = self.kwargs["consultation_pk"]
         filtered_response_ids = get_filtered_response_ids(self.request.GET, consultation_uuid)
-        filtered_respondent_ids = models.Response.objects.filter(id__in=filtered_response_ids).values(
-            "respondent_id"
-        )
+        filtered_respondent_ids = models.Response.objects.filter(
+            id__in=filtered_response_ids
+        ).values("respondent_id")
 
         # v1 parity: every answer value of every demographic question stays listed
         # (zero-count values included under filters); counts cover only the

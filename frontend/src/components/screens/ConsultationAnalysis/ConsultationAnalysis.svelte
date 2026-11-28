@@ -24,7 +24,10 @@
   import type { ConsultationV2 } from "../../../global/queries/consultations/types";
   import type { QuestionDetailV2 } from "../../../global/queries/questions/types";
   import { excludeDemographicQuestions } from "../../../global/queries/questions/queries";
-  import { getQuestionText } from "../../../global/questionText";
+  import {
+    getQuestionText,
+    holdsOwnAnswers,
+  } from "../../../global/questionText";
 
   import LoadingMessage from "../../LoadingMessage/LoadingMessage.svelte";
   import Chart from "../../Chart/Chart.svelte";
@@ -79,7 +82,9 @@
 
   let chartQuestions = $derived(
     questions.filter(
-      (question) => (question.multiple_choice_answer?.length ?? 0) > 0,
+      (question) =>
+        holdsOwnAnswers(question) &&
+        (question.multiple_choice_answer?.length ?? 0) > 0,
     ),
   );
 

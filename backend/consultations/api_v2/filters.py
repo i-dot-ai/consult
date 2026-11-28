@@ -11,6 +11,8 @@ from rest_framework.filters import SearchFilter
 from authentication.models import User
 from consultations.api_v2.demographic_tokens import decode_demographic_token
 from consultations.models import Respondent, Response
+from consultations.query_params import RepeatedValueFilter, is_uuid
+from consultations.services.closed_answers import filter_responses_by_answers
 from embeddings import embed_text
 
 logger = settings.LOGGER
@@ -22,9 +24,11 @@ class ResponseFilter(FilterSet):
     evidenceRich = BooleanFilter(field_name="annotation__evidence_rich")
     unseenResponsesOnly = BaseInFilter(method="filter_seen", lookup_expr="in")
     themeFilters = BaseInFilter(method="filter_themes", lookup_expr="in")
-    demographics = BaseInFilter(method="filter_demographics", lookup_expr="in")
+    demographics = BaseInFilter(method="filter_demographic_answers", lookup_expr="in")
     is_flagged = BooleanFilter()
-    multiple_choice_answer = BaseInFilter(method="filter_multiple_choice", lookup_expr="in")
+    multiple_choice_answer = BaseInFilter(method="filter_answers", lookup_expr="in")
+    answers = RepeatedValueFilter(method="filter_answers")
+    demographic_answers = RepeatedValueFilter(method="filter_demographic_answers")
     respondent_id = UUIDFilter()
     question_id = UUIDFilter()
 
@@ -66,7 +70,7 @@ class ResponseFilter(FilterSet):
         )
         return qs
 
-    def filter_demographics(self, queryset, name, value):
+    def filter_demographic_answers(self, queryset, name, value):
         """OR within each demographic question, AND across questions.
 
         Values are opaque demographic tokens (question id + answer value) produced
@@ -76,32 +80,36 @@ class ResponseFilter(FilterSet):
         if not value:
             return queryset
 
+        # v2 has no legacy DemographicOption ids, so anything that is not a token is dropped
         groups: dict[str, list[str]] = {}
         for item in value:
             parsed = decode_demographic_token(item)
-            if parsed is not None:
+            if parsed is not None and is_uuid(parsed[0]):
                 question_id, answer = parsed
                 groups.setdefault(question_id, []).append(answer)
+        if not groups:
+            return queryset
 
         # Each group narrows via a subquery rather than chaining JOINs
         respondents = Respondent.objects.all()
         for question_id, answers in groups.items():
             respondents = respondents.filter(
-                id__in=Response.objects.filter(
-                    question_id=question_id, text__in=answers
-                ).values("respondent_id")
+                id__in=Response.objects.filter(question_id=question_id, text__in=answers).values(
+                    "respondent_id"
+                )
             )
 
         return queryset.filter(respondent_id__in=respondents.values("id"))
 
-    def filter_multiple_choice(self, queryset, name, value):
+    def filter_answers(self, queryset, name, value):
+        """Answer texts, from answers or the comma-separated multiple_choice_answer."""
         if not value:
             return queryset
-        return queryset.filter(chosen_options__in=value).distinct()
+        return filter_responses_by_answers(queryset, value)
 
     class Meta:
         model = Response
-        fields: ClassVar[list] = ["respondent_id", "chosen_options"]
+        fields: ClassVar[list] = ["respondent_id"]
 
 
 def apply_search_filter(queryset, query_params):

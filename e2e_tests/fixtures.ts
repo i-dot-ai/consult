@@ -19,12 +19,20 @@ export type Response = {
   evidence_rich?: boolean;
 };
 
+export type QuestionType = "open" | "closed" | "demographic";
+
+// The closed sibling of an open question; each response's chosen_options are
+// stored as one row per option on it.
+export type ClosedSibling = {
+  text: string;
+  number: number;
+};
+
 export type Question = {
   text: string;
   number: number;
-  has_free_text: boolean;
-  has_multiple_choice: boolean;
-  multiple_choice_options?: string[];
+  type: QuestionType;
+  closed_question?: ClosedSibling;
   responses?: Response[];
   candidate_themes?: Theme[];
   themes?: Theme[];
@@ -154,9 +162,11 @@ const hybridQuestionResponsesWithThemes: Response[] = [
 export const hybridQuestion: Question = {
   text: "Do you agree with the proposal to align the flavour categories of chocolate bars as outlined in the draft guidelines of the Chocolate Bar Regulation for the United Kingdom?",
   number: 1,
-  has_free_text: true,
-  has_multiple_choice: true,
-  multiple_choice_options: ["Yes", "No", "Don't know", "No answer"],
+  type: "open",
+  closed_question: {
+    text: "Do you agree with the proposal to align the flavour categories of chocolate bars?",
+    number: 101,
+  },
   responses: hybridQuestionResponses,
 };
 
@@ -179,9 +189,7 @@ const multChoiceQuestionOptions = [
 export const multChoiceQuestion: Question = {
   text: "Which of the following factors do you believe are important when considering the packaging of chocolate bars? Please select all that apply: a) Sustainability, b) Design, c) Cost-effectiveness, d) Durability, e) Brand recognition.",
   number: 3,
-  has_free_text: false,
-  has_multiple_choice: true,
-  multiple_choice_options: multChoiceQuestionOptions,
+  type: "closed",
   responses: [
     {
       chosen_options: [multChoiceQuestionOptions[0]],
@@ -303,8 +311,7 @@ const openQuestionResponsesWithThemes: Response[] = [
 export const openQuestion: Question = {
   text: "What are your thoughts on how the current chocolate bar regulations could be improved to better address consumer needs and industry standards?",
   number: 4,
-  has_free_text: true,
-  has_multiple_choice: false,
+  type: "open",
   responses: openQuestionResponses,
 };
 
@@ -439,9 +446,11 @@ const signedOffResponses1: Response[] = [
 const signedOffQuestion1: Question = {
   text: "Do you support the proposed chocolate quality standards regulation?",
   number: 1,
-  has_free_text: true,
-  has_multiple_choice: true,
-  multiple_choice_options: ["Yes", "No", "Don't know"],
+  type: "open",
+  closed_question: {
+    text: "Do you support the proposed chocolate quality standards regulation? (selected option)",
+    number: 101,
+  },
   responses: signedOffResponses1,
   themes: signedOffTheme1,
   theme_status: "confirmed",
@@ -483,12 +492,14 @@ const signedOffResponses2: Response[] = [
   },
 ];
 
-const signedOffQuestion2: Question & { status?: string } = {
+const signedOffQuestion2: Question = {
   text: "What are your views on the economic impact of the proposed chocolate regulations?",
   number: 2,
-  has_free_text: true,
-  has_multiple_choice: true,
-  multiple_choice_options: ["Positive impact", "Negative impact", "Neutral", "Don't know"],
+  type: "open",
+  closed_question: {
+    text: "What impact do you expect from the proposed chocolate regulations? (selected option)",
+    number: 102,
+  },
   responses: signedOffResponses2,
   themes: signedOffTheme2,
   theme_status: "confirmed",
@@ -542,12 +553,14 @@ const signedOffResponses3: Response[] = [
   },
 ];
 
-const signedOffQuestion3: Question & { status?: string } = {
+const signedOffQuestion3: Question = {
   text: "Do you agree with the proposed implementation approach for the chocolate regulations?",
   number: 3,
-  has_free_text: true,
-  has_multiple_choice: true,
-  multiple_choice_options: ["Strongly agree", "Agree", "Disagree", "Strongly disagree"],
+  type: "open",
+  closed_question: {
+    text: "Do you agree with the proposed implementation approach? (selected option)",
+    number: 103,
+  },
   responses: signedOffResponses3,
   themes: signedOffTheme3,
   theme_status: "confirmed",

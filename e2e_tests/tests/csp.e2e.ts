@@ -107,7 +107,7 @@ test.describe("CSP leaves refactored components intact", () => {
     await gotoFinaliseThemesList(page, signOffConsultation.title);
 
     const freeTextQuestion = signOffConsultation.questions!.find(
-      (question) => question.has_free_text,
+      (question) => question.type === "open",
     )!;
     await page
       .getByTestId("question-card")

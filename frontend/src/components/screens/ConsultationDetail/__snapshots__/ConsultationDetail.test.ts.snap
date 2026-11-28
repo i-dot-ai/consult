@@ -282,7 +282,7 @@ exports[`ConsultationDetail > should match snapshot after loading 1`] = `
                       <span
                         class="mr-1 text-primary"
                       >
-                        Q1
+                        Q2
                       </span>
                        Do you agree with the proposal to align the flavour categories of chocolate bars as outlined in the draft guidelines of the Chocolate Bar Regulation for the United Kingdom?
                       
@@ -339,28 +339,14 @@ exports[`ConsultationDetail > should match snapshot after loading 1`] = `
                    
                   <!---->
                   <button
-                    aria-label="Q1"
+                    aria-label="Q2"
                     class="flex items-center justify-between gap-1 w-2 h-2 m-0.5 p-0 text-sm rounded-2xl trigger relative transition-colors duration-300 cursor-pointer bg-neutral-300 bg-primary hover:bg-pink-200"
                     data-melt-tabs-trigger=""
                     data-orientation="horizontal"
                     data-state="active"
-                    data-value="tab-1"
-                    role="tab"
-                    tabindex="0"
-                    title="Q1"
-                    type="button"
-                  />
-                  
-                  <!---->
-                  <button
-                    aria-label="Q2"
-                    class="flex items-center justify-between gap-1 w-2 h-2 m-0.5 p-0 text-sm rounded-2xl trigger relative transition-colors duration-300 cursor-pointer bg-neutral-300 hover:bg-pink-200"
-                    data-melt-tabs-trigger=""
-                    data-orientation="horizontal"
-                    data-state="inactive"
                     data-value="tab-2"
                     role="tab"
-                    tabindex="-1"
+                    tabindex="0"
                     title="Q2"
                     type="button"
                   />
