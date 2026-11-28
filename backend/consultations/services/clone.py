@@ -8,7 +8,6 @@ from consultations.models import (
     CandidateTheme,
     Consultation,
     DemographicOption,
-    MultiChoiceAnswer,
     Question,
     Respondent,
     Response,
@@ -107,6 +106,38 @@ def _clone(
     return id_map
 
 
+def _clone_questions(
+    queryset: QuerySet,
+    fk_mappings: list[tuple[str, dict[UUID, UUID]]],
+) -> dict[UUID, UUID]:
+    """
+    Clone questions maintaining the self-referential closed_question FK.
+    """
+    question_map = _clone(queryset, fk_mappings)
+
+    cloned_hybrids = Question.objects.filter(
+        id__in=question_map.values(), closed_question_id__isnull=False
+    )
+    updates = []
+    for cloned_question in list(cloned_hybrids):
+        sibling_id = question_map.get(cloned_question.closed_question_id)
+        if sibling_id is None:
+            # Only a hand-edited FK can point outside the consultation; the clone must not
+            # keep a link into the original, so it loses the sibling and says so
+            logger.warning(
+                "Question %(question_id)s names a closed question outside its consultation; "
+                "the clone keeps no closed sibling",
+                question_id=cloned_question.id,
+            )
+        cloned_question.closed_question_id = sibling_id
+        updates.append(cloned_question)
+
+    if updates:
+        Question.objects.bulk_update(updates, ["closed_question_id"])
+
+    return question_map
+
+
 def _clone_candidate_themes(
     queryset: QuerySet,
     fk_mappings: list[tuple[str, dict[UUID, UUID]]],
@@ -121,7 +152,16 @@ def _clone_candidate_themes(
     updates = []
     for cloned_theme in list(cloned_themes):
         if cloned_theme.parent_id:
-            cloned_theme.parent_id = candidate_theme_map[cloned_theme.parent_id]
+            parent_id = candidate_theme_map.get(cloned_theme.parent_id)
+            if parent_id is None:
+                # Only a hand-edited FK can point outside the consultation; the clone must not
+                # keep a link into the original, so it loses the parent and says so
+                logger.warning(
+                    "Candidate theme %(theme_id)s names a parent outside its consultation; "
+                    "the clone keeps no parent",
+                    theme_id=cloned_theme.id,
+                )
+            cloned_theme.parent_id = parent_id
             updates.append(cloned_theme)
 
     if updates:
@@ -167,14 +207,10 @@ def clone_consultation(original: Consultation) -> Consultation:
         [("respondent_id", respondent_map), ("demographicoption_id", demographic_map)],
     )
 
-    # Clone questions and mulitchoiceanswers
-    question_map = _clone(
+    # Clone questions
+    question_map = _clone_questions(
         Question.objects.filter(consultation=original),
         [("consultation_id", consultation_map)],
-    )
-    multi_choice_map = _clone(
-        MultiChoiceAnswer.objects.filter(question__consultation=original),
-        [("question_id", question_map)],
     )
 
     # Clone selectedthemes and candidatethemes
@@ -187,14 +223,10 @@ def clone_consultation(original: Consultation) -> Consultation:
         [("question_id", question_map), ("selectedtheme_id", selected_theme_map)],
     )
 
-    # Clone responses and response_chosen_options
+    # Clone responses
     response_map = _clone(
         Response.objects.filter(question__consultation=original),
         [("question_id", question_map), ("respondent_id", respondent_map)],
-    )
-    _clone(
-        Response.chosen_options.through.objects.filter(response__question__consultation=original),
-        [("response_id", response_map), ("multichoiceanswer_id", multi_choice_map)],
     )
 
     # Clone responseannotations and responseannotationthemes

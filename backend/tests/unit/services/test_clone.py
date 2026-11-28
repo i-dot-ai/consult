@@ -7,7 +7,6 @@ from consultations.models import (
     CandidateTheme,
     Consultation,
     DemographicOption,
-    MultiChoiceAnswer,
     Question,
     Respondent,
     Response,
@@ -19,7 +18,6 @@ from consultations.services.clone import clone_consultation
 from factories import (
     CandidateThemeFactory,
     ConsultationFactory,
-    MultiChoiceAnswerFactory,
     QuestionFactory,
     RespondentFactory,
     ResponseFactory,
@@ -107,23 +105,6 @@ class TestCloneConsultation:
         assert demo1.id not in [d.id for d in cloned_demograhics]
         assert demo2.id not in [d.id for d in cloned_demograhics]
 
-    def test_questions_and_multi_choice_answers(self):
-        original = ConsultationFactory()
-        question = QuestionFactory(consultation=original, has_multiple_choice=True)
-        answer1 = MultiChoiceAnswerFactory(question=question, text="Option A")
-        answer2 = MultiChoiceAnswerFactory(question=question, text="Option B")
-
-        cloned = clone_consultation(original)
-
-        cloned_question = Question.objects.get(consultation=cloned)
-        cloned_answers = MultiChoiceAnswer.objects.filter(question=cloned_question)
-        assert cloned_answers.count() == 2
-        assert cloned_answers.filter(text="Option A").exists()
-        assert cloned_answers.filter(text="Option B").exists()
-        # Verify they are new objects
-        assert answer1.id not in [a.id for a in cloned_answers]
-        assert answer2.id not in [a.id for a in cloned_answers]
-
     def test_themes(self):
         original = ConsultationFactory()
         question = QuestionFactory(consultation=original)
@@ -153,32 +134,6 @@ class TestCloneConsultation:
         assert cloned_parent.selectedtheme == cloned_selected_theme
         assert cloned_parent.parent is None
         assert cloned_child.parent == cloned_parent
-
-    def test_responses_and_chosen_options(self):
-        original = ConsultationFactory()
-        question = QuestionFactory(
-            consultation=original, has_free_text=True, has_multiple_choice=True
-        )
-        answer = MultiChoiceAnswerFactory(question=question, text="Option A")
-        respondent = RespondentFactory(consultation=original)
-        response = ResponseFactory(
-            question=question,
-            respondent=respondent,
-            free_text="Test response",
-        )
-        response.chosen_options.add(answer)
-
-        cloned = clone_consultation(original)
-
-        cloned_question = Question.objects.get(consultation=cloned)
-        cloned_response = Response.objects.get(question=cloned_question)
-        cloned_answer = cloned_response.chosen_options.first()
-
-        assert cloned_response.free_text == "Test response"
-        assert cloned_response.chosen_options.count() == 1
-
-        assert cloned_answer.text == "Option A"
-        assert cloned_answer.id != answer.id
 
     def test_response_annotations_and_themes(self):
         original = ConsultationFactory()
@@ -315,3 +270,56 @@ class TestCloneConsultation:
         cloned_annotation = ResponseAnnotation.objects.get(response=cloned_response)
 
         assert cloned_annotation.flagged_by.count() == 0
+
+    def test_hybrid_closed_sibling_is_remapped(self):
+        original = ConsultationFactory()
+        closed_question = QuestionFactory(
+            consultation=original, number=1, type=Question.QuestionType.CLOSED
+        )
+        open_question = QuestionFactory(
+            consultation=original,
+            number=2,
+            type=Question.QuestionType.OPEN,
+            closed_question=closed_question,
+        )
+        respondent = RespondentFactory(consultation=original)
+        ResponseFactory(question=closed_question, respondent=respondent, text="Yes", free_text=None)
+        ResponseFactory(question=open_question, respondent=respondent, free_text="Because")
+
+        cloned = clone_consultation(original)
+
+        cloned_open = Question.objects.get(consultation=cloned, number=2)
+        cloned_closed = Question.objects.get(consultation=cloned, number=1)
+        assert cloned_open.closed_question == cloned_closed
+        assert list(cloned_open.answer_rows().values_list("text", flat=True)) == ["Yes"]
+
+    def test_closed_sibling_outside_the_consultation_is_dropped_with_a_warning(self):
+        original = ConsultationFactory()
+        foreign_closed = QuestionFactory(
+            consultation=ConsultationFactory(), number=1, type=Question.QuestionType.CLOSED
+        )
+        QuestionFactory(
+            consultation=original,
+            number=1,
+            type=Question.QuestionType.OPEN,
+            closed_question=foreign_closed,
+        )
+
+        with patch("consultations.services.clone.logger") as logger:
+            cloned = clone_consultation(original)
+
+        assert Question.objects.get(consultation=cloned, number=1).closed_question is None
+        logger.warning.assert_called_once()
+
+    def test_theme_parent_outside_the_consultation_is_dropped_with_a_warning(self):
+        original = ConsultationFactory()
+        question = QuestionFactory(consultation=original, number=1)
+        foreign_parent = CandidateThemeFactory(question=QuestionFactory(number=1))
+        CandidateThemeFactory(question=question, name="Child Theme", parent=foreign_parent)
+
+        with patch("consultations.services.clone.logger") as logger:
+            cloned = clone_consultation(original)
+
+        cloned_question = Question.objects.get(consultation=cloned, number=1)
+        assert CandidateTheme.objects.get(question=cloned_question).parent is None
+        logger.warning.assert_called_once()
