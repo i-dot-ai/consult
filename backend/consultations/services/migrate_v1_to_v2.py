@@ -270,6 +270,16 @@ def _split_hybrid_question(question: Question, number: int) -> Question:
     return closed_question
 
 
+def option_target_question_id(question: Question) -> UUID | None:
+    """The question whose Response rows hold a question's selected options: itself when
+    closed, its closed sibling when open, nothing otherwise."""
+    if question.type == Question.QuestionType.CLOSED:
+        return question.id
+    if question.type == Question.QuestionType.OPEN:
+        return question.closed_question_id
+    return None
+
+
 def _convert_multiple_choice_to_responses(consultation: Consultation) -> None:
     """Turn selected options into one Response row per selected option.
 
@@ -289,17 +299,14 @@ def _convert_multiple_choice_to_responses(consultation: Consultation) -> None:
     questions = {question.id: question for question in consultation.question_set.all()}
 
     def target_question_id(source_question_id):
-        question = questions[source_question_id]
-        if question.type == Question.QuestionType.CLOSED:
-            return question.id
-        if question.type == Question.QuestionType.OPEN and question.closed_question_id:
-            return question.closed_question_id
-        logger.warning(
-            "Skipping chosen options on question {question_id}: it has no V2 question to "
-            "receive them",
-            question_id=question.id,
-        )
-        return None
+        target_id = option_target_question_id(questions[source_question_id])
+        if target_id is None:
+            logger.warning(
+                "Skipping chosen options on question {question_id}: it has no V2 question to "
+                "receive them",
+                question_id=source_question_id,
+            )
+        return target_id
 
     # Option rows only ever land on closed questions, so the dedupe set can
     # ignore every other response in the consultation.

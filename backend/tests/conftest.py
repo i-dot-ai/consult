@@ -5,6 +5,7 @@ from django.contrib.postgres.search import SearchVector
 from django.test import RequestFactory
 from rest_framework_simplejwt.tokens import RefreshToken
 
+import factories
 from consultations.models import (
     Consultation,
     DemographicOption,
@@ -414,3 +415,23 @@ def embedded_responses():
         "search_mode": data["search_mode"],
     }
     Consultation.objects.filter(id=question.consultation.id).delete()
+
+
+@pytest.fixture
+def legacy_consultation():
+    """A v1-shaped consultation: a closed question with options selected through
+    chosen_options and no typed questions, as the pre-v2 pipeline left them."""
+    consultation = factories.ConsultationFactory(is_v1=True)
+    question = factories.QuestionFactory(
+        consultation=consultation, number=1, has_free_text=False, has_multiple_choice=True
+    )
+    red = factories.MultiChoiceAnswerFactory(question=question, text="Red")
+    blue = factories.MultiChoiceAnswerFactory(question=question, text="Blue")
+    for options in ([red, blue], [red]):
+        response = factories.ResponseFactory(
+            question=question,
+            respondent=factories.RespondentFactory(consultation=consultation),
+            free_text=None,
+        )
+        response.chosen_options.add(*options)
+    return consultation
