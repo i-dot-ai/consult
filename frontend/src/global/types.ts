@@ -160,7 +160,6 @@ export interface QuestionResponseResponse {
   respondent: Respondent;
   question: Question;
   free_text_answer_text: string;
-  chosen_options: MultiChoiceResponse;
   created_at: string;
   modified_at: string;
   // Extra fields not mapped:
@@ -258,12 +257,6 @@ export interface ThemeWithCount extends ResponseTheme {
 export interface ThemeInfoResponse {
   themes: ThemeWithCount[];
 }
-
-export interface MultiChoiceResponseItem {
-  answer: string;
-  response_count: number;
-}
-export type MultiChoiceResponse = MultiChoiceResponseItem[];
 
 export interface DemoOptionsResponseItem {
   id: string;
