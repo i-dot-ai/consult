@@ -6,7 +6,10 @@ from consultations.models import (
     Response,
 )
 from factories import (
+    ClosedQuestionFactory,
     ConsultationFactory,
+    DemographicQuestionFactory,
+    OpenQuestionFactory,
     QuestionFactory,
     QuestionWithBothFactory,
     QuestionWithMultipleChoiceFactory,
@@ -112,3 +115,37 @@ class TestSampleResponses:
             str(exc_info.value)
             == "Number of responses to keep (5) cannot exceed current number of responses (1)"
         )
+
+
+@pytest.mark.django_db
+def test_answers_question_is_self_for_chartable_questions():
+    closed_question = ClosedQuestionFactory()
+    demographic_question = DemographicQuestionFactory()
+    assert closed_question.answers_question == closed_question
+    assert demographic_question.answers_question == demographic_question
+
+
+@pytest.mark.django_db
+def test_answers_question_is_the_closed_sibling_for_a_hybrid():
+    closed_question = ClosedQuestionFactory()
+    open_question = OpenQuestionFactory(
+        consultation=closed_question.consultation, closed_question=closed_question
+    )
+    assert open_question.answers_question == closed_question
+
+
+@pytest.mark.django_db
+def test_answers_question_is_none_without_answers_to_read():
+    assert OpenQuestionFactory().answers_question is None
+    assert QuestionFactory().answers_question is None
+
+
+@pytest.mark.django_db
+def test_answers_question_id_reads_no_related_question(django_assert_num_queries):
+    closed_question = ClosedQuestionFactory()
+    open_question = OpenQuestionFactory(
+        consultation=closed_question.consultation, closed_question=closed_question
+    )
+    open_question = Question.objects.get(id=open_question.id)
+    with django_assert_num_queries(0):
+        assert open_question.answers_question_id == closed_question.id
