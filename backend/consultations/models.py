@@ -269,6 +269,7 @@ class Question(UUIDPrimaryKeyModel, TimeStampedModel):
 
     def calculate_response_counts(self, responses=None):
         """Calculate response counts from a queryset. Defaults to all responses for this question."""
+        filtered_respondent_ids = None if responses is None else responses.values("respondent_id")
         if responses is None:
             responses = self.response_set.all()
 
@@ -286,17 +287,20 @@ class Question(UUIDPrimaryKeyModel, TimeStampedModel):
         else:
             self.free_text_response_count = 0
 
+        # A respondent who answered only the closed part of a hybrid has no row on
+        # the open question, so the unfiltered count reads the answer rows directly.
         self.multi_choice_response_count = (
-            self.answer_rows(responses.values("respondent_id"))
-            .values("respondent_id")
-            .distinct()
-            .count()
+            self.answer_rows(filtered_respondent_ids).values("respondent_id").distinct().count()
         )
 
         # total_response_count is the overall response count for the question.
         # For free-text questions this is the raw respondent row count; for multi-choice-only
         # questions we use the number of responses with at least one selected option.
-        self.total_response_count = responses.values("respondent_id").distinct().count()
+        respondents = responses.values("respondent_id").distinct()
+        if filtered_respondent_ids is None and self.answers_question_id not in (None, self.id):
+            # Either part of a hybrid counts as answering it
+            respondents = respondents.union(self.answer_rows().values("respondent_id").distinct())
+        self.total_response_count = respondents.count()
 
         if self.has_multiple_choice and not self.has_free_text:
             self.total_response_count = self.multi_choice_response_count
@@ -397,9 +401,10 @@ class Response(UUIDPrimaryKeyModel, TimeStampedModel):
         ]
 
     def __str__(self):
-        if self.free_text:
-            return shorten(self.free_text, width=64, placeholder="...")
-        return "multi-choice response"
+        text = self.free_text or self.text
+        if text:
+            return shorten(text, width=64, placeholder="...")
+        return "response"
 
     def mark_as_read_by(self, user):
         """Mark this response as read by the given user"""

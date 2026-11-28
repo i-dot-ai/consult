@@ -43,7 +43,6 @@ from consultations.models import (
     CandidateTheme,
     Consultation,
     DemographicOption,
-    MultiChoiceAnswer,
     Question,
     Respondent,
     Response,
@@ -112,7 +111,6 @@ SAMPLE_DEMOGRAPHICS = {
 # Performance optimization constants
 RESPONDENT_BATCH_SIZE = 1000  # Batch size for bulk creating respondents
 RESPONSE_BATCH_SIZE = 5000  # Batch size for bulk creating responses
-M2M_BATCH_SIZE = 10000  # Batch size for bulk creating M2M relationships
 RECONNECT_INTERVAL = 3600  # Reconnect to database every hour (seconds)
 
 
@@ -536,6 +534,7 @@ def create_question(
     consultation: Consultation,
     question_number: int,
     question_type: str,
+    sibling_number: int,
 ) -> Question:
     """
     Create a question for the consultation.
@@ -544,37 +543,42 @@ def create_question(
         consultation: Consultation instance
         question_number: Question number
         question_type: 'open', 'hybrid', or 'multiple_choice'
+        sibling_number: Number given to the closed sibling of a hybrid question
 
     Returns:
-        Created Question instance
+        Created Question instance (the open part for a hybrid)
     """
     question_text = random.choice(SAMPLE_QUESTIONS)
 
-    has_free_text = question_type in ["open", "hybrid"]
-    has_multiple_choice = question_type in ["hybrid", "multiple_choice"]
+    if question_type == "multiple_choice":
+        return Question.objects.create(
+            consultation=consultation,
+            text=question_text,
+            number=question_number,
+            type=Question.QuestionType.CLOSED,
+            has_free_text=False,
+            has_multiple_choice=True,
+        )
 
-    question = Question.objects.create(
+    closed_question = None
+    if question_type == "hybrid":
+        closed_question = Question.objects.create(
+            consultation=consultation,
+            text=f"{question_text} (selected option)",
+            number=sibling_number,
+            type=Question.QuestionType.CLOSED,
+            has_free_text=False,
+            has_multiple_choice=True,
+        )
+
+    return Question.objects.create(
         consultation=consultation,
         text=question_text,
         number=question_number,
-        has_free_text=has_free_text,
-        has_multiple_choice=has_multiple_choice,
+        type=Question.QuestionType.OPEN,
+        has_free_text=True,
+        closed_question=closed_question,
     )
-
-    # Add multiple choice options if needed
-    if has_multiple_choice:
-        num_options = random.randint(3, 5)
-        selected_options = random.sample(
-            SAMPLE_MC_OPTIONS, min(num_options, len(SAMPLE_MC_OPTIONS))
-        )
-
-        for option_text in selected_options:
-            MultiChoiceAnswer.objects.create(
-                question=question,
-                text=option_text,
-            )
-
-    return question
 
 
 def create_responses_for_question(
@@ -591,63 +595,38 @@ def create_responses_for_question(
         coverage_percent: Percentage of respondents who answer
 
     Returns:
-        Number of responses created
+        Number of Response rows created, free-text and answer rows together
     """
     # Determine how many respondents will answer
     num_responding = int(len(respondents) * coverage_percent / 100)
     responding = random.sample(respondents, num_responding)
 
-    # Get MC options once if needed
-    mc_options = []
-    if question.has_multiple_choice:
-        mc_options = list(MultiChoiceAnswer.objects.filter(question=question))
+    answers_question = question.answers_question
 
-    # Prepare all responses and M2M relationships upfront
     responses_to_create = []
-    m2m_data = []  # (response_index, option_ids)
+    answers_to_create = []
 
-    for idx, respondent in enumerate(responding):
-        response = Response(
-            respondent=respondent,
-            question=question,
-            free_text=random.choice(SAMPLE_RESPONSES) if question.has_free_text else None,
-        )
-        responses_to_create.append(response)
-
-        # Prepare M2M data for this response
-        if question.has_multiple_choice and mc_options:
-            num_selections = random.randint(1, min(3, len(mc_options)))
-            selected = random.sample(mc_options, num_selections)
-            m2m_data.append((idx, [opt.id for opt in selected]))
-
-    # Bulk create responses in batches
-    all_created = []
-
-    for i in range(0, len(responses_to_create), RESPONSE_BATCH_SIZE):
-        batch = responses_to_create[i : i + RESPONSE_BATCH_SIZE]
-        created_batch = Response.objects.bulk_create(batch)
-        all_created.extend(created_batch)
-
-    # Bulk create M2M relationships
-    if m2m_data:
-        m2m_to_create = []
-        for idx, option_ids in m2m_data:
-            response = all_created[idx]
-            for option_id in option_ids:
-                m2m_to_create.append(
-                    Response.chosen_options.through(
-                        response_id=response.id,
-                        multichoiceanswer_id=option_id,
-                    )
+    for respondent in responding:
+        if question.type == Question.QuestionType.OPEN:
+            text = random.choice(SAMPLE_RESPONSES)
+            # v1 readers use free_text, v2 readers use text
+            responses_to_create.append(
+                Response(respondent=respondent, question=question, text=text, free_text=text)
+            )
+        if answers_question is not None:
+            for option in random.sample(SAMPLE_MC_OPTIONS, random.randint(1, 3)):
+                answers_to_create.append(
+                    Response(respondent=respondent, question=answers_question, text=option)
                 )
 
-        # Create M2M in batches
-        for i in range(0, len(m2m_to_create), M2M_BATCH_SIZE):
-            batch = m2m_to_create[i : i + M2M_BATCH_SIZE]
-            Response.chosen_options.through.objects.bulk_create(batch)
+    all_created = []
+    for rows in (responses_to_create, answers_to_create):
+        for i in range(0, len(rows), RESPONSE_BATCH_SIZE):
+            all_created.extend(Response.objects.bulk_create(rows[i : i + RESPONSE_BATCH_SIZE]))
 
-    # Update question's response counts
     question.update_response_counts()
+    if answers_question is not None and answers_question != question:
+        answers_question.update_response_counts()
 
     return len(all_created)
 
@@ -773,7 +752,7 @@ def resume_load_test(
                 last_reconnect = time.time()
 
             question_type = question_types[i - 1]
-            question = create_question(consultation, i, question_type)
+            question = create_question(consultation, i, question_type, num_of_questions + i)
 
             coverage = random.uniform(70, 90)
             num_responses = create_responses_for_question(question, respondents, coverage)
@@ -1014,7 +993,7 @@ def run_load_test(
             periodic_reconnect()
             last_reconnect = time.time()
 
-        question = create_question(consultation, i, question_type)
+        question = create_question(consultation, i, question_type, num_of_questions + i)
 
         # Create responses for this question
         coverage = random.uniform(70, 90)

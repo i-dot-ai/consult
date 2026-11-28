@@ -84,12 +84,23 @@ const enableV2 = getDataSetupV2Enabled();
   ├── respondents.jsonl
   ├── question_part_1/
   │   ├── question.json
-  │   ├── responses.jsonl
-  │   └── multi_choice.jsonl
+  │   └── responses.jsonl
   ├── question_part_2/
   │   ├── question.json
-  │   ├── responses.jsonl
+  │   └── answers.jsonl
         </code></pre>
+        <Text>
+          <code>question.json</code> carries the question text and its{" "}
+          <code>type</code> (open, closed or demographic). Open questions put
+          one free-text answer per line in <code>responses.jsonl</code>; closed
+          and demographic questions put one selected option per line in{" "}
+          <code>answers.jsonl</code>, both as{" "}
+          <code>
+            {"{"}"themefinder_id": 1, "text": "..."{"}"}
+          </code>
+          . An open question names its closed sibling with{" "}
+          <code>closed_question_number</code>.
+        </Text>
         <Text>
           As part of this, you will need to define the consultation{" "}
           <code>CODE</code>, which is the unique identifier we will use for the

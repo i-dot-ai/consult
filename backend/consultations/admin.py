@@ -13,7 +13,6 @@ from consultations.models import (
     CandidateTheme,
     Consultation,
     DemographicOption,
-    MultiChoiceAnswer,
     Question,
     Respondent,
     Response,
@@ -188,9 +187,7 @@ class ConsultationAdmin(admin.ModelAdmin):
                     consultation_id=consultation.id,
                 )
                 messages.error(request, f"Failed to start migration job: {e}")
-            return HttpResponseRedirect(
-                reverse("admin:consultations_consultation_changelist")
-            )
+            return HttpResponseRedirect(reverse("admin:consultations_consultation_changelist"))
 
         already_migrated = consultation.migrated_at is not None
         has_provider = consultation.data_source is not None
@@ -214,11 +211,6 @@ class ConsultationAdmin(admin.ModelAdmin):
         return TemplateResponse(
             request, "admin/consultations/consultation/migrate_v1_confirm.html", context
         )
-
-
-class MultiChoiceAnswerInline(admin.StackedInline):
-    model = MultiChoiceAnswer
-    extra = 0
 
 
 class SelectedThemeInline(admin.StackedInline):
@@ -247,7 +239,6 @@ class QuestionAdmin(admin.ModelAdmin):
         "has_free_text",
         "has_multiple_choice",
     ]
-    inlines: ClassVar[list] = [MultiChoiceAnswerInline]
     actions: ClassVar[list] = [set_has_free_text_false, reset_sign_off]
     change_form_template = "admin/consultations/question/change_form.html"
 

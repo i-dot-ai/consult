@@ -17,7 +17,7 @@ _Current database schema on [dbdiagram](https://dbdiagram.io/d/Data-Setup-Curren
 We need a way to:
 
 - Record what data files were uploaded and when for auditability
-- Represent initial consultation data after a data file has been uploaded and before setup is complete. In this state, users have not yet defined the question types and that determines where we store the responses (`response` for open question responses, `demographicoption` and `respondent_demographics` for demographic question responses, `multichoiceanswer` and `response_chosen_options` for closed question responses)
+- Represent initial consultation data after a data file has been uploaded and before setup is complete. In this state, users have not yet defined the question types and that determines where we store the responses (at the time, `response` for open question responses, `demographicoption` and `respondent_demographics` for demographic question responses, `multichoiceanswer` and `response_chosen_options` for closed question responses; all answer types now live in `response` as one row per selected option)
 - Represent progress through the data setup journey so users can pick up where they left off
 - Separate hybrid questions (questions with `has_free_text` and `has_multiple_choice`) so that any closed question can be used to filter the responses of any open question
 - Maintain a one-to-one relationship of closely related closed and open questions (such as, "Do you agree with X?" and "Why?") so we can display them alongside each other in the analysis dashboard

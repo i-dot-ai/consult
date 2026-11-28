@@ -141,9 +141,11 @@ SETUP → FINDING_THEMES → FINALISING_THEMES → ASSIGNING_THEMES → ANALYSIS
 ```
 app_data/consultations/{code}/
 ├── inputs/
+│   ├── respondents.jsonl (S3 import only)
 │   └── question_{id}/
-│       ├── question.json
-│       ├── responses.jsonl
+│       ├── question.json (question_text, type, has_free_text, closed_question_number)
+│       ├── responses.jsonl (open questions: one free-text answer per line)
+│       ├── answers.jsonl (closed and demographic questions, S3 import only: one selected option per line)
 │       └── themes.csv (for assign phase)
 └── outputs/
     ├── find-themes/{timestamp}/

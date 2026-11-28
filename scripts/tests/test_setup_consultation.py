@@ -40,6 +40,15 @@ QU_B = (
 # ── load_responses ────────────────────────────────────────────────────────────
 
 
+def _answers_by_respondent(question_dir):
+    """answers.jsonl grouped per respondent, in file order."""
+    grouped: dict[int, list[str]] = {}
+    for line in (question_dir / "answers.jsonl").read_text().splitlines():
+        row = json.loads(line)
+        grouped.setdefault(row["themefinder_id"], []).append(row["text"])
+    return grouped
+
+
 def test_load_responses_lgr_single_header():
     """LGR format: single header row, data immediately follows."""
     df, headers = load_responses(FIXTURES / "responses_lgr_format.csv")
@@ -515,35 +524,29 @@ def test_create_question_inputs_strips_trailing_comma_in_closed(tmp_path):
     questions = [{"question_number": 1, "column_name": "C", "question_text": "?"}]
     create_question_inputs(df, questions, "closed", tmp_path)
 
-    rows = [
-        json.loads(line)
-        for line in (
-            tmp_path / "question_part_1" / "multi_choice.jsonl"
-        ).read_text().splitlines()
-    ]
-    assert rows[0]["options"] == ["Option A"]
-    assert rows[1]["options"] == ["Option A", "Option B"]
-    assert rows[2]["options"] == ["Option A", "Option B"]
-    assert rows[3]["options"] == ["Option A", "Option B"]
-
+    assert _answers_by_respondent(tmp_path / "question_part_1") == {
+        1: ["Option A"],
+        2: ["Option A", "Option B"],
+        3: ["Option A", "Option B"],
+        4: ["Option A", "Option B"],
+    }
     q = json.loads((tmp_path / "question_part_1" / "question.json").read_text())
-    assert "" not in q["multi_choice_options"]
+    assert q == {
+        "question_number": 1,
+        "question_text": "?",
+        "has_free_text": False,
+        "type": "closed",
+    }
 
 
-def test_create_question_inputs_keeps_internal_empty_token_in_closed(tmp_path):
-    """Internal empty tokens (e.g. 'A,,B') are preserved — only trailing strip."""
+def test_create_question_inputs_drops_empty_tokens_in_closed(tmp_path):
+    """An empty token (e.g. 'A,,B') is not an option and gets no answer line."""
     df = pd.DataFrame(
         {"themefinder_id": [1], "C": ["A,,B"]}
     )
     questions = [{"question_number": 1, "column_name": "C", "question_text": "?"}]
     create_question_inputs(df, questions, "closed", tmp_path)
-    rows = [
-        json.loads(line)
-        for line in (
-            tmp_path / "question_part_1" / "multi_choice.jsonl"
-        ).read_text().splitlines()
-    ]
-    assert rows[0]["options"] == ["A", "", "B"]
+    assert _answers_by_respondent(tmp_path / "question_part_1") == {1: ["A", "B"]}
 
 
 def test_create_question_inputs_strips_trailing_comma_in_hybrid(tmp_path):
@@ -563,14 +566,25 @@ def test_create_question_inputs_strips_trailing_comma_in_hybrid(tmp_path):
             "question_text": "?",
         }
     ]
-    create_question_inputs(df, questions, "hybrid", tmp_path)
+    create_question_inputs(df, questions, "hybrid", tmp_path, sibling_number_start=10)
+
+    assert _answers_by_respondent(tmp_path / "question_part_10") == {
+        1: ["Strongly agree", "Agree"]
+    }
+    q = json.loads((tmp_path / "question_part_1" / "question.json").read_text())
+    assert q["type"] == "open" and q["closed_question_number"] == 10
+    sibling = json.loads((tmp_path / "question_part_10" / "question.json").read_text())
+    assert sibling == {
+        "question_number": 10,
+        "question_text": "?",
+        "has_free_text": False,
+        "type": "closed",
+    }
     rows = [
         json.loads(line)
-        for line in (
-            tmp_path / "question_part_1" / "multi_choice.jsonl"
-        ).read_text().splitlines()
+        for line in (tmp_path / "question_part_1" / "responses.jsonl").read_text().splitlines()
     ]
-    assert rows[0]["options"] == ["Strongly agree", "Agree"]
+    assert rows == [{"themefinder_id": 1, "text": "Free-text answer"}]
 
 
 def test_create_question_inputs_deduplicates_closed_options(tmp_path):
@@ -586,12 +600,10 @@ def test_create_question_inputs_deduplicates_closed_options(tmp_path):
     ]
     create_question_inputs(df, questions, "closed", tmp_path)
 
-    lines = (
-        (tmp_path / "question_part_1" / "multi_choice.jsonl").read_text().splitlines()
-    )
-    rows = [json.loads(line) for line in lines]
-    assert rows[0]["options"] == ["Option A", "Option B"]
-    assert rows[1]["options"] == ["Option B"]
+    assert _answers_by_respondent(tmp_path / "question_part_1") == {
+        1: ["Option A", "Option B"],
+        2: ["Option B"],
+    }
 
 
 def test_create_question_inputs_deduplicates_hybrid_options(tmp_path):
@@ -614,14 +626,12 @@ def test_create_question_inputs_deduplicates_hybrid_options(tmp_path):
             "question_text": "Do you agree?",
         }
     ]
-    create_question_inputs(df, questions, "hybrid", tmp_path)
+    create_question_inputs(df, questions, "hybrid", tmp_path, sibling_number_start=2)
 
-    lines = (
-        (tmp_path / "question_part_1" / "multi_choice.jsonl").read_text().splitlines()
-    )
-    rows = [json.loads(line) for line in lines]
-    assert rows[0]["options"] == ["Strongly agree", "Agree"]
-    assert rows[1]["options"] == ["Disagree"]
+    assert _answers_by_respondent(tmp_path / "question_part_2") == {
+        1: ["Strongly agree", "Agree"],
+        2: ["Disagree"],
+    }
 
 
 def test_create_question_inputs_strips_response_text_whitespace(tmp_path):
@@ -778,8 +788,9 @@ def test_create_question_inputs_skips_hybrid_with_no_responses(tmp_path):
             "question_text": "?",
         }
     ]
-    create_question_inputs(df, questions, "hybrid", tmp_path)
+    create_question_inputs(df, questions, "hybrid", tmp_path, sibling_number_start=10)
     assert not (tmp_path / "question_part_9").exists()
+    assert not (tmp_path / "question_part_10").exists()
 
 
 def test_create_question_inputs_still_writes_when_some_responses_present(tmp_path):
@@ -789,11 +800,7 @@ def test_create_question_inputs_still_writes_when_some_responses_present(tmp_pat
     )
     questions = [{"question_number": 4, "column_name": "A", "question_text": "?"}]
     create_question_inputs(df, questions, "closed", tmp_path)
-    assert (tmp_path / "question_part_4" / "multi_choice.jsonl").exists()
-    lines = (
-        (tmp_path / "question_part_4" / "multi_choice.jsonl").read_text().splitlines()
-    )
-    assert len(lines) == 2
+    assert _answers_by_respondent(tmp_path / "question_part_4") == {1: ["Yes", "No"], 3: ["Maybe"]}
 
 
 def test_load_responses_drops_rows_emptied_by_null_normalisation(tmp_path):
@@ -842,18 +849,10 @@ def test_clean_text_column_preserves_non_breaking_hyphen_in_options(tmp_path):
     )
     questions = [{"question_number": 1, "column_name": "C", "question_text": "?"}]
     create_question_inputs(df, questions, "closed", tmp_path)
-    rows = [
-        json.loads(line)
-        for line in (
-            tmp_path / "question_part_1" / "multi_choice.jsonl"
-        ).read_text().splitlines()
-    ]
-    assert rows[0]["options"] == ["Community‑based"]
-    assert rows[1]["options"] == ["Faith"]
-
-    q = json.loads((tmp_path / "question_part_1" / "question.json").read_text())
-    assert "Community‑based" in q["multi_choice_options"]
-    assert "Communitybased" not in q["multi_choice_options"]
+    assert _answers_by_respondent(tmp_path / "question_part_1") == {
+        1: ["Community‑based"],
+        2: ["Faith"],
+    }
 
 
 def test_create_respondents_jsonl_preserves_unicode(tmp_path):
