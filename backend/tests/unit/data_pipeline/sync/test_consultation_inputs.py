@@ -3,7 +3,7 @@ from unittest.mock import MagicMock, patch
 
 import pytest
 
-from consultations.models import Consultation, MultiChoiceAnswer, Response
+from consultations.models import Consultation, Response
 from data_pipeline.sync.consultation_inputs import (
     assign_consultation_code,
     export_consultation_inputs_to_s3,
@@ -167,6 +167,7 @@ class TestExportConsultationInputsToS3:
             "question_number": 1,
             "question_text": question.text,
             "has_free_text": True,
+            "type": "open",
         }
         [(key, rows)] = responses_jsonl_rows(mock_s3_client)
         assert key == "app_data/consultations/test-code/inputs/question_part_1/responses.jsonl"
@@ -177,7 +178,7 @@ class TestExportConsultationInputsToS3:
 
     @patch("data_pipeline.sync.consultation_inputs.get_s3_client")
     @patch("data_pipeline.sync.consultation_inputs.settings")
-    def test_closed_question_gets_question_json_with_options_but_no_responses(
+    def test_closed_question_gets_question_json_but_no_responses(
         self, mock_settings, mock_get_s3_client
     ):
         mock_settings.AWS_BUCKET_NAME = "test-bucket"
@@ -185,17 +186,10 @@ class TestExportConsultationInputsToS3:
         mock_get_s3_client.return_value = mock_s3_client
         consultation = ConsultationFactory(code="test-code")
         question = QuestionFactory(
-            consultation=consultation,
-            number=2,
-            type="closed",
-            has_free_text=False,
-            has_multiple_choice=True,
+            consultation=consultation, number=2, type="closed", has_free_text=False
         )
-        MultiChoiceAnswerFactory(question=question, text="red")
-        MultiChoiceAnswerFactory(question=question, text="blue")
         respondent = RespondentFactory(consultation=consultation, themefinder_id=1)
-        response = Response.objects.create(question=question, respondent=respondent, text="red")
-        response.chosen_options.add(MultiChoiceAnswer.objects.get(text="red"))
+        Response.objects.create(question=question, respondent=respondent, text="red")
 
         export_consultation_inputs_to_s3(consultation, "test-code")
 
@@ -204,7 +198,7 @@ class TestExportConsultationInputsToS3:
             "question_number": 2,
             "question_text": question.text,
             "has_free_text": False,
-            "multi_choice_options": ["blue", "red"],
+            "type": "closed",
         }
         assert mock_s3_client.upload_fileobj.call_count == 0
 
@@ -316,30 +310,6 @@ class TestExportConsultationInputsToS3:
         assert parts == 0
         assert mock_s3_client.put_object.call_count == 0
         assert mock_s3_client.upload_fileobj.call_count == 0
-
-    @patch("data_pipeline.sync.consultation_inputs.get_s3_client")
-    @patch("data_pipeline.sync.consultation_inputs.settings")
-    def test_not_provided_is_not_a_multi_choice_option(self, mock_settings, mock_get_s3_client):
-        mock_settings.AWS_BUCKET_NAME = "test-bucket"
-        mock_s3_client = MagicMock()
-        mock_get_s3_client.return_value = mock_s3_client
-        consultation = ConsultationFactory(code="test-code")
-        question = QuestionFactory(
-            consultation=consultation,
-            number=1,
-            type="open",
-            has_free_text=True,
-            has_multiple_choice=True,
-        )
-        MultiChoiceAnswerFactory(question=question, text="Not Provided")
-        MultiChoiceAnswerFactory(question=question, text="Yes")
-        respondent = RespondentFactory(consultation=consultation, themefinder_id=1)
-        Response.objects.create(question=question, respondent=respondent, text=None)
-
-        export_consultation_inputs_to_s3(consultation, "test-code")
-
-        [body] = question_json_bodies(mock_s3_client)
-        assert body["multi_choice_options"] == ["Yes"]
 
     def test_requires_a_consultation_code(self):
         consultation = ConsultationFactory(code="")
